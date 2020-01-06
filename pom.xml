@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.tvd12</groupId>
+		<artifactId>ezyfox</artifactId>
+		<version>0.0.2</version>
+	</parent>
+	<artifactId>ezymq</artifactId>
+    <version>1.1.0</version>
+	<packaging>pom</packaging>
+
+	<name>ezymq</name>
+	<url>http://www.tvd12.com/java/projects/ezymq</url>
+	<description>
+		Support for Message Queue interaction 
+	</description>
+
+	<organization>
+		<name>Young Monkeys</name>
+		<url>http://www.tvd12.com</url>
+	</organization>
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<scm>
+		<connection>scm:git:git@github.com:youngmonkeys/ezymq.git</connection>
+		<developerConnection>scm:git:git@github.com:youngmonkeys/ezymq.git</developerConnection>
+		<url>https://github.com/youngmonkeys/ezymq</url>
+	</scm>
+
+	<issueManagement>
+		<system>Github</system>
+		<url>https://github.com/youngmonkeys/ezymq/issues</url>
+	</issueManagement>
+
+	<ciManagement>
+		<system>travis</system>
+		<url>https://travis-ci.org/youngmonkeys/ezymq</url>
+	</ciManagement>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>oss.sonatype.org</id>
+			<url>https://oss.sonatype.org/content/groups/public</url>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<developers>
+		<developer>
+			<name>Ta Van Dung</name>
+			<email>itprono3@gmail.com</email>
+			<organization>Young Monkeys</organization>
+			<organizationUrl>http://www.youngmonkeys.org</organizationUrl>
+		</developer>
+	</developers>
+  <modules>
+    <module>ezymq-kafka</module>
+    <module>ezymq-rabbitmq</module>
+  </modules>
+</project>
