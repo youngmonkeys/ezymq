@@ -6,13 +6,13 @@
 
 # Synopsis
 
-EzyData is a library in EzyFox ecosystem, It support to interact to data, memory caching and database
+EzyMQ is a library in EzyFox ecosystem, It support to interact to Message Queue
 
 # Code Example
 
 # Motivation
 
-In an effort to bring data interaction to EzyFox ecosystem and help everyone study one do everything
+In an effort to bring Message Queue interaction to EzyFox ecosystem and help everyone study one do everything
 
 # API Reference
 
