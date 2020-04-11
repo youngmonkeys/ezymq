@@ -50,9 +50,8 @@ public class EzyKafkaHandler
 		String cmd = record.topic();
         Object requestEntity = null;
         Object responseEntity = null;
-        try
-        {
-        		byte[] requestBody = (byte[])record.value();
+        try {
+        	byte[] requestBody = (byte[])record.value();
             requestEntity = dataCodec.deserialize(cmd, requestBody);
             if (actionInterceptor != null)
                 actionInterceptor.intercept(cmd, requestEntity);
@@ -61,7 +60,7 @@ public class EzyKafkaHandler
                 actionInterceptor.intercept(cmd, requestEntity, responseEntity);
         }
         catch (Exception e) {
-        		if (actionInterceptor != null)
+        	if (actionInterceptor != null)
                 actionInterceptor.intercept(cmd, requestEntity, e);
         }
 	}

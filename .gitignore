@@ -10,3 +10,5 @@ test-output
 */test-output
 .log
 *.log
+target/
+*/target/

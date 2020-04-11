@@ -29,18 +29,18 @@ public class EzyKafkaCaller extends EzyLoggable {
 
     public void send(String cmd, Object data) {
         byte[] requestMessage = entityCodec.serialize(data);
-        rawSend(cmd, requestMessage);
+        sendRaw(cmd, requestMessage);
     }
 	
-    protected void rawSend(String cmd, byte[] requestMessage) {
+    protected void sendRaw(String cmd, byte[] requestMessage) {
     		try {
 			client.send(cmd, requestMessage);
 		} 
-    		catch (TimeoutException e) {
+    	catch (TimeoutException e) {
 			throw new EzyTimeoutException("call request: " + cmd + " timeout", e);
 		}
-    		catch (Exception e) {
-    			throw new InternalServerErrorException(e.getMessage(), e);
+    	catch (Exception e) {
+    		throw new InternalServerErrorException(e.getMessage(), e);
 		}
     }
     

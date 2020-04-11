@@ -16,8 +16,7 @@ public class EzyKafkaBytesDataCodec extends EzyAbstractKafkaDataCodec  {
 	protected EzyMessageSerializer messageSerializer;
 	protected EzyMessageDeserializer messageDeserializer;
 	
-	public EzyKafkaBytesDataCodec() {
-	}
+	public EzyKafkaBytesDataCodec() {}
 	
 	public EzyKafkaBytesDataCodec(
 			EzyMessageSerializer messageSerializer,
