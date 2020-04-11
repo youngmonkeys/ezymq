@@ -14,21 +14,17 @@ import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.RpcClient.Response;
 import com.rabbitmq.client.ShutdownSignalException;
 import com.rabbitmq.utility.BlockingCell;
-import com.tvd12.ezyfox.builder.EzyBuilder;
-import com.tvd12.ezyfox.util.EzyLoggable;
-import com.tvd12.ezymq.rabbitmq.factory.EzyCorrelationIdFactory;
-import com.tvd12.ezymq.rabbitmq.factory.EzySimpleCorrelationIdFactory;
+import com.tvd12.ezymq.rabbitmq.factory.EzyRabbitCorrelationIdFactory;
+import com.tvd12.ezymq.rabbitmq.factory.EzyRabbitSimpleCorrelationIdFactory;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitResponseConsumer;
 
-public class EzyRabbitRpcClient extends EzyLoggable {
+public class EzyRabbitRpcClient extends EzyRabbitEndpoint {
 
-    protected final Channel channel;
-    protected final String exchange;
-    protected final String requestRoutingKey;
     protected final int defaultTimeout;
 	protected final String replyQueueName;
 	protected final String replyRoutingKey;
-	protected final EzyCorrelationIdFactory correlationIdFactory;
+	protected final String requestRoutingKey;
+	protected final EzyRabbitCorrelationIdFactory correlationIdFactory;
 	protected final Map<String, BlockingCell<Object>> continuationMap;
 	protected final EzyRabbitResponseConsumer unconsumedResponseConsumer;
 	private DefaultConsumer consumer;
@@ -49,7 +45,7 @@ public class EzyRabbitRpcClient extends EzyLoggable {
         		replyQueueName,
         		replyRoutingKey,
         		timeout, 
-        		new EzySimpleCorrelationIdFactory(),
+        		new EzyRabbitSimpleCorrelationIdFactory(),
         		unconsumedResponseConsumer);
     }
 	
@@ -60,10 +56,9 @@ public class EzyRabbitRpcClient extends EzyLoggable {
 			String replyQueueName,
 			String replyRoutingKey,
 			int defaultTimeout, 
-			EzyCorrelationIdFactory correlationIdFactory,
+			EzyRabbitCorrelationIdFactory correlationIdFactory,
 			EzyRabbitResponseConsumer unconsumedResponseConsumer) throws IOException {
-        this.channel = channel;
-        this.exchange = exchange;
+		super(channel, exchange);
         this.requestRoutingKey = requestRoutingKey;
         this.replyQueueName = replyQueueName;
         this.replyRoutingKey = replyRoutingKey;
@@ -97,12 +92,12 @@ public class EzyRabbitRpcClient extends EzyLoggable {
                     String replyId = properties.getCorrelationId();
                     BlockingCell<Object> blocker = continuationMap.remove(replyId);
                     if (blocker == null) {
-                    		if(unconsumedResponseConsumer != null) {
-                    			unconsumedResponseConsumer.consume(properties, body);
-                    		}
-                    		else { 
-                    			logger.warn("No outstanding request for correlation ID {}", replyId);
-                    		}
+                		if(unconsumedResponseConsumer != null) {
+                			unconsumedResponseConsumer.consume(properties, body);
+                		}
+                		else { 
+                			logger.warn("No outstanding request for correlation ID {}", replyId);
+                		}
                     } else {
                         blocker.set(new Response(consumerTag, envelope, properties, body));
                     }
@@ -119,7 +114,7 @@ public class EzyRabbitRpcClient extends EzyLoggable {
         AMQP.BasicProperties.Builder propertiesBuilder = (props != null) 
         			? props.builder() 
         			: new AMQP.BasicProperties.Builder();
-        	AMQP.BasicProperties newProperties = propertiesBuilder
+        AMQP.BasicProperties newProperties = propertiesBuilder
         			.build();
         publish(newProperties, message);
 	}
@@ -136,11 +131,11 @@ public class EzyRabbitRpcClient extends EzyLoggable {
         AMQP.BasicProperties.Builder propertiesBuilder = (props != null) 
         			? props.builder() 
         			: new AMQP.BasicProperties.Builder();
-        	AMQP.BasicProperties newProperties = propertiesBuilder
-        			.correlationId(replyId)
-        			.replyTo(replyRoutingKey)
-        			.build();
-        	BlockingCell<Object> k = new BlockingCell<Object>();
+    	AMQP.BasicProperties newProperties = propertiesBuilder
+    			.correlationId(replyId)
+    			.replyTo(replyRoutingKey)
+    			.build();
+    	BlockingCell<Object> k = new BlockingCell<Object>();
         synchronized (continuationMap) {
             continuationMap.put(replyId, k);
         }
@@ -190,28 +185,16 @@ public class EzyRabbitRpcClient extends EzyLoggable {
 		return new Builder();
 	}
 	
-	public static class Builder implements EzyBuilder<EzyRabbitRpcClient> {
+	public static class Builder extends EzyRabbitEndpoint.Builder<Builder> {
 		protected int timeout;
-		protected Channel channel; 
-		protected String exchange; 
 		protected String routingKey; 
 		protected String replyQueueName;
 		protected String replyRoutingKey; 
-		protected EzyCorrelationIdFactory correlationIdFactory;
+		protected EzyRabbitCorrelationIdFactory correlationIdFactory;
 		protected EzyRabbitResponseConsumer unconsumedResponseConsumer;
 		
 		public Builder timeout(int timeout) {
 			this.timeout = timeout;
-			return this;
-		}
-		
-		public Builder channel(Channel channel) {
-			this.channel = channel;
-			return this;
-		}
-		
-		public Builder exchange(String exchange) {
-			this.exchange = exchange;
 			return this;
 		}
 		
@@ -230,7 +213,7 @@ public class EzyRabbitRpcClient extends EzyLoggable {
 			return this;
 		}
 		
-		public Builder correlationIdFactory(EzyCorrelationIdFactory correlationIdFactory) {
+		public Builder correlationIdFactory(EzyRabbitCorrelationIdFactory correlationIdFactory) {
 			this.correlationIdFactory = correlationIdFactory;
 			return this;
 		}
@@ -258,10 +241,10 @@ public class EzyRabbitRpcClient extends EzyLoggable {
 			}
 		}
 		
-		private EzyCorrelationIdFactory getCorrelationIdFactory() {
+		private EzyRabbitCorrelationIdFactory getCorrelationIdFactory() {
 			if(correlationIdFactory != null)
 				return correlationIdFactory;
-			return new EzySimpleCorrelationIdFactory();
+			return new EzyRabbitSimpleCorrelationIdFactory();
 		}
 	}
 	

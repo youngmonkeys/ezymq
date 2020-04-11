@@ -29,10 +29,10 @@ public class EzyKafkaCaller extends EzyLoggable {
 
     public void send(String cmd, Object data) {
         byte[] requestMessage = entityCodec.serialize(data);
-        sendRaw(cmd, requestMessage);
+        rawSend(cmd, requestMessage);
     }
 	
-    protected void sendRaw(String cmd, byte[] requestMessage) {
+    protected void rawSend(String cmd, byte[] requestMessage) {
     		try {
 			client.send(cmd, requestMessage);
 		} 

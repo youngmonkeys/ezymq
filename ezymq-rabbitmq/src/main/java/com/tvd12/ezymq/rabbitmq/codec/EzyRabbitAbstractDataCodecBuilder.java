@@ -8,7 +8,7 @@ import com.tvd12.ezyfox.binding.EzyUnmarshaller;
 import com.tvd12.ezyfox.builder.EzyBuilder;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
-public abstract class EzyAbstractRabbitDataCodecBuilder<B extends EzyAbstractRabbitDataCodecBuilder> 
+public abstract class EzyRabbitAbstractDataCodecBuilder<B extends EzyRabbitAbstractDataCodecBuilder> 
 		implements EzyBuilder<EzyRabbitDataCodec> {
 
 	protected EzyMarshaller marshaller;
@@ -32,13 +32,13 @@ public abstract class EzyAbstractRabbitDataCodecBuilder<B extends EzyAbstractRab
 	
 	@Override
 	public EzyRabbitDataCodec build() {
-		EzyAbstractRabbitDataCodec product = newProduct();
+		EzyRabbitAbstractDataCodec product = newProduct();
 		product.setMarshaller(marshaller);
 		product.setUnmarshaller(unmarshaller);
 		product.setRequestTypeMap(requestTypeMap);
 		return product;
 	}
 	
-	protected abstract EzyAbstractRabbitDataCodec newProduct();
+	protected abstract EzyRabbitAbstractDataCodec newProduct();
 	
 }

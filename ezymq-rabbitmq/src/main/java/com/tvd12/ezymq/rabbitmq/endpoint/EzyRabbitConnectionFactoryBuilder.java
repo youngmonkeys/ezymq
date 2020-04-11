@@ -1,13 +1,14 @@
 package com.tvd12.ezymq.rabbitmq.endpoint;
 
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.ExceptionHandler;
 import com.rabbitmq.client.impl.ForgivingExceptionHandler;
 import com.tvd12.ezyfox.builder.EzyBuilder;
-import com.tvd12.ezyfox.concurrent.EzyThreadFactory;
 import com.tvd12.ezyfox.io.EzyStrings;
+import com.tvd12.ezymq.rabbitmq.concurrent.EzyRabbitThreadFactory;
 
 public class EzyRabbitConnectionFactoryBuilder implements EzyBuilder<ConnectionFactory> {
 	protected int port = 5672;
@@ -16,6 +17,7 @@ public class EzyRabbitConnectionFactoryBuilder implements EzyBuilder<ConnectionF
 	protected String host = "localhost";
 	protected String vhost = "/";
 	protected String uri = null;
+	protected int sharedThreadPoolSize;
 	protected ThreadFactory threadFactory;
 	protected ExceptionHandler exceptionHandler;
 	
@@ -55,11 +57,18 @@ public class EzyRabbitConnectionFactoryBuilder implements EzyBuilder<ConnectionF
 	}
 	
 	public EzyRabbitConnectionFactoryBuilder threadFactory(String poolName) {
-		return threadFactory(newThreadFactory(poolName));
+		return threadFactory(EzyRabbitThreadFactory.create(poolName));
+	}
+	
+	public EzyRabbitConnectionFactoryBuilder sharedThreadPoolSize(int sharedThreadPoolSize) {
+		this.sharedThreadPoolSize = sharedThreadPoolSize;
+		return this;
 	}
 	
 	@Override
 	public ConnectionFactory build() {
+		if(threadFactory == null)
+			threadFactory = newThreadFactory();
 		ConnectionFactory factory = new ConnectionFactory();
 		if(EzyStrings.isNoContent(uri)) {
 			factory.setHost(host);
@@ -71,8 +80,10 @@ public class EzyRabbitConnectionFactoryBuilder implements EzyBuilder<ConnectionF
 		else {
 			setConnectionURI(factory);
 		}
-		factory.setThreadFactory(getThreadFactory());
+		factory.setThreadFactory(threadFactory);
 		factory.setExceptionHandler(getExceptionHandler());
+		if(sharedThreadPoolSize > 0)
+			factory.setSharedExecutor(Executors.newFixedThreadPool(sharedThreadPoolSize, threadFactory));
 		return factory;
 	}
 	
@@ -85,17 +96,8 @@ public class EzyRabbitConnectionFactoryBuilder implements EzyBuilder<ConnectionF
 		}
 	}
 	
-	private ThreadFactory getThreadFactory() {
-		return threadFactory != null ? threadFactory : newThreadFactory();
-	}
-	
 	private ThreadFactory newThreadFactory() {
-		return newThreadFactory("threadpool");
-	}
-	
-	protected ThreadFactory newThreadFactory(String poolName) {
-		return EzyThreadFactory.builder()
-				.prefix("rabbitmq").poolName(poolName).build();
+		return EzyRabbitThreadFactory.create("worker");
 	}
 	
 	protected ExceptionHandler getExceptionHandler() {

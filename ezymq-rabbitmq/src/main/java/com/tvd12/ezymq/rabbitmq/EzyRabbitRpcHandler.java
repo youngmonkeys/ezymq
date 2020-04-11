@@ -1,7 +1,11 @@
 package com.tvd12.ezymq.rabbitmq;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.tvd12.ezyfox.builder.EzyBuilder;
@@ -11,6 +15,7 @@ import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.ezyfox.util.EzyStartable;
 import com.tvd12.ezyfox.util.EzyStoppable;
 import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitDataCodec;
+import com.tvd12.ezymq.rabbitmq.concurrent.EzyRabbitThreadFactory;
 import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitErrorCodes;
 import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitKeys;
 import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitStatusCodes;
@@ -25,14 +30,23 @@ public class EzyRabbitRpcHandler
 		extends EzyLoggable
 		implements EzyRabbitRpcCallHandler, EzyStartable, EzyStoppable {
 
-	@Setter
-	protected EzyRabbitActionInterceptor actionInterceptor;
-
+	protected final int threadPoolSize;
 	protected final EzyRabbitRpcServer server;
 	protected final EzyRabbitDataCodec dataCodec;
 	protected final EzyRabbitRequestHandlers requestHandlers;
+	protected ExecutorService executorService;
+	@Setter
+	protected EzyRabbitActionInterceptor actionInterceptor;
 	
 	public EzyRabbitRpcHandler(
+			EzyRabbitRpcServer server,
+			EzyRabbitDataCodec dataCodec,
+			EzyRabbitRequestHandlers requestHandlers) {
+		this(0, server, dataCodec, requestHandlers);
+	}
+	
+	public EzyRabbitRpcHandler(
+			int threadPoolSize,
 			EzyRabbitRpcServer server,
 			EzyRabbitDataCodec dataCodec,
 			EzyRabbitRequestHandlers requestHandlers) {
@@ -40,17 +54,46 @@ public class EzyRabbitRpcHandler
 		this.server.setCallHandler(this);
 		this.dataCodec = dataCodec;
 		this.requestHandlers = requestHandlers;
+		this.threadPoolSize = threadPoolSize;
 	}
 	
 	@Override
 	public void start() throws Exception {
-		server.mainloop();
+		if(threadPoolSize > 0) {
+			executorService = newExecutorService();
+			for(int i = 0 ; i < threadPoolSize ; ++i)
+				executorService.execute(() -> startLoop());
+		}
+		else {
+			server.mainloop();
+		}
+		
+	}
+	
+	protected void startLoop() {
+		try {
+			server.mainloop();
+		} catch (IOException e) {
+			logger.error("rpc loop has exception", e);
+		}
+	}
+	
+	protected ExecutorService newExecutorService() {
+		ThreadFactory threadFactory 
+			= EzyRabbitThreadFactory.create("rpc-handler");
+		ExecutorService executorService 
+			= Executors.newFixedThreadPool(threadPoolSize, threadFactory);
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> executorService.shutdown()));
+		return executorService;
 	}
 	
 	@Override
 	public void stop() {
 		try {
 			server.stop();
+			if(executorService != null)
+				executorService.shutdown();
+			executorService = null;
 		} catch (Exception e) {
 			logger.error("stop rpc server error", e);
 		}
@@ -61,8 +104,7 @@ public class EzyRabbitRpcHandler
 		String cmd = requestProperties.getType();
         Object requestEntity = null;
         Object responseEntity = null;
-        try
-        {
+        try {
             requestEntity = dataCodec.deserialize(cmd, requestBody);
             if (actionInterceptor != null)
                 actionInterceptor.intercept(cmd, requestEntity);
@@ -71,7 +113,7 @@ public class EzyRabbitRpcHandler
                 actionInterceptor.intercept(cmd, requestEntity, responseEntity);
         }
         catch (Exception e) {
-        		if (actionInterceptor != null)
+        	if (actionInterceptor != null)
                 actionInterceptor.intercept(cmd, requestEntity, e);
         }
 	}
@@ -99,28 +141,28 @@ public class EzyRabbitRpcHandler
             responseBytes = new byte[0];
             Map<String, Object> responseHeaders = new HashMap<String, Object>();
             if (e instanceof NotFoundException) {
-            		responseHeaders.put(EzyRabbitKeys.STATUS, EzyRabbitStatusCodes.NOT_FOUND);
+            	responseHeaders.put(EzyRabbitKeys.STATUS, EzyRabbitStatusCodes.NOT_FOUND);
             }
             else if (e instanceof BadRequestException) {
-            		BadRequestException badEx = (BadRequestException)e;
+            	BadRequestException badEx = (BadRequestException)e;
                 responseHeaders.put(EzyRabbitKeys.STATUS, EzyRabbitStatusCodes.BAD_REQUEST);
                 responseHeaders.put(EzyRabbitKeys.ERROR_CODE, badEx.getCode());
             }
             else if (e instanceof IllegalArgumentException) {
-            		responseHeaders.put(EzyRabbitKeys.STATUS, EzyRabbitStatusCodes.BAD_REQUEST);
-            		responseHeaders.put(EzyRabbitKeys.ERROR_CODE, EzyRabbitErrorCodes.INVALID_ARGUMENT);
+        		responseHeaders.put(EzyRabbitKeys.STATUS, EzyRabbitStatusCodes.BAD_REQUEST);
+        		responseHeaders.put(EzyRabbitKeys.ERROR_CODE, EzyRabbitErrorCodes.INVALID_ARGUMENT);
             }
             else if(e instanceof UnsupportedOperationException) {
-            		responseHeaders.put(EzyRabbitKeys.STATUS, EzyRabbitStatusCodes.BAD_REQUEST);
-            		responseHeaders.put(EzyRabbitKeys.ERROR_CODE, EzyRabbitErrorCodes.UNSUPPORTED_OPERATION);
+        		responseHeaders.put(EzyRabbitKeys.STATUS, EzyRabbitStatusCodes.BAD_REQUEST);
+        		responseHeaders.put(EzyRabbitKeys.ERROR_CODE, EzyRabbitErrorCodes.UNSUPPORTED_OPERATION);
             }
             else {
-            		responseHeaders.put(EzyRabbitKeys.STATUS, EzyRabbitStatusCodes.INTERNAL_SERVER_ERROR);
+        		responseHeaders.put(EzyRabbitKeys.STATUS, EzyRabbitStatusCodes.INTERNAL_SERVER_ERROR);
             }
             
             String errorMessage = e.getMessage();
             if(errorMessage == null)
-            		errorMessage = e.toString();
+            	errorMessage = e.toString();
             responseHeaders.put(EzyRabbitKeys.MESSAGE, errorMessage);
             replyPropertiesBuilder.headers(responseHeaders);
 
@@ -141,10 +183,16 @@ public class EzyRabbitRpcHandler
 	}
 	
 	public static class Builder implements EzyBuilder<EzyRabbitRpcHandler> {
+		protected int threadPoolSize;
 		protected EzyRabbitRpcServer server;
 		protected EzyRabbitDataCodec dataCodec;
 		protected EzyRabbitRequestHandlers requestHandlers;
 		protected EzyRabbitActionInterceptor actionInterceptor;
+		
+		public Builder threadPoolSize(int threadPoolSize) {
+			this.threadPoolSize = threadPoolSize;
+			return this;
+		}
 		
 		public Builder server(EzyRabbitRpcServer server) {
 			this.server = server;
@@ -169,6 +217,7 @@ public class EzyRabbitRpcHandler
 		@Override
 		public EzyRabbitRpcHandler build() {
 			EzyRabbitRpcHandler product = new EzyRabbitRpcHandler(
+					threadPoolSize,
 					server,
 					dataCodec,
 					requestHandlers);

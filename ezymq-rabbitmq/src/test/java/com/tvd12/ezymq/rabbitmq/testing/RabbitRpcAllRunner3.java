@@ -1,63 +1,22 @@
 package com.tvd12.ezymq.rabbitmq.testing;
 
+import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.AMQP.BasicProperties;
-import com.tvd12.ezyfox.binding.EzyBindingContext;
-import com.tvd12.ezyfox.binding.EzyMarshaller;
-import com.tvd12.ezyfox.binding.EzyUnmarshaller;
-import com.tvd12.ezyfox.binding.impl.EzySimpleBindingContext;
 import com.tvd12.ezyfox.builder.EzyArrayBuilder;
-import com.tvd12.ezyfox.codec.EzyEntityCodec;
-import com.tvd12.ezyfox.codec.EzyMessageDeserializer;
-import com.tvd12.ezyfox.codec.EzyMessageSerializer;
-import com.tvd12.ezyfox.codec.MsgPackSimpleDeserializer;
-import com.tvd12.ezyfox.codec.MsgPackSimpleSerializer;
 import com.tvd12.ezyfox.factory.EzyEntityFactory;
-import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcCaller;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcHandler;
-import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitBytesDataCodec;
-import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitBytesEntityCodec;
-import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitDataCodec;
-import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitConnectionFactoryBuilder;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcClient;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcServer;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandlers;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitResponseConsumer;
 
-public class RabbitRpcAllRunner3 extends EzyLoggable {
+public class RabbitRpcAllRunner3 extends RabbitBaseTest {
 
-	private EzyMarshaller marshaller;
-	private EzyUnmarshaller unmarshaller;
-	private EzyMessageSerializer messageSerializer;
-	private EzyMessageDeserializer messageDeserializer;
-
-	private EzyBindingContext bindingContext;
-	private EzyEntityCodec entityCodec;
-	private EzyRabbitDataCodec dataCodec;
 	private EzyRabbitRequestHandlers requestHandlers;
 	
 	public RabbitRpcAllRunner3() {
-		this.messageSerializer = newMessageSerializer();
-		this.messageDeserializer = newMessageDeserializer();
-		this.bindingContext = newBindingContext();
-		this.marshaller = bindingContext.newMarshaller();
-		this.unmarshaller = bindingContext.newUnmarshaller();
-		this.entityCodec = EzyRabbitBytesEntityCodec.builder()
-				.marshaller(marshaller)
-				.unmarshaller(unmarshaller)
-				.messageSerializer(messageSerializer)
-				.messageDeserializer(messageDeserializer)
-				.build();
-		this.dataCodec = EzyRabbitBytesDataCodec.builder()
-				.marshaller(marshaller)
-				.unmarshaller(unmarshaller)
-				.messageSerializer(messageSerializer)
-				.messageDeserializer(messageDeserializer)
-				.mapRequestType("fibonaci", int.class)
-				.build();
 		this.requestHandlers = new EzyRabbitRequestHandlers();
 		this.requestHandlers.addHandler("fibonaci", a -> {
 			return (int)a + 3;
@@ -118,8 +77,6 @@ public class RabbitRpcAllRunner3 extends EzyLoggable {
 	}
 	
 	protected EzyRabbitRpcClient newClient() throws Exception {
-		ConnectionFactory connectionFactory = new EzyRabbitConnectionFactoryBuilder()
-			.build();
 		Connection connection = connectionFactory.newConnection();
 		Channel channel = connection.createChannel();
 		channel.basicQos(1);
@@ -155,8 +112,6 @@ public class RabbitRpcAllRunner3 extends EzyLoggable {
 	}
 	
 	protected EzyRabbitRpcServer newServer() throws Exception {
-		ConnectionFactory connectionFactory = new EzyRabbitConnectionFactoryBuilder()
-				.build();
 		Connection connection = connectionFactory.newConnection();
 		Channel channel = connection.createChannel();
 		channel.basicQos(1);
@@ -172,20 +127,6 @@ public class RabbitRpcAllRunner3 extends EzyLoggable {
 				.exchange("rmqia-rpc-exchange")
 				.replyRoutingKey("rmqia-rpc-client-routing-key")
 				.channel(channel)
-				.build();
-	}
-	
-	protected EzyMessageSerializer newMessageSerializer() {
-		return new MsgPackSimpleSerializer();
-	}
-	
-	protected EzyMessageDeserializer newMessageDeserializer() {
-		return new MsgPackSimpleDeserializer();
-	}
-	
-	private EzyBindingContext newBindingContext() {
-		return EzySimpleBindingContext.builder()
-				.scan("com.tvd12.ezymq.rabbitmq.testing.entity")
 				.build();
 	}
 	

@@ -14,11 +14,11 @@ import lombok.Setter;
 
 public class EzyRabbitRpcServer extends RpcServer {
 	
-	@Setter
-	protected EzyRabbitRpcCallHandler callHandler;
 	protected final String exchange;
 	protected final String replyRoutingKey;
 	protected final String queueName;
+	@Setter
+	protected EzyRabbitRpcCallHandler callHandler;
 	
 	public EzyRabbitRpcServer(
 			Channel channel, 
@@ -52,8 +52,9 @@ public class EzyRabbitRpcServer extends RpcServer {
 	            replyPropertiesBuilder.correlationId(correlationId);
 	            AMQP.BasicProperties replyProperties = replyPropertiesBuilder.build();
 	            getChannel().basicPublish(exchange, responseRoutingKey, replyProperties, replyBody);
-	        } else {
-	        		handleFire(request);
+	        } 
+	        else {
+	        	handleFire(request);
 	        }
 	}
 	

@@ -93,11 +93,11 @@ public class EzyRabbitRpcCaller extends EzyLoggable implements EzyStoppable {
     
     protected void rawFire(
     		BasicProperties requestProperties, byte[] requestMessage) {
-    		try {
+    	try {
 			client.doFire(requestProperties, requestMessage);
 		} 
-    		catch (Exception e) {
-    			throw new InternalServerErrorException(e.getMessage(), e);
+    	catch (Exception e) {
+    		throw new InternalServerErrorException(e.getMessage(), e);
 		}
     }
     

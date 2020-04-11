@@ -4,18 +4,18 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.tvd12.ezyfox.util.EzyLoggable;
 
-public class EzySimpleCorrelationIdFactory
+public class EzyRabbitSimpleCorrelationIdFactory
 		extends EzyLoggable
-		implements EzyCorrelationIdFactory {
+		implements EzyRabbitCorrelationIdFactory {
 
 	private final String prefix;
 	private final AtomicLong generator = new AtomicLong();
 	
-	public EzySimpleCorrelationIdFactory() {
+	public EzyRabbitSimpleCorrelationIdFactory() {
 		this("");
 	}
 	
-	public EzySimpleCorrelationIdFactory(String prefix) {
+	public EzyRabbitSimpleCorrelationIdFactory(String prefix) {
 		this.prefix = prefix;
 	}
 	

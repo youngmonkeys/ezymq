@@ -11,7 +11,7 @@ import lombok.Setter;
 
 @Setter
 @SuppressWarnings("rawtypes")
-public class EzyRabbitBytesDataCodec extends EzyAbstractRabbitDataCodec  {
+public class EzyRabbitBytesDataCodec extends EzyRabbitAbstractDataCodec  {
 
 	protected EzyMessageSerializer messageSerializer;
 	protected EzyMessageDeserializer messageDeserializer;
@@ -56,7 +56,7 @@ public class EzyRabbitBytesDataCodec extends EzyAbstractRabbitDataCodec  {
 		return new Builder();
 	}
 	
-	public static class Builder extends EzyAbstractRabbitDataCodecBuilder<Builder> {
+	public static class Builder extends EzyRabbitAbstractDataCodecBuilder<Builder> {
 		protected EzyMessageSerializer messageSerializer;
 		protected EzyMessageDeserializer messageDeserializer;
 		
@@ -70,7 +70,7 @@ public class EzyRabbitBytesDataCodec extends EzyAbstractRabbitDataCodec  {
 		}
 		
 		@Override
-		protected EzyAbstractRabbitDataCodec newProduct() {
+		protected EzyRabbitAbstractDataCodec newProduct() {
 			return new EzyRabbitBytesDataCodec(messageSerializer, messageDeserializer);
 		}
 	}

@@ -9,16 +9,15 @@ import lombok.Setter;
 
 @Setter
 @SuppressWarnings({"rawtypes", "unchecked"})
-public abstract class EzyAbstractRabbitDataCodec implements EzyRabbitDataCodec {
+public abstract class EzyRabbitAbstractDataCodec implements EzyRabbitDataCodec {
 
 	protected EzyMarshaller marshaller;
 	protected EzyUnmarshaller unmarshaller;
 	protected Map<String, Class> requestTypeMap;
 	
-	public EzyAbstractRabbitDataCodec() {
-	}
+	public EzyRabbitAbstractDataCodec() {}
 	
-	public EzyAbstractRabbitDataCodec(
+	public EzyRabbitAbstractDataCodec(
 			EzyMarshaller marshaller,
 			EzyUnmarshaller unmarshaller,
 			Map<String, Class> requestTypeMap,
