@@ -75,5 +75,6 @@
 	<modules>
 		<module>ezymq-kafka</module>
 		<module>ezymq-rabbitmq</module>
+		<module>ezymq-activemq</module>
 	</modules>
 </project>

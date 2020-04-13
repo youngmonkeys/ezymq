@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.tvd12</groupId>
+		<artifactId>ezymq</artifactId>
+		<version>1.1.1</version>
+	</parent>
+	<artifactId>ezymq-activemq</artifactId>
+	<name>ezymq-activemq</name>
+	<url>http://maven.apache.org</url>
+	
+	<properties>
+		<activemq.version>5.15.12</activemq.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.tvd12</groupId>
+			<artifactId>ezyfox-binding-codec</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.tvd12</groupId>
+			<artifactId>ezyfox-message</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-client</artifactId>
+			<version>${activemq.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.tvd12</groupId>
+			<artifactId>ezyfox-msgpack</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+</project>
