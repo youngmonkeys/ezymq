@@ -65,10 +65,17 @@ public class EzyRabbitConnectionFactoryBuilder implements EzyBuilder<ConnectionF
 		return this;
 	}
 	
+	public EzyRabbitConnectionFactoryBuilder exceptionHandler(ExceptionHandler exceptionHandler) {
+		this.exceptionHandler = exceptionHandler;
+		return this;
+	}
+	
 	@Override
 	public ConnectionFactory build() {
 		if(threadFactory == null)
 			threadFactory = newThreadFactory();
+		if(exceptionHandler == null)
+			exceptionHandler = newExceptionHandler();
 		ConnectionFactory factory = new ConnectionFactory();
 		if(EzyStrings.isNoContent(uri)) {
 			factory.setHost(host);
@@ -81,7 +88,7 @@ public class EzyRabbitConnectionFactoryBuilder implements EzyBuilder<ConnectionF
 			setConnectionURI(factory);
 		}
 		factory.setThreadFactory(threadFactory);
-		factory.setExceptionHandler(getExceptionHandler());
+		factory.setExceptionHandler(exceptionHandler);
 		if(sharedThreadPoolSize > 0)
 			factory.setSharedExecutor(Executors.newFixedThreadPool(sharedThreadPoolSize, threadFactory));
 		return factory;
@@ -98,10 +105,6 @@ public class EzyRabbitConnectionFactoryBuilder implements EzyBuilder<ConnectionF
 	
 	private ThreadFactory newThreadFactory() {
 		return EzyRabbitThreadFactory.create("worker");
-	}
-	
-	protected ExceptionHandler getExceptionHandler() {
-		return exceptionHandler != null ? exceptionHandler : newExceptionHandler();
 	}
 	
 	protected ExceptionHandler newExceptionHandler() {

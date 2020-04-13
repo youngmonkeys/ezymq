@@ -6,8 +6,8 @@ import com.rabbitmq.client.AMQP.BasicProperties;
 public interface EzyRabbitMessageHandler {
 	
 	void handle(
-			BasicProperties requestProperties,
-			byte[] requestBody);
+			BasicProperties properties,
+			byte[] messageBody);
 	
 	default void handle(Delivery request) {
 		handle( request.getProperties(),

@@ -10,9 +10,7 @@ public class EzyRabbitTopicClient extends EzyRabbitEndpoint {
     protected final String routingKey;
 	
 	public EzyRabbitTopicClient(
-			Channel channel, 
-			String exchange, 
-			String routingKey) throws IOException {
+			Channel channel, String exchange, String routingKey) {
         super(channel, exchange);
         this.routingKey = routingKey;
     }
@@ -37,15 +35,10 @@ public class EzyRabbitTopicClient extends EzyRabbitEndpoint {
 		
 		@Override
 		public EzyRabbitTopicClient build() {
-			try {
-				return new EzyRabbitTopicClient(
-						channel, 
-						exchange, 
-						routingKey);
-			}
-			catch(Exception e) {
-				throw new RuntimeException(e);
-			}
+			return new EzyRabbitTopicClient(
+					channel, 
+					exchange, 
+					routingKey);
 		}
 	}
 	
