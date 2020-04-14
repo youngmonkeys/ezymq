@@ -90,7 +90,7 @@ public class RabbitRpcAllRunner3 extends RabbitBaseTest {
 		channel.queueBind("rmqia-rpc-client-queue-private", "rmqia-rpc-exchange", "rmqia-rpc-client-routing-key-private");
 		channel.queueBind("rmqia-rpc-client-queue-backup", "rmqia-rpc-exchange", "rmqia-rpc-client-routing-key-backup");
 		return EzyRabbitRpcClient.builder()
-				.timeout(300 * 1000)
+				.defaultTimeout(300 * 1000)
 				.channel(channel)
 				.exchange("rmqia-rpc-exchange")
 				.routingKey("rmqia-rpc-routing-key")

@@ -66,16 +66,26 @@ public class EzyActiveProperties {
 			return this;
 		}
 		
-		public void addProperty(String key, Object value) {
+		public Builder addProperty(String key, Object value) {
 			if(properties == null)
 				properties = new HashMap<>();
 			properties.put(key, value);
+			return this;
 		}
 		
-		public void addProperties(Map<String, Object> props) {
+		public Builder addProperties(Map<String, Object> props) {
 			if(properties == null)
 				properties = new HashMap<>();
 			properties.putAll(props);
+			return this;
+		}
+		
+		public Builder addProperties(EzyActiveProperties props) {
+			if(props == null)
+				return this;
+			this.type = props.type;
+			this.correlationId = props.correlationId;
+			return this.addProperties(props.properties);
 		}
 		
 		@Override

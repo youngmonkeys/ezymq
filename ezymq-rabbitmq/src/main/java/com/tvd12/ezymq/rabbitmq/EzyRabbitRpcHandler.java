@@ -3,12 +3,11 @@ package com.tvd12.ezymq.rabbitmq;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.tvd12.ezyfox.builder.EzyBuilder;
+import com.tvd12.ezyfox.concurrent.EzyThreadList;
 import com.tvd12.ezyfox.exception.BadRequestException;
 import com.tvd12.ezyfox.exception.NotFoundException;
 import com.tvd12.ezyfox.util.EzyLoggable;
@@ -34,7 +33,7 @@ public class EzyRabbitRpcHandler
 	protected final EzyRabbitRpcServer server;
 	protected final EzyRabbitDataCodec dataCodec;
 	protected final EzyRabbitRequestHandlers requestHandlers;
-	protected ExecutorService executorService;
+	protected EzyThreadList executorService;
 	@Setter
 	protected EzyRabbitActionInterceptor actionInterceptor;
 	
@@ -61,8 +60,7 @@ public class EzyRabbitRpcHandler
 	public void start() throws Exception {
 		if(threadPoolSize > 0) {
 			executorService = newExecutorService();
-			for(int i = 0 ; i < threadPoolSize ; ++i)
-				executorService.execute(() -> startLoop());
+			executorService.execute();
 		}
 		else {
 			server.mainloop();
@@ -78,12 +76,11 @@ public class EzyRabbitRpcHandler
 		}
 	}
 	
-	protected ExecutorService newExecutorService() {
+	protected EzyThreadList newExecutorService() {
 		ThreadFactory threadFactory 
 			= EzyRabbitThreadFactory.create("rpc-handler");
-		ExecutorService executorService 
-			= Executors.newFixedThreadPool(threadPoolSize, threadFactory);
-		Runtime.getRuntime().addShutdownHook(new Thread(() -> executorService.shutdown()));
+		EzyThreadList executorService = new EzyThreadList(
+				threadPoolSize, () -> startLoop(), threadFactory); 
 		return executorService;
 	}
 	
@@ -91,8 +88,6 @@ public class EzyRabbitRpcHandler
 	public void stop() {
 		try {
 			server.stop();
-			if(executorService != null)
-				executorService.shutdown();
 			executorService = null;
 		} catch (Exception e) {
 			logger.error("stop rpc server error", e);

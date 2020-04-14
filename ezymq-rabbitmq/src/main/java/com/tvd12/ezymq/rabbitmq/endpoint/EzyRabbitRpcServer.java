@@ -41,21 +41,21 @@ public class EzyRabbitRpcServer extends RpcServer {
 	@Override
 	public void processRequest(Delivery request)
 	        throws IOException {
-	        AMQP.BasicProperties requestProperties = request.getProperties();
-	        String correlationId = requestProperties.getCorrelationId();
-	        String responseRoutingKey = requestProperties.getReplyTo();
-	        if(responseRoutingKey == null)
-	        		responseRoutingKey = replyRoutingKey; 
-	        if (correlationId != null) {
-	            AMQP.BasicProperties.Builder replyPropertiesBuilder = new AMQP.BasicProperties.Builder();
-	            byte[] replyBody = handleCall(request, replyPropertiesBuilder);
-	            replyPropertiesBuilder.correlationId(correlationId);
-	            AMQP.BasicProperties replyProperties = replyPropertiesBuilder.build();
-	            getChannel().basicPublish(exchange, responseRoutingKey, replyProperties, replyBody);
-	        } 
-	        else {
-	        	handleFire(request);
-	        }
+        AMQP.BasicProperties requestProperties = request.getProperties();
+        String correlationId = requestProperties.getCorrelationId();
+        String responseRoutingKey = requestProperties.getReplyTo();
+        if(responseRoutingKey == null)
+        		responseRoutingKey = replyRoutingKey; 
+        if (correlationId != null) {
+            AMQP.BasicProperties.Builder replyPropertiesBuilder = new AMQP.BasicProperties.Builder();
+            byte[] replyBody = handleCall(request, replyPropertiesBuilder);
+            replyPropertiesBuilder.correlationId(correlationId);
+            AMQP.BasicProperties replyProperties = replyPropertiesBuilder.build();
+            getChannel().basicPublish(exchange, responseRoutingKey, replyProperties, replyBody);
+        } 
+        else {
+        	handleFire(request);
+        }
 	}
 	
 	protected void handleFire(Delivery request) {

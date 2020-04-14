@@ -1,7 +1,5 @@
 package com.tvd12.ezymq.activemq.endpoint;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import javax.jms.BytesMessage;
@@ -10,6 +8,7 @@ import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
+import com.tvd12.ezyfox.concurrent.EzyThreadList;
 import com.tvd12.ezyfox.util.EzyStartable;
 import com.tvd12.ezyfox.util.EzyStoppable;
 import com.tvd12.ezymq.activemq.concurrent.EzyActiveThreadFactory;
@@ -25,7 +24,7 @@ public class EzyActiveTopicServer
 	protected volatile boolean active;
 	protected final int threadPoolSize;
 	protected final MessageConsumer consumer;
-	protected ExecutorService executorService;
+	protected EzyThreadList executorService;
     @Setter
     protected EzyActiveMessageHandler messageHandler;
 	
@@ -42,8 +41,7 @@ public class EzyActiveTopicServer
 	public void start() throws Exception {
 		this.active = true;
 		this.executorService = newExecutorSerivice();
-		for(int i = 0 ; i < threadPoolSize ; ++i)
-			executorService.execute(() -> loop());
+		this.executorService.execute();
 	}
 	
 	protected void loop() {
@@ -64,21 +62,17 @@ public class EzyActiveTopicServer
 		}
 	}
 	
-	protected ExecutorService newExecutorSerivice() {
+	protected EzyThreadList newExecutorSerivice() {
 		ThreadFactory threadFactory 
 			= EzyActiveThreadFactory.create("topic-server");
-		ExecutorService executorService 
-			= Executors.newFixedThreadPool(threadPoolSize, threadFactory);
-		Runtime.getRuntime()
-			.addShutdownHook(new Thread(() -> executorService.shutdown()));
+		EzyThreadList executorService = 
+				new EzyThreadList(threadPoolSize, () -> loop(), threadFactory);
 		return executorService;
 	}
 	
 	@Override
 	public void stop() {
 		this.active = false;
-		if(executorService != null)
-			executorService.shutdown();
 		this.executorService = null;
 	}
 	

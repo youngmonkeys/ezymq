@@ -2,9 +2,7 @@ package com.tvd12.ezymq.rabbitmq.endpoint;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.TimeoutException;
 
 import com.rabbitmq.client.AMQP;
@@ -13,19 +11,23 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.RpcClient.Response;
 import com.rabbitmq.client.ShutdownSignalException;
-import com.rabbitmq.utility.BlockingCell;
+import com.tvd12.ezyfox.concurrent.EzyFuture;
+import com.tvd12.ezyfox.concurrent.EzyFutureConcurrentHashMap;
+import com.tvd12.ezyfox.concurrent.EzyFutureMap;
+import com.tvd12.ezymq.rabbitmq.exception.EzyRabbitMaxCapacity;
 import com.tvd12.ezymq.rabbitmq.factory.EzyRabbitCorrelationIdFactory;
 import com.tvd12.ezymq.rabbitmq.factory.EzyRabbitSimpleCorrelationIdFactory;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitResponseConsumer;
 
 public class EzyRabbitRpcClient extends EzyRabbitEndpoint {
 
+	protected final int capacity;
     protected final int defaultTimeout;
 	protected final String replyQueueName;
 	protected final String replyRoutingKey;
 	protected final String requestRoutingKey;
+	protected final EzyFutureMap<String> futureMap;
 	protected final EzyRabbitCorrelationIdFactory correlationIdFactory;
-	protected final Map<String, BlockingCell<Object>> continuationMap;
 	protected final EzyRabbitResponseConsumer unconsumedResponseConsumer;
 	private DefaultConsumer consumer;
 	
@@ -37,14 +39,16 @@ public class EzyRabbitRpcClient extends EzyRabbitEndpoint {
 			String routingKey,
 			String replyQueueName,
 			String replyRoutingKey, 
-			int timeout,
+			int capacity,
+			int defaultTimeout,
 			EzyRabbitResponseConsumer unconsumedResponseConsumer) throws IOException {
         this(channel, 
         		exchange, 
         		routingKey, 
         		replyQueueName,
         		replyRoutingKey,
-        		timeout, 
+        		capacity,
+        		defaultTimeout, 
         		new EzyRabbitSimpleCorrelationIdFactory(),
         		unconsumedResponseConsumer);
     }
@@ -55,16 +59,18 @@ public class EzyRabbitRpcClient extends EzyRabbitEndpoint {
 			String requestRoutingKey,
 			String replyQueueName,
 			String replyRoutingKey,
+			int capacity,
 			int defaultTimeout, 
 			EzyRabbitCorrelationIdFactory correlationIdFactory,
 			EzyRabbitResponseConsumer unconsumedResponseConsumer) throws IOException {
 		super(channel, exchange);
+		this.capacity = capacity;
         this.requestRoutingKey = requestRoutingKey;
         this.replyQueueName = replyQueueName;
         this.replyRoutingKey = replyRoutingKey;
         this.defaultTimeout = defaultTimeout;
         this.correlationIdFactory = correlationIdFactory;
-        this.continuationMap = new HashMap<>(); 
+        this.futureMap = new EzyFutureConcurrentHashMap<>(); 
         this.unconsumedResponseConsumer = unconsumedResponseConsumer;
         this.consumer = setupConsumer();
     }
@@ -74,11 +80,9 @@ public class EzyRabbitRpcClient extends EzyRabbitEndpoint {
             @Override
             public void handleShutdownSignal(String consumerTag,
                                              ShutdownSignalException signal) {
-                synchronized (continuationMap) {
-                    for (Entry<String, BlockingCell<Object>> entry : continuationMap.entrySet()) {
-                        entry.getValue().set(signal);
-                    }
-                }
+                Map<String, EzyFuture> remainFutures = futureMap.clear();
+                for(EzyFuture future : remainFutures.values())
+                	future.setResult(signal);
                 consumer = null;
             }
 
@@ -88,19 +92,17 @@ public class EzyRabbitRpcClient extends EzyRabbitEndpoint {
                                        AMQP.BasicProperties properties,
                                        byte[] body)
                     throws IOException {
-                synchronized (continuationMap) {
-                    String replyId = properties.getCorrelationId();
-                    BlockingCell<Object> blocker = continuationMap.remove(replyId);
-                    if (blocker == null) {
-                		if(unconsumedResponseConsumer != null) {
-                			unconsumedResponseConsumer.consume(properties, body);
-                		}
-                		else { 
-                			logger.warn("No outstanding request for correlation ID {}", replyId);
-                		}
-                    } else {
-                        blocker.set(new Response(consumerTag, envelope, properties, body));
-                    }
+            	String replyId = properties.getCorrelationId();
+                EzyFuture future = futureMap.removeFuture(replyId);
+                if (future == null) {
+            		if(unconsumedResponseConsumer != null) {
+            			unconsumedResponseConsumer.consume(properties, body);
+            		}
+            		else { 
+            			logger.warn("No outstanding request for correlation ID {}", replyId);
+            		}
+                } else {
+                	future.setResult(new Response(consumerTag, envelope, properties, body));
                 }
             }
         };
@@ -120,13 +122,15 @@ public class EzyRabbitRpcClient extends EzyRabbitEndpoint {
 	}
 	
 	public Response doCall(AMQP.BasicProperties props, byte[] message)
-	        throws IOException, TimeoutException {
+	        throws Exception {
 		return doCall(props, message, defaultTimeout);
 	}
  
 	public Response doCall(AMQP.BasicProperties props, byte[] message, int timeout)
-	        throws IOException, ShutdownSignalException, TimeoutException {
+	        throws Exception {
         checkConsumer();
+        if(futureMap.size() >= capacity)
+			throw new EzyRabbitMaxCapacity("rpc client too many request, capacity: " + capacity);
         String replyId = correlationIdFactory.newCorrelationId();
         AMQP.BasicProperties.Builder propertiesBuilder = (props != null) 
         			? props.builder() 
@@ -135,20 +139,19 @@ public class EzyRabbitRpcClient extends EzyRabbitEndpoint {
     			.correlationId(replyId)
     			.replyTo(replyRoutingKey)
     			.build();
-    	BlockingCell<Object> k = new BlockingCell<Object>();
-        synchronized (continuationMap) {
-            continuationMap.put(replyId, k);
-        }
+    	EzyFuture future = futureMap.addFuture(replyId);
         publish(newProperties, message);
         Object reply;
         try {
-            reply = k.uninterruptibleGet(timeout);
-        } catch (TimeoutException ex) {
-        		synchronized (continuationMap) {
-        			continuationMap.remove(replyId);
-        		}
+        	reply = future.get(timeout);
+        } 
+        catch (TimeoutException ex) {
+        	futureMap.removeFuture(replyId);
             throw ex;
         }
+        catch (Exception e) {
+        	throw e;
+		}
         if (reply instanceof ShutdownSignalException) {
             ShutdownSignalException sig = (ShutdownSignalException) reply;
             ShutdownSignalException wrapper =
@@ -186,15 +189,26 @@ public class EzyRabbitRpcClient extends EzyRabbitEndpoint {
 	}
 	
 	public static class Builder extends EzyRabbitEndpoint.Builder<Builder> {
-		protected int timeout;
+		
+		protected int capacity;
+		protected int defaultTimeout;
 		protected String routingKey; 
 		protected String replyQueueName;
 		protected String replyRoutingKey; 
 		protected EzyRabbitCorrelationIdFactory correlationIdFactory;
 		protected EzyRabbitResponseConsumer unconsumedResponseConsumer;
 		
-		public Builder timeout(int timeout) {
-			this.timeout = timeout;
+		public Builder() {
+			this.capacity = 10000;
+		}
+		
+		public Builder capacity(int capacity) {
+			this.capacity = capacity;
+			return this;
+		}
+		
+		public Builder defaultTimeout(int defaultTimeout) {
+			this.defaultTimeout = defaultTimeout;
 			return this;
 		}
 		
@@ -226,14 +240,17 @@ public class EzyRabbitRpcClient extends EzyRabbitEndpoint {
 		@Override
 		public EzyRabbitRpcClient build() {
 			try {
+				if(correlationIdFactory == null)
+					correlationIdFactory = new EzyRabbitSimpleCorrelationIdFactory();
 				return new EzyRabbitRpcClient(
 						channel, 
 						exchange, 
 						routingKey, 
 						replyQueueName, 
 						replyRoutingKey,
-						timeout, 
-						getCorrelationIdFactory(),
+						capacity,
+						defaultTimeout, 
+						correlationIdFactory,
 						unconsumedResponseConsumer);
 			}
 			catch(Exception e) {
@@ -241,11 +258,6 @@ public class EzyRabbitRpcClient extends EzyRabbitEndpoint {
 			}
 		}
 		
-		private EzyRabbitCorrelationIdFactory getCorrelationIdFactory() {
-			if(correlationIdFactory != null)
-				return correlationIdFactory;
-			return new EzyRabbitSimpleCorrelationIdFactory();
-		}
 	}
 	
 }

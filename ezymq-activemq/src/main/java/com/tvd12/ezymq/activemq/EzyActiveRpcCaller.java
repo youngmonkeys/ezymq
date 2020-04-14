@@ -1,11 +1,8 @@
-package com.tvd12.ezymq.rabbitmq;
+package com.tvd12.ezymq.activemq;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
-import com.rabbitmq.client.AMQP.BasicProperties;
-import com.rabbitmq.client.RpcClient.Response;
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
 import com.tvd12.ezyfox.exception.BadRequestException;
@@ -15,17 +12,19 @@ import com.tvd12.ezyfox.exception.NotFoundException;
 import com.tvd12.ezyfox.message.EzyMessageTypeFetcher;
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.ezyfox.util.EzyStoppable;
-import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitKeys;
-import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitStatusCodes;
-import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcClient;
+import com.tvd12.ezymq.activemq.constant.EzyActiveKeys;
+import com.tvd12.ezymq.activemq.constant.EzyActiveStatusCodes;
+import com.tvd12.ezymq.activemq.endpoint.EzyActiveMessage;
+import com.tvd12.ezymq.activemq.endpoint.EzyActiveRpcClient;
+import com.tvd12.ezymq.activemq.util.EzyActiveProperties;
 
-public class EzyRabbitRpcCaller extends EzyLoggable implements EzyStoppable {
+public class EzyActiveRpcCaller extends EzyLoggable implements EzyStoppable {
 	
-	protected final EzyRabbitRpcClient client;
+	protected final EzyActiveRpcClient client;
 	protected final EzyEntityCodec entityCodec;
 
-	public EzyRabbitRpcCaller(
-			EzyRabbitRpcClient client, EzyEntityCodec entityCodec) {
+	public EzyActiveRpcCaller(
+			EzyActiveRpcClient client, EzyEntityCodec entityCodec) {
         this.client = client;
         this.entityCodec = entityCodec;
     }
@@ -34,8 +33,8 @@ public class EzyRabbitRpcCaller extends EzyLoggable implements EzyStoppable {
 	public void stop() {
 		try {
 			client.close();
-		} catch (IOException e) {
-			logger.error("stop rpc client error", e);
+		} catch (Exception e) {
+			logger.warn("stop rpc client error", e);
 		}
 	}
 	
@@ -47,7 +46,7 @@ public class EzyRabbitRpcCaller extends EzyLoggable implements EzyStoppable {
 	}
 	
 	public void fire(String cmd, Object data) {
-		BasicProperties requestProperties = new BasicProperties.Builder()
+		EzyActiveProperties requestProperties = new EzyActiveProperties.Builder()
         		.type(cmd)
         		.build();
         byte[] requestMessage = entityCodec.serialize(data);
@@ -62,37 +61,36 @@ public class EzyRabbitRpcCaller extends EzyLoggable implements EzyStoppable {
     }
 
     public <T> T call(String cmd, Object data, Class<T> returnType) {
-        BasicProperties requestProperties = new BasicProperties.Builder()
+        EzyActiveProperties requestProperties = new EzyActiveProperties.Builder()
         		.type(cmd)
         		.build();
         byte[] requestMessage = entityCodec.serialize(data);
-        Response responseData = rawCall(requestProperties, requestMessage);
-        BasicProperties responseProperties = responseData.getProperties();
-        Map<String, Object> responseHeaders = responseProperties.getHeaders();
-        processResponseHeaders(responseHeaders);
+        EzyActiveMessage responseData = rawCall(requestProperties, requestMessage);
+        EzyActiveProperties responseProperties = responseData.getProperties();
+        processResponseProperties(responseProperties.getProperties());
         byte[] responseBody = responseData.getBody();
         T responseEntity = entityCodec.deserialize(responseBody, returnType);
         return responseEntity;
     }
     
-    protected void processResponseHeaders(Map<String, Object> responseHeaders) {
+    protected void processResponseProperties(Map<String, Object> responseHeaders) {
     		if(responseHeaders == null)
     			return;
-    		if(!responseHeaders.containsKey(EzyRabbitKeys.STATUS))
+    		if(!responseHeaders.containsKey(EzyActiveKeys.STATUS))
     			return;
-    		int status = (int)responseHeaders.get(EzyRabbitKeys.STATUS);
-        String message = responseHeaders.get(EzyRabbitKeys.MESSAGE).toString();
-        Integer code = (Integer) responseHeaders.get(EzyRabbitKeys.ERROR_CODE);
-        if (status == EzyRabbitStatusCodes.NOT_FOUND)
+    		int status = (int)responseHeaders.get(EzyActiveKeys.STATUS);
+        String message = responseHeaders.get(EzyActiveKeys.MESSAGE).toString();
+        Integer code = (Integer) responseHeaders.get(EzyActiveKeys.ERROR_CODE);
+        if (status == EzyActiveStatusCodes.NOT_FOUND)
             throw new NotFoundException(message);
-        if (status == EzyRabbitStatusCodes.BAD_REQUEST)
+        if (status == EzyActiveStatusCodes.BAD_REQUEST)
             throw new BadRequestException(code, message);
-        if (status == EzyRabbitStatusCodes.INTERNAL_SERVER_ERROR)
+        if (status == EzyActiveStatusCodes.INTERNAL_SERVER_ERROR)
             throw new InternalServerErrorException(message);
     }
     
     protected void rawFire(
-    		BasicProperties requestProperties, byte[] requestMessage) {
+    		EzyActiveProperties requestProperties, byte[] requestMessage) {
     	try {
 			client.doFire(requestProperties, requestMessage);
 		} 
@@ -101,10 +99,10 @@ public class EzyRabbitRpcCaller extends EzyLoggable implements EzyStoppable {
 		}
     }
     
-    protected Response rawCall(
-    		BasicProperties requestProperties, byte[] requestMessage) {
+    protected EzyActiveMessage rawCall(
+    		EzyActiveProperties requestProperties, byte[] requestMessage) {
     	try {
-			Response responseData = client.doCall(requestProperties, requestMessage);
+			EzyActiveMessage responseData = client.doCall(requestProperties, requestMessage);
 			return responseData;
 		} 
     	catch (TimeoutException e) {
@@ -119,12 +117,12 @@ public class EzyRabbitRpcCaller extends EzyLoggable implements EzyStoppable {
     		return new Builder();
     }
     
-    public static class Builder implements EzyBuilder<EzyRabbitRpcCaller> {
+    public static class Builder implements EzyBuilder<EzyActiveRpcCaller> {
     	
-    		protected EzyRabbitRpcClient client;
+    		protected EzyActiveRpcClient client;
     		protected EzyEntityCodec entityCodec;
     		
-    		public Builder client(EzyRabbitRpcClient client) {
+    		public Builder client(EzyActiveRpcClient client) {
     			this.client = client;
     			return this;
     		}
@@ -135,8 +133,8 @@ public class EzyRabbitRpcCaller extends EzyLoggable implements EzyStoppable {
     		}
     		
     		@Override
-    		public EzyRabbitRpcCaller build() {
-    			return new EzyRabbitRpcCaller(client, entityCodec);
+    		public EzyActiveRpcCaller build() {
+    			return new EzyActiveRpcCaller(client, entityCodec);
     		}
     		
     }
