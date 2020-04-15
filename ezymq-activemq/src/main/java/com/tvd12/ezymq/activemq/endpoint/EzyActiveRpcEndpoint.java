@@ -2,7 +2,6 @@ package com.tvd12.ezymq.activemq.endpoint;
 
 import java.util.concurrent.ThreadFactory;
 
-import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -35,10 +34,14 @@ public abstract class EzyActiveRpcEndpoint
 		this.requestQueue = requestQueue;
 		this.replyQueue = replyQueue;
 		this.threadPoolSize = threadPoolSize;
-        this.producer = session.createProducer(requestQueue);
-        this.consumer = session.createConsumer(replyQueue);
+        this.producer = createProducer();
+        this.consumer = createConsumer();
         this.executorService = newExecutorSerivice();
     }
+	
+	protected abstract MessageProducer createProducer() throws Exception;
+	
+	protected abstract MessageConsumer createConsumer() throws Exception;
 	
 	protected EzyThreadList newExecutorSerivice() {
 		ThreadFactory threadFactory 
@@ -58,10 +61,7 @@ public abstract class EzyActiveRpcEndpoint
 
 	protected void publish(EzyActiveProperties props, byte[] message) 
 			throws Exception {
-		BytesMessage m = session.createBytesMessage();
-		setMessageProperties(m, props);
-		m.writeBytes(message);
-		producer.send(m);
+		publish(producer, props, message);
 	}
 	
 	public void close() {
@@ -74,7 +74,7 @@ public abstract class EzyActiveRpcEndpoint
 	public abstract static class Builder<B extends Builder<B>> 
 			extends EzyActiveEndpoint.Builder<B> {
 		
-	    protected int threadPoolSize;
+	    protected int threadPoolSize = 3;
 	    protected String requestQueueName;
 		protected String replyQueueName;
 	    protected Destination requestQueue;
@@ -107,8 +107,8 @@ public abstract class EzyActiveRpcEndpoint
 		
 		@Override
 		public EzyActiveRpcEndpoint build() {
-			if(replyQueue == null)
-				replyQueue = createDestination(EzyActiveDestinationType.QUEUE, requestQueueName);
+			if(requestQueue == null)
+				requestQueue = createDestination(EzyActiveDestinationType.QUEUE, requestQueueName);
 			if(replyQueue == null)
 				replyQueue = createDestination(EzyActiveDestinationType.QUEUE, replyQueueName);
 			try {

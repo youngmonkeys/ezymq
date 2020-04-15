@@ -4,6 +4,8 @@ import java.util.concurrent.TimeoutException;
 
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import com.tvd12.ezyfox.concurrent.EzyFuture;
@@ -61,6 +63,16 @@ public class EzyActiveRpcClient extends EzyActiveRpcEndpoint {
         this.active = true;
         this.executorService.execute();
     }
+	
+	@Override
+	protected MessageProducer createProducer() throws Exception {
+		return session.createProducer(requestQueue);
+	}
+	
+	@Override
+	protected MessageConsumer createConsumer() throws Exception {
+		return session.createConsumer(replyQueue);
+	}
 	
 	@Override
 	protected void handleLoopOne() {

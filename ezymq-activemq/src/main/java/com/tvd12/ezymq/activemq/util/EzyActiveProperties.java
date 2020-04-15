@@ -76,7 +76,8 @@ public class EzyActiveProperties {
 		public Builder addProperties(Map<String, Object> props) {
 			if(properties == null)
 				properties = new HashMap<>();
-			properties.putAll(props);
+			if(props != null)
+				properties.putAll(props);
 			return this;
 		}
 		

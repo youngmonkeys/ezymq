@@ -1,6 +1,5 @@
 package com.tvd12.ezymq.activemq.endpoint;
 
-import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
@@ -20,10 +19,7 @@ public class EzyActiveTopicClient extends EzyActiveTopicEndpoint {
 	
 	public void publish(EzyActiveProperties props, byte[] message) 
 			throws Exception {
-		BytesMessage data = session.createBytesMessage();
-		setMessageProperties(data, props);
-		data.writeBytes(message);
-		this.producer.send(data);
+		publish(producer, props, message);
 	}
 	
 	public static Builder builder() {

@@ -2,6 +2,8 @@ package com.tvd12.ezymq.activemq.endpoint;
 
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import com.tvd12.ezyfox.util.EzyStartable;
@@ -23,9 +25,20 @@ public class EzyActiveRpcServer
 			int threadPoolSize) throws Exception {
 		super(session, requestQueue, replyQueue, threadPoolSize);
 	}
+	
+	@Override
+	protected MessageProducer createProducer() throws Exception {
+		return session.createProducer(replyQueue);
+	}
+	
+	@Override
+	protected MessageConsumer createConsumer() throws Exception {
+		return session.createConsumer(requestQueue);
+	}
 
 	@Override
 	public void start() throws Exception {
+		this.active = true;
 		this.executorService.execute();
 	}
 

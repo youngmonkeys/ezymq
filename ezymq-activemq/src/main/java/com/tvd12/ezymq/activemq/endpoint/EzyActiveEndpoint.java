@@ -3,6 +3,7 @@ package com.tvd12.ezymq.activemq.endpoint;
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.Message;
+import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import com.tvd12.ezyfox.builder.EzyBuilder;
@@ -32,6 +33,14 @@ public class EzyActiveEndpoint extends EzyLoggable {
 	protected EzyActiveProperties getMessageProperties(
 			Message message) throws Exception {
 		return EzyActiveMessages.getMessageProperties(message);
+	}
+	
+	public void publish(MessageProducer producer, 
+			EzyActiveProperties props, byte[] message) throws Exception {
+		BytesMessage data = session.createBytesMessage();
+		setMessageProperties(data, props);
+		data.writeBytes(message);
+		producer.send(data);
 	}
 	
 	@SuppressWarnings("unchecked")

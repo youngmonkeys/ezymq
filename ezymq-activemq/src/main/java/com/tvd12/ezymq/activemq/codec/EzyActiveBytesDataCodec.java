@@ -16,8 +16,7 @@ public class EzyActiveBytesDataCodec extends EzyActiveAbstractDataCodec  {
 	protected EzyMessageSerializer messageSerializer;
 	protected EzyMessageDeserializer messageDeserializer;
 	
-	public EzyActiveBytesDataCodec() {
-	}
+	public EzyActiveBytesDataCodec() {}
 	
 	public EzyActiveBytesDataCodec(
 			EzyMessageSerializer messageSerializer,
