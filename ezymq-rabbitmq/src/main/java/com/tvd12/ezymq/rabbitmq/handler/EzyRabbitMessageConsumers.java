@@ -26,7 +26,10 @@ public class EzyRabbitMessageConsumers extends EzyLoggable {
     }
 
     public List<EzyRabbitMessageConsumer> getComsumers(String cmd) {
-    	List<EzyRabbitMessageConsumer> answer = consumers.get(cmd);
+    	List<EzyRabbitMessageConsumer> answer = null;
+    	synchronized (consumers) {
+    		answer = consumers.get(cmd);
+		}
         if (answer != null)
             return answer;
         return Collections.EMPTY_LIST;
