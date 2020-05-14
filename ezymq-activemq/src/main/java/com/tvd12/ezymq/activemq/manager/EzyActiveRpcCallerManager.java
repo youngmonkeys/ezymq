@@ -3,12 +3,15 @@ package com.tvd12.ezymq.activemq.manager;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.jms.ConnectionFactory;
+import javax.jms.Session;
+
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
 import com.tvd12.ezymq.activemq.EzyActiveRpcCaller;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveRpcClient;
 import com.tvd12.ezymq.activemq.setting.EzyActiveRpcCallerSetting;
 
-public class EzyActiveRpcCallerManager {
+public class EzyActiveRpcCallerManager extends EzyActiveAbstractManager {
 	
 	protected final EzyEntityCodec entityCodec;
 	protected final Map<String, EzyActiveRpcCaller> rpcCallers;
@@ -16,7 +19,9 @@ public class EzyActiveRpcCallerManager {
 	
 	public EzyActiveRpcCallerManager(
 			EzyEntityCodec entityCodec,
+			ConnectionFactory connectionFactory,
 			Map<String, EzyActiveRpcCallerSetting> rpcCallerSettings) {
+		super(connectionFactory);
 		this.entityCodec = entityCodec;
 		this.rpcCallerSettings = rpcCallerSettings;
 		this.rpcCallers = createRpcCallers();
@@ -33,14 +38,26 @@ public class EzyActiveRpcCallerManager {
 		Map<String, EzyActiveRpcCaller> map = new HashMap<>();
 		for(String name : rpcCallerSettings.keySet()) {
 			EzyActiveRpcCallerSetting setting = rpcCallerSettings.get(name);
-			map.put(name, createRpcCaller(setting));
+			map.put(name, createRpcCaller(name, setting));
 		}
 		return map;
 	}
 	
-	protected EzyActiveRpcCaller createRpcCaller(EzyActiveRpcCallerSetting setting) {
+	protected EzyActiveRpcCaller 
+			createRpcCaller(String name, EzyActiveRpcCallerSetting setting) {
+		try {
+			return createRpcCaller(setting);
+		}
+		catch (Exception e) {
+			throw new IllegalStateException("create rpc caller: " + name + " error", e);
+		}
+	}
+	
+	protected EzyActiveRpcCaller 
+			createRpcCaller(EzyActiveRpcCallerSetting setting) throws Exception {
+		Session session = getSession(setting);
 		EzyActiveRpcClient client = EzyActiveRpcClient.builder()
-				.session(setting.getSession())
+				.session(session)
 				.capacity(setting.getCapacity())
 				.defaultTimeout(setting.getDefaultTimeout())
 				.threadPoolSize(setting.getThreadPoolSize())
@@ -48,6 +65,8 @@ public class EzyActiveRpcCallerManager {
 				.requestQueue(setting.getRequestQueue())
 				.replyQueueName(setting.getReplyQueueName())
 				.replyQueue(setting.getReplyQueue())
+				.correlationIdFactory(setting.getCorrelationIdFactory())
+				.unconsumedResponseConsumer(setting.getUnconsumedResponseConsumer())
 				.build();
 		EzyActiveRpcCaller caller = EzyActiveRpcCaller.builder()
 				.entityCodec(entityCodec)

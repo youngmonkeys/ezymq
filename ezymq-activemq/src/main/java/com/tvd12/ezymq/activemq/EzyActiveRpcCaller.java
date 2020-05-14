@@ -74,11 +74,11 @@ public class EzyActiveRpcCaller extends EzyLoggable implements EzyStoppable {
     }
     
     protected void processResponseProperties(Map<String, Object> responseHeaders) {
-    		if(responseHeaders == null)
-    			return;
-    		if(!responseHeaders.containsKey(EzyActiveKeys.STATUS))
-    			return;
-    		int status = (int)responseHeaders.get(EzyActiveKeys.STATUS);
+		if(responseHeaders == null)
+			return;
+		if(!responseHeaders.containsKey(EzyActiveKeys.STATUS))
+			return;
+		int status = (int)responseHeaders.get(EzyActiveKeys.STATUS);
         String message = responseHeaders.get(EzyActiveKeys.MESSAGE).toString();
         Integer code = (Integer) responseHeaders.get(EzyActiveKeys.ERROR_CODE);
         if (status == EzyActiveStatusCodes.NOT_FOUND)

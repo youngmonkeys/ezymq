@@ -1,5 +1,7 @@
 package com.tvd12.ezymq.activemq;
 
+import javax.jms.ConnectionFactory;
+
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
 import com.tvd12.ezymq.activemq.codec.EzyActiveDataCodec;
 import com.tvd12.ezymq.activemq.manager.EzyActiveRpcCallerManager;
@@ -13,13 +15,19 @@ public class EzyActiveMQContext {
 	protected final EzyEntityCodec entityCodec;
 	protected final EzyActiveDataCodec dataCodec;
 	protected final EzyActiveTopicManager topicManager;
+	protected final ConnectionFactory connectionFactory;
 	protected final EzyActiveRpcCallerManager rpcCallerManager;
 	protected final EzyActiveRpcHandlerManager rpcHandlerManager;
 	
-	public EzyActiveMQContext(EzyActiveSettings settings) {
+	public EzyActiveMQContext(
+			EzyEntityCodec entityCodec,
+			EzyActiveDataCodec dataCodec,
+			EzyActiveSettings settings,
+			ConnectionFactory connectionFactory) {
 		this.settings = settings;
-		this.dataCodec = settings.getDataCodec();
-		this.entityCodec = settings.getEntityCodec();
+		this.dataCodec = dataCodec;
+		this.entityCodec = entityCodec;
+		this.connectionFactory = connectionFactory;
 		this.topicManager = newTopicManager();
 		this.rpcCallerManager = newRpcCallerManager();
 		this.rpcHandlerManager = newActiveRpcHandlerManager();
@@ -40,23 +48,30 @@ public class EzyActiveMQContext {
 	
 	protected EzyActiveTopicManager newTopicManager() {
 		return new EzyActiveTopicManager(
-				settings.getDataCodec(),
+				dataCodec,
+				connectionFactory,
 				settings.getTopicSettings()
 		);
 	}
 	
 	protected EzyActiveRpcCallerManager newRpcCallerManager() {
 		return new EzyActiveRpcCallerManager(
-				settings.getEntityCodec(),
+				entityCodec,
+				connectionFactory,
 				settings.getRpcCallerSettings()
 		);
 	}
 	
 	protected EzyActiveRpcHandlerManager newActiveRpcHandlerManager() {
 		return new EzyActiveRpcHandlerManager(
-				settings.getDataCodec(),
+				dataCodec,
+				connectionFactory,
 				settings.getRpcHandlerSettings()
 		);
+	}
+	
+	public static EzyActiveMQContextBuilder builder() {
+		return new EzyActiveMQContextBuilder();
 	}
 	
 }

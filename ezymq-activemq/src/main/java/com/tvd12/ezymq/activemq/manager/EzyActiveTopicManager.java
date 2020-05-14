@@ -3,6 +3,8 @@ package com.tvd12.ezymq.activemq.manager;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.jms.ConnectionFactory;
+
 import com.tvd12.ezymq.activemq.EzyActiveTopic;
 import com.tvd12.ezymq.activemq.codec.EzyActiveDataCodec;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveTopicClient;
@@ -10,7 +12,7 @@ import com.tvd12.ezymq.activemq.endpoint.EzyActiveTopicServer;
 import com.tvd12.ezymq.activemq.setting.EzyActiveTopicSetting;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class EzyActiveTopicManager {
+public class EzyActiveTopicManager extends EzyActiveAbstractManager {
 
 	protected final EzyActiveDataCodec dataCodec;
 	protected final Map<String, EzyActiveTopic> topics;
@@ -18,7 +20,9 @@ public class EzyActiveTopicManager {
 	
 	public EzyActiveTopicManager(
 			EzyActiveDataCodec dataCodec,
+			ConnectionFactory connectionFactory,
 			Map<String, EzyActiveTopicSetting> topicSettings) {
+		super(connectionFactory);
 		this.dataCodec = dataCodec;
 		this.topicSettings = topicSettings;
 		this.topics = createTopics();
@@ -35,9 +39,19 @@ public class EzyActiveTopicManager {
 		Map<String, EzyActiveTopic> map = new HashMap<>();
 		for(String name : topicSettings.keySet()) {
 			EzyActiveTopicSetting setting = topicSettings.get(name);
-			map.put(name, createTopic(setting));
+			map.put(name, createTopic(name, setting));
 		}
 		return map;
+	}
+	
+	protected EzyActiveTopic 
+			createTopic(String name, EzyActiveTopicSetting setting) {
+		try {
+			return createTopic(setting);
+		}
+		catch (Exception e) {
+			throw new IllegalStateException("can't create topic: " + name, e);
+		}
 	}
 	
 	protected EzyActiveTopic createTopic(EzyActiveTopicSetting setting) {

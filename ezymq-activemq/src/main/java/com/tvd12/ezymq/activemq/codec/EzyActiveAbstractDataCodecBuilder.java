@@ -30,6 +30,11 @@ public abstract class EzyActiveAbstractDataCodecBuilder<B extends EzyActiveAbstr
 		return (B)this;
 	}
 	
+	public B mapRequestTypes(Map<String, Class> requestTypes) {
+		this.requestTypeMap.putAll(requestTypes);
+		return (B)this;
+	}
+	
 	@Override
 	public EzyActiveDataCodec build() {
 		EzyActiveAbstractDataCodec product = newProduct();

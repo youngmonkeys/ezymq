@@ -3,12 +3,15 @@ package com.tvd12.ezymq.activemq.manager;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.jms.ConnectionFactory;
+import javax.jms.Session;
+
 import com.tvd12.ezymq.activemq.EzyActiveRpcHandler;
 import com.tvd12.ezymq.activemq.codec.EzyActiveDataCodec;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveRpcServer;
 import com.tvd12.ezymq.activemq.setting.EzyActiveRpcHandlerSetting;
 
-public class EzyActiveRpcHandlerManager {
+public class EzyActiveRpcHandlerManager extends EzyActiveAbstractManager {
 	
 	protected final EzyActiveDataCodec dataCodec;
 	protected final Map<String, EzyActiveRpcHandler> rpcHandlers;
@@ -16,7 +19,9 @@ public class EzyActiveRpcHandlerManager {
 	
 	public EzyActiveRpcHandlerManager(
 			EzyActiveDataCodec dataCodec,
+			ConnectionFactory connectionFactory,
 			Map<String, EzyActiveRpcHandlerSetting> rpcHandlerSettings) {
+		super(connectionFactory);
 		this.dataCodec = dataCodec;
 		this.rpcHandlerSettings = rpcHandlerSettings;
 		this.rpcHandlers = createRpcCallers();
@@ -33,26 +38,27 @@ public class EzyActiveRpcHandlerManager {
 		Map<String, EzyActiveRpcHandler> map = new HashMap<>();
 		for(String name : rpcHandlerSettings.keySet()) {
 			EzyActiveRpcHandlerSetting setting = rpcHandlerSettings.get(name);
-			map.put(name, createRpcCaller(name, setting));
+			map.put(name, createRpcHandler(name, setting));
 		}
 		return map;
 	}
 	
-	protected EzyActiveRpcHandler createRpcCaller(
+	protected EzyActiveRpcHandler createRpcHandler(
 			String name,
 			EzyActiveRpcHandlerSetting setting) {
 		try {
-			return createRpcCaller(setting);
+			return createRpcHandler(setting);
 		}
 		catch (Exception e) {
 			throw new IllegalStateException("can't create handler: " + name, e);
 		}
 	}
 	
-	protected EzyActiveRpcHandler createRpcCaller(
+	protected EzyActiveRpcHandler createRpcHandler(
 			EzyActiveRpcHandlerSetting setting) throws Exception {
+		Session session = getSession(setting);
 		EzyActiveRpcServer client = EzyActiveRpcServer.builder()
-				.session(setting.getSession())
+				.session(session)
 				.threadPoolSize(setting.getThreadPoolSize())
 				.requestQueueName(setting.getReplyQueueName())
 				.requestQueue(setting.getRequestQueue())

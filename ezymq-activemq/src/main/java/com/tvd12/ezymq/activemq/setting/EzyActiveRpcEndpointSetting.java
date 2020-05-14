@@ -16,17 +16,54 @@ public class EzyActiveRpcEndpointSetting extends EzyActiveEndpointSetting {
 	
 	public EzyActiveRpcEndpointSetting(
 			Session session,
-			int threadPoolSize,
 			String requestQueueName,
-			String replyQueueName,
 			Destination requestQueue,
-			Destination replyQueue) {
+			String replyQueueName,
+			Destination replyQueue,
+			int threadPoolSize) {
 		super(session);
 		this.threadPoolSize = threadPoolSize;
 		this.requestQueue = requestQueue;
 		this.replyQueue = replyQueue;
 		this.requestQueueName = requestQueueName;
 		this.replyQueueName = replyQueueName;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public abstract static class Builder<B extends Builder<B>> 
+			extends EzyActiveEndpointSetting.Builder<B> {
+		
+	    protected int threadPoolSize = 3;
+	    protected String requestQueueName;
+		protected String replyQueueName;
+	    protected Destination requestQueue;
+		protected Destination replyQueue;
+		
+		public B threadPoolSize(int threadPoolSize) {
+			this.threadPoolSize = threadPoolSize ;
+			return (B)this;
+		}
+		
+		public B requestQueue(Destination requestQueue) {
+			this.requestQueue = requestQueue;
+			return (B)this;
+		}
+		
+		public B replyQueue(Destination replyQueue) {
+			this.replyQueue = replyQueue;
+			return (B)this;
+		}
+		
+		public B requestQueueName(String requestQueueName) {
+			this.requestQueueName = requestQueueName;
+			return (B)this;
+		}
+		
+		public B replyQueueName(String replyQueueName) {
+			this.replyQueueName = replyQueueName;
+			return (B)this;
+		}
+		
 	}
 	
 }
