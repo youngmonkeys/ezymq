@@ -45,7 +45,7 @@ public abstract class EzyActiveRpcEndpoint
 	
 	protected EzyThreadList newExecutorSerivice() {
 		ThreadFactory threadFactory 
-			= EzyActiveThreadFactory.create("rpc-client");
+			= EzyActiveThreadFactory.create(getThreadName());
 		EzyThreadList executorService = 
 				new EzyThreadList(threadPoolSize, () -> loop(), threadFactory);
 		return executorService;
@@ -69,6 +69,8 @@ public abstract class EzyActiveRpcEndpoint
 		EzyProcessor.processWithLogException(() -> producer.close());
 		EzyProcessor.processWithLogException(() -> consumer.close());
     }
+	
+	protected abstract String getThreadName();
 	
 	@SuppressWarnings("unchecked")
 	public abstract static class Builder<B extends Builder<B>> 

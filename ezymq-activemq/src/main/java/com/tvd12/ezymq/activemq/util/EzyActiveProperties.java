@@ -30,7 +30,7 @@ public class EzyActiveProperties {
 	
 	public Object getValue(String key) {
 		Object value = null;
-		if(properties == null)
+		if(properties != null)
 			value = properties.get(key);
 		return value;
 	}

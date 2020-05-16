@@ -60,7 +60,7 @@ public class EzyActiveRpcHandlerManager extends EzyActiveAbstractManager {
 		EzyActiveRpcServer client = EzyActiveRpcServer.builder()
 				.session(session)
 				.threadPoolSize(setting.getThreadPoolSize())
-				.requestQueueName(setting.getReplyQueueName())
+				.requestQueueName(setting.getRequestQueueName())
 				.requestQueue(setting.getRequestQueue())
 				.replyQueueName(setting.getReplyQueueName())
 				.replyQueue(setting.getReplyQueue())
@@ -68,6 +68,7 @@ public class EzyActiveRpcHandlerManager extends EzyActiveAbstractManager {
 		EzyActiveRpcHandler handler = EzyActiveRpcHandler.builder()
 				.dataCodec(dataCodec)
 				.actionInterceptor(setting.getActionInterceptor())
+				.requestHandlers(setting.getRequestHandlers())
 				.server(client).build();
 		handler.start();
 		return handler;

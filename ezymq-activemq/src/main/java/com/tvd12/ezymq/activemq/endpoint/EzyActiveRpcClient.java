@@ -140,6 +140,11 @@ public class EzyActiveRpcClient extends EzyActiveRpcEndpoint {
         
 	}
 	
+	@Override
+	protected String getThreadName() {
+		return "rpc-client";
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}

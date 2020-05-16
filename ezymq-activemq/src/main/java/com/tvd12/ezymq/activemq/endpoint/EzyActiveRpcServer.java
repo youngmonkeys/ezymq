@@ -84,6 +84,11 @@ public class EzyActiveRpcServer
 		return answer;
 	}
 	
+	@Override
+	protected String getThreadName() {
+		return "rpc-server";
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}

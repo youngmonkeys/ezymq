@@ -22,7 +22,12 @@ public final class EzyActiveMessages {
 		message.setJMSCorrelationID(props.getCorrelationId());
 		for(String key : props.keySet()) {
 			Object value = props.getValue(key);
-			message.setObjectProperty(key, value);
+			if(value instanceof Integer)
+				message.setIntProperty(key, (Integer)value);
+			if(value instanceof String)
+				message.setStringProperty(key, (String)value);
+			else
+				message.setObjectProperty(key, value);
 		}
 	}
 	

@@ -61,7 +61,7 @@ public class EzyActiveRpcCallerManager extends EzyActiveAbstractManager {
 				.capacity(setting.getCapacity())
 				.defaultTimeout(setting.getDefaultTimeout())
 				.threadPoolSize(setting.getThreadPoolSize())
-				.requestQueueName(setting.getReplyQueueName())
+				.requestQueueName(setting.getRequestQueueName())
 				.requestQueue(setting.getRequestQueue())
 				.replyQueueName(setting.getReplyQueueName())
 				.replyQueue(setting.getReplyQueue())
