@@ -76,18 +76,18 @@ public class EzyRabbitRpcCaller extends EzyLoggable implements EzyStoppable {
     }
     
     protected void processResponseHeaders(Map<String, Object> responseHeaders) {
-    		if(responseHeaders == null)
-    			return;
-    		if(!responseHeaders.containsKey(EzyRabbitKeys.STATUS))
-    			return;
-    		int status = (int)responseHeaders.get(EzyRabbitKeys.STATUS);
+		if(responseHeaders == null)
+			return;
+		Integer status = (Integer)responseHeaders.get(EzyRabbitKeys.STATUS);
+		if(status == null)
+			return;
         String message = responseHeaders.get(EzyRabbitKeys.MESSAGE).toString();
         Integer code = (Integer) responseHeaders.get(EzyRabbitKeys.ERROR_CODE);
-        if (status == EzyRabbitStatusCodes.NOT_FOUND)
+        if (status.equals(EzyRabbitStatusCodes.NOT_FOUND))
             throw new NotFoundException(message);
-        if (status == EzyRabbitStatusCodes.BAD_REQUEST)
+        if (status.equals(EzyRabbitStatusCodes.BAD_REQUEST))
             throw new BadRequestException(code, message);
-        if (status == EzyRabbitStatusCodes.INTERNAL_SERVER_ERROR)
+        if (status.equals(EzyRabbitStatusCodes.INTERNAL_SERVER_ERROR))
             throw new InternalServerErrorException(message);
     }
     
