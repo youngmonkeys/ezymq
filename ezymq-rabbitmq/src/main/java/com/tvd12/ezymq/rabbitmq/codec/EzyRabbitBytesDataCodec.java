@@ -16,8 +16,7 @@ public class EzyRabbitBytesDataCodec extends EzyRabbitAbstractDataCodec  {
 	protected EzyMessageSerializer messageSerializer;
 	protected EzyMessageDeserializer messageDeserializer;
 	
-	public EzyRabbitBytesDataCodec() {
-	}
+	public EzyRabbitBytesDataCodec() {}
 	
 	public EzyRabbitBytesDataCodec(
 			EzyMessageSerializer messageSerializer,

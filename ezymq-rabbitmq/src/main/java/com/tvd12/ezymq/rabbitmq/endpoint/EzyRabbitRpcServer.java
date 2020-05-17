@@ -45,7 +45,7 @@ public class EzyRabbitRpcServer extends RpcServer {
         String correlationId = requestProperties.getCorrelationId();
         String responseRoutingKey = requestProperties.getReplyTo();
         if(responseRoutingKey == null)
-        		responseRoutingKey = replyRoutingKey; 
+        	responseRoutingKey = replyRoutingKey; 
         if (correlationId != null) {
             AMQP.BasicProperties.Builder replyPropertiesBuilder = new AMQP.BasicProperties.Builder();
             byte[] replyBody = handleCall(request, replyPropertiesBuilder);

@@ -26,7 +26,7 @@ public class RabbitRpcAllRunner extends RabbitBaseTest {
 		RabbitRpcAllRunner runner = new RabbitRpcAllRunner();
 		runner.startServer();
 		runner.sleep();
-		runner.rpc();
+//		runner.rpc();
 	}
 	
 	protected void startServer() throws Exception {

@@ -30,6 +30,11 @@ public abstract class EzyRabbitAbstractDataCodecBuilder<B extends EzyRabbitAbstr
 		return (B)this;
 	}
 	
+	public B mapRequestTypes(Map<String, Class> requestTypes) {
+		this.requestTypeMap.putAll(requestTypes);
+		return (B)this;
+	}
+	
 	@Override
 	public EzyRabbitDataCodec build() {
 		EzyRabbitAbstractDataCodec product = newProduct();
