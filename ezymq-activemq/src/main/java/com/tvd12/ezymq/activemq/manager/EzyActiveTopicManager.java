@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.ConnectionFactory;
+import javax.jms.Session;
 
 import com.tvd12.ezymq.activemq.EzyActiveTopic;
 import com.tvd12.ezymq.activemq.codec.EzyActiveDataCodec;
@@ -54,12 +55,14 @@ public class EzyActiveTopicManager extends EzyActiveAbstractManager {
 		}
 	}
 	
-	protected EzyActiveTopic createTopic(EzyActiveTopicSetting setting) {
+	protected EzyActiveTopic 
+			createTopic(EzyActiveTopicSetting setting) throws Exception {
 		EzyActiveTopicClient client = null;
 		EzyActiveTopicServer server = null;
+		Session session = getSession(setting);
 		if(setting.isClientEnable()) {
 			client = EzyActiveTopicClient.builder()
-					.session(setting.getSession())
+					.session(session)
 					.topic(setting.getTopic())
 					.topicName(setting.getTopicName())
 					.build();
