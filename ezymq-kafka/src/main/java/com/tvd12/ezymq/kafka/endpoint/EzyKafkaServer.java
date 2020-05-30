@@ -8,7 +8,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 
 import com.tvd12.ezyfox.concurrent.EzyThreadList;
 import com.tvd12.ezyfox.util.EzyDestroyable;
-import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.ezyfox.util.EzyProcessor;
 import com.tvd12.ezyfox.util.EzyStartable;
 import com.tvd12.ezyfox.util.EzyStoppable;
@@ -18,7 +17,7 @@ import lombok.Setter;
 
 @SuppressWarnings("rawtypes")
 public class EzyKafkaServer 
-		extends EzyLoggable
+		extends EzyKafkaEndpoint
 		implements EzyStartable, EzyStoppable, EzyDestroyable {
 	
 	protected final long pollTimeOut;
@@ -95,6 +94,46 @@ public class EzyKafkaServer
 	public void destroy() {
 		this.active = false;
 		EzyProcessor.processWithLogException(() -> consumer.close());
+	}
+	
+	public static Builder builder() {
+		return new Builder();
+	}
+	
+	public static class Builder extends EzyKafkaEndpoint.Builder<Builder> {
+		
+		protected Consumer consumer;
+		protected int threadPoolSize;
+		protected long pollTimeOut = 100;
+		protected EzyKafkaRecordsHandler recordsHandler;
+		
+		public Builder pollTimeOut(long pollTimeOut) {
+			this.pollTimeOut = pollTimeOut;
+			return this;
+		}
+		
+		public Builder threadPoolSize(int threadPoolSize) {
+			this.threadPoolSize = threadPoolSize;
+			return this;
+		}
+		
+		public Builder consumer(Consumer consumer) {
+			this.consumer = consumer;
+			return this;
+		}
+		
+		public Builder recordsHandler(EzyKafkaRecordsHandler recordsHandler) {
+			this.recordsHandler = recordsHandler;
+			return this;
+		}
+		
+		@Override
+		public EzyKafkaServer build() {
+			if(consumer == null)
+				this.consumer = newConsumer();
+			return new EzyKafkaServer(consumer, pollTimeOut, threadPoolSize);
+		}
+		
 	}
 	
 }

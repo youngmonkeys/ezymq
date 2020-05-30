@@ -2,6 +2,7 @@ package com.tvd12.ezymq.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
+import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.ezyfox.util.EzyStartable;
 import com.tvd12.ezyfox.util.EzyStoppable;
@@ -63,6 +64,46 @@ public class EzyKafkaHandler
         	if (actionInterceptor != null)
                 actionInterceptor.intercept(cmd, requestEntity, e);
         }
+	}
+	
+	public static Builder builder() {
+		return new Builder();
+	}
+	
+	public static class Builder implements EzyBuilder<EzyKafkaHandler> {
+		
+		protected EzyKafkaServer server;
+		protected EzyKafkaDataCodec dataCodec;
+		protected EzyKafkaRequestHandlers requestHandlers;
+		protected EzyKafkaActionInterceptor actionInterceptor;
+		
+		public Builder server(EzyKafkaServer server) {
+			this.server = server;
+			return this;
+		}
+		
+		public Builder dataCodec(EzyKafkaDataCodec dataCodec) {
+			this.dataCodec = dataCodec;
+			return this;
+		}
+		
+		public Builder requestHandlers(EzyKafkaRequestHandlers requestHandlers) {
+			this.requestHandlers = requestHandlers;
+			return this;
+		}
+		
+		public Builder actionInterceptor(EzyKafkaActionInterceptor actionInterceptor) {
+			this.actionInterceptor = actionInterceptor;
+			return this;
+		}
+		
+		@Override
+		public EzyKafkaHandler build() {
+			EzyKafkaHandler handler = new EzyKafkaHandler(server, dataCodec, requestHandlers);
+			handler.setActionInterceptor(actionInterceptor);
+			return handler;
+		}
+		
 	}
 	
 }

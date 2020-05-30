@@ -2,6 +2,7 @@ package com.tvd12.ezymq.kafka;
 
 import java.util.concurrent.TimeoutException;
 
+import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
 import com.tvd12.ezyfox.exception.EzyTimeoutException;
 import com.tvd12.ezyfox.exception.InternalServerErrorException;
@@ -42,6 +43,32 @@ public class EzyKafkaCaller extends EzyLoggable {
     	catch (Exception e) {
     		throw new InternalServerErrorException(e.getMessage(), e);
 		}
+    }
+    
+    public static Builder builder() {
+    	return new Builder();
+    }
+    
+    public static class Builder implements EzyBuilder<EzyKafkaCaller> {
+
+    	protected EzyKafkaClient client;
+    	protected EzyEntityCodec entityCodec;
+    	
+    	public Builder client(EzyKafkaClient client) {
+    		this.client = client;
+    		return this;
+    	}
+    	
+    	public Builder entityCodec(EzyEntityCodec entityCodec) {
+    		this.entityCodec = entityCodec;
+    		return this;
+    	}
+    	
+		@Override
+		public EzyKafkaCaller build() {
+			return new EzyKafkaCaller(client, entityCodec);
+		}
+    	
     }
     
 }
