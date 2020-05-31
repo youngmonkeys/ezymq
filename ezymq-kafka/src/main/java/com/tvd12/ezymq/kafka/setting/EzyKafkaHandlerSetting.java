@@ -21,13 +21,14 @@ public class EzyKafkaHandlerSetting extends EzyKafkaEndpointSetting {
 	protected final EzyKafkaActionInterceptor actionInterceptor;
 	
 	public EzyKafkaHandlerSetting(
+			String topic,
 			Consumer consumer, 
 			long poolTimeOut,
 			int threadPoolSize,
 			EzyKafkaRequestHandlers requestHandlers,
 			EzyKafkaActionInterceptor actionInterceptor,
 			Map<String, Object> properties) {
-		super(properties);
+		super(topic, properties);
 		this.consumer = consumer;
 		this.pollTimeOut = poolTimeOut;
 		this.threadPoolSize = threadPoolSize;
@@ -42,7 +43,7 @@ public class EzyKafkaHandlerSetting extends EzyKafkaEndpointSetting {
 	public static class Builder extends EzyKafkaEndpointSetting.Builder<Builder> {
 		
 		protected Consumer consumer;
-		protected int threadPoolSize;
+		protected int threadPoolSize = 3;
 		protected long pollTimeOut = 100;
 		protected EzyKafkaRequestHandlers requestHandlers;
 		protected EzyKafkaActionInterceptor actionInterceptor;
@@ -53,6 +54,7 @@ public class EzyKafkaHandlerSetting extends EzyKafkaEndpointSetting {
 		}
 		
 		public Builder(EzyKafkaSettings.Builder parent) {
+			super();
 			this.parent = parent;
 		}
 		
@@ -97,6 +99,7 @@ public class EzyKafkaHandlerSetting extends EzyKafkaEndpointSetting {
 			if(requestHandlers == null)
 				throw new NullPointerException("requestHandlers can not be null");
 			return new EzyKafkaHandlerSetting(
+					topic,
 					consumer,
 					pollTimeOut,
 					threadPoolSize,

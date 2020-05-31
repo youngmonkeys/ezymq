@@ -52,6 +52,7 @@ public class EzyKafkaHandlerManager extends EzyKafkaAbstractManager {
 	protected EzyKafkaHandler createHandler(
 			EzyKafkaHandlerSetting setting) throws Exception {
 		EzyKafkaServer client = EzyKafkaServer.builder()
+				.topic(setting.getTopic())
 				.consumer(setting.getConsumer())
 				.pollTimeOut(setting.getPollTimeOut())
 				.threadPoolSize(setting.getThreadPoolSize())

@@ -166,6 +166,7 @@ public class EzyKafkaContextBuilder implements EzyBuilder<EzyKafkaContext> {
 				.unmarshaller(unmarshaller)
 				.messageSerializer(messageSerializer)
 				.messageDeserializer(messageDeserializer)
+				.mapRequestTypes(requestTypes)
 				.build();
 	}
 	

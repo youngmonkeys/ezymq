@@ -51,6 +51,7 @@ public class EzyKafkaCallerManager extends EzyKafkaAbstractManager {
 	protected EzyKafkaCaller 
 			createCaller(EzyKafkaCallerSetting setting) throws Exception {
 		EzyKafkaClient client = EzyKafkaClient.builder()
+				.topic(setting.getTopic())
 				.producer(setting.getProducer())
 				.properties(setting.getProperties())
 				.build();

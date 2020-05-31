@@ -1,7 +1,13 @@
 package com.tvd12.ezymq.kafka.handler;
 
-public interface EzyKafkaRequestHandler<I, O> {
+public interface EzyKafkaRequestHandler<I> {
 	
-    O handle(I request) throws Exception;
+    default Object handle(I request) throws Exception {
+    	process(request);
+    	return Boolean.TRUE;
+    }
+    
+    default void process(I request) throws Exception {
+    }
     
 }

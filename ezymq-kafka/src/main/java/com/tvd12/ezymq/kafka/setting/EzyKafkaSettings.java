@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.kafka.clients.producer.ProducerConfig;
+
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezymq.kafka.EzyKafkaContextBuilder;
 
@@ -68,12 +70,12 @@ public class EzyKafkaSettings {
 					name, k -> new EzyKafkaHandlerSetting.Builder(this));
 		}
 		
-		public Builder addRpcCallerSetting(String name, EzyKafkaCallerSetting setting) {
+		public Builder addCallerSetting(String name, EzyKafkaCallerSetting setting) {
 			this.callerSettings.put(name, setting);
 			return this;
 		}
 		
-		public Builder addRpcHandlerSetting(String name, EzyKafkaHandlerSetting setting) {
+		public Builder addHandlerSetting(String name, EzyKafkaHandlerSetting setting) {
 			this.handlerSettings.put(name, setting);
 			return this;
 		}
@@ -85,6 +87,8 @@ public class EzyKafkaSettings {
 		
 		@Override
 		public EzyKafkaSettings build() {
+			if(!properties.containsKey(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG))
+				throw new IllegalStateException("must set property: " + ProducerConfig.BOOTSTRAP_SERVERS_CONFIG);
 			for(String name : callerSettingBuilders.keySet()) {
 				EzyKafkaCallerSetting.Builder builder = callerSettingBuilders.get(name);
 				builder.properties(properties);

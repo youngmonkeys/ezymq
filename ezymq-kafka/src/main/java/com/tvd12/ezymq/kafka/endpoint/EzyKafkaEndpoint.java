@@ -7,20 +7,34 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.common.serialization.Deserializer;
+import org.apache.kafka.common.serialization.Serializer;
 
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.util.EzyLoggable;
 
 public class EzyKafkaEndpoint extends EzyLoggable {
 
+	protected final String topic;
+	
+	public EzyKafkaEndpoint(String topic) {
+		this.topic = topic;
+	}
+	
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	public abstract static class Builder<B extends Builder<B>> 
 			implements EzyBuilder<EzyKafkaEndpoint> {
 		
+		protected String topic;
 		protected final Map<String, Object> properties;
 		
 		public Builder() {
 			this.properties = new HashMap<>();
+		}
+		
+		public B topic(String topic) {
+			this.topic = topic;
+			return (B)this;
 		}
 		
 		public B property(String key, Object value) {
@@ -33,12 +47,16 @@ public class EzyKafkaEndpoint extends EzyLoggable {
 			return (B)this;
 		}
 		
-		protected Producer newProducer() {
-			return new KafkaProducer<>(properties);
+		protected Producer newProducer(Serializer serializer) {
+			if(serializer == null)
+				return new KafkaProducer<>(properties);
+			return new KafkaProducer(properties, serializer, serializer);
 		}
 		
-		protected Consumer newConsumer() {
-			return new KafkaConsumer<>(properties);
+		protected Consumer newConsumer(Deserializer deserializer) {
+			if(deserializer == null)
+				return new KafkaConsumer<>(properties);
+			return new KafkaConsumer<>(properties, deserializer, deserializer);
 		}
 		
 	}

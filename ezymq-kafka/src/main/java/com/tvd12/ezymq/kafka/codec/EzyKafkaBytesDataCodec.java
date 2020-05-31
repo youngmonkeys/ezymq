@@ -11,7 +11,7 @@ import lombok.Setter;
 
 @Setter
 @SuppressWarnings("rawtypes")
-public class EzyKafkaBytesDataCodec extends EzyAbstractKafkaDataCodec  {
+public class EzyKafkaBytesDataCodec extends EzyKafkaAbstractDataCodec  {
 
 	protected EzyMessageSerializer messageSerializer;
 	protected EzyMessageDeserializer messageDeserializer;
@@ -55,7 +55,7 @@ public class EzyKafkaBytesDataCodec extends EzyAbstractKafkaDataCodec  {
 		return new Builder();
 	}
 	
-	public static class Builder extends EzyAbstractKafkaDataCodecBuilder<Builder> {
+	public static class Builder extends EzyKafkaAbstractDataCodecBuilder<Builder> {
 		protected EzyMessageSerializer messageSerializer;
 		protected EzyMessageDeserializer messageDeserializer;
 		
@@ -69,7 +69,7 @@ public class EzyKafkaBytesDataCodec extends EzyAbstractKafkaDataCodec  {
 		}
 		
 		@Override
-		protected EzyAbstractKafkaDataCodec newProduct() {
+		protected EzyKafkaAbstractDataCodec newProduct() {
 			return new EzyKafkaBytesDataCodec(messageSerializer, messageDeserializer);
 		}
 	}

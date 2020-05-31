@@ -8,7 +8,7 @@ import com.tvd12.ezyfox.binding.EzyUnmarshaller;
 import com.tvd12.ezyfox.builder.EzyBuilder;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
-public abstract class EzyAbstractKafkaDataCodecBuilder<B extends EzyAbstractKafkaDataCodecBuilder> 
+public abstract class EzyKafkaAbstractDataCodecBuilder<B extends EzyKafkaAbstractDataCodecBuilder> 
 		implements EzyBuilder<EzyKafkaDataCodec> {
 
 	protected EzyMarshaller marshaller;
@@ -30,15 +30,20 @@ public abstract class EzyAbstractKafkaDataCodecBuilder<B extends EzyAbstractKafk
 		return (B)this;
 	}
 	
+	public B mapRequestTypes(Map<String, Class> requestTypes) {
+		this.requestTypeMap.putAll(requestTypes);
+		return (B)this;
+	}
+	
 	@Override
 	public EzyKafkaDataCodec build() {
-		EzyAbstractKafkaDataCodec product = newProduct();
+		EzyKafkaAbstractDataCodec product = newProduct();
 		product.setMarshaller(marshaller);
 		product.setUnmarshaller(unmarshaller);
 		product.setRequestTypeMap(requestTypeMap);
 		return product;
 	}
 	
-	protected abstract EzyAbstractKafkaDataCodec newProduct();
+	protected abstract EzyKafkaAbstractDataCodec newProduct();
 	
 }

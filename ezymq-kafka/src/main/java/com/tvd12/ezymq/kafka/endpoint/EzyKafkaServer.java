@@ -1,10 +1,12 @@
 package com.tvd12.ezymq.kafka.endpoint;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.function.Function;
 
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.common.serialization.Deserializer;
 
 import com.tvd12.ezyfox.concurrent.EzyThreadList;
 import com.tvd12.ezyfox.util.EzyDestroyable;
@@ -28,19 +30,24 @@ public class EzyKafkaServer
 	@Setter
 	protected EzyKafkaRecordsHandler recordsHandler;
 	
-	public EzyKafkaServer(Consumer consumer, long poolTimeOut) {
-		this(consumer, poolTimeOut, 0);
+	public EzyKafkaServer(
+			String topic, 
+			Consumer consumer, 
+			long poolTimeOut, int threadPoolSize) {
+		this(
+			topic, 
+			consumer, 
+			poolTimeOut, 
+			newExecutorServiceSupplier(threadPoolSize)
+		);
 	}
 	
 	public EzyKafkaServer(
-			Consumer consumer, long poolTimeOut, int threadPoolSize) {
-		this(consumer, poolTimeOut, newExecutorServiceSupplier(threadPoolSize));
-	}
-	
-	public EzyKafkaServer(
+			String topic,
 			Consumer consumer, 
 			long poolTimeOut, 
 			Function<Runnable, EzyThreadList> executorServiceSupplier) {
+		super(topic);
 		this.consumer = consumer;
 		this.pollTimeOut = poolTimeOut;
 		this.executorService = newExecutorService(executorServiceSupplier);
@@ -61,9 +68,11 @@ public class EzyKafkaServer
 		return t -> new EzyThreadList(threadPoolSize, t, "kafka-server");
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void start() throws Exception {
 		this.active = true;
+		this.consumer.subscribe(Collections.singletonList(topic));
 		if(executorService == null)
 			loop();
 		else
@@ -77,7 +86,10 @@ public class EzyKafkaServer
 	
 	protected void pollRecords() {
 		try {
-			ConsumerRecords records = consumer.poll(Duration.ofMillis(pollTimeOut));
+			ConsumerRecords records = ConsumerRecords.EMPTY;
+			synchronized (this) {
+				records = consumer.poll(Duration.ofMillis(pollTimeOut));
+			}
 			recordsHandler.handleRecords(records);
 		}
 		catch(Exception e) {
@@ -105,6 +117,7 @@ public class EzyKafkaServer
 		protected Consumer consumer;
 		protected int threadPoolSize;
 		protected long pollTimeOut = 100;
+		protected Deserializer deserializer;
 		protected EzyKafkaRecordsHandler recordsHandler;
 		
 		public Builder pollTimeOut(long pollTimeOut) {
@@ -122,6 +135,11 @@ public class EzyKafkaServer
 			return this;
 		}
 		
+		public Builder deserializer(Deserializer deserializer) {
+			this.deserializer = deserializer;
+			return this;
+		}
+		
 		public Builder recordsHandler(EzyKafkaRecordsHandler recordsHandler) {
 			this.recordsHandler = recordsHandler;
 			return this;
@@ -130,8 +148,8 @@ public class EzyKafkaServer
 		@Override
 		public EzyKafkaServer build() {
 			if(consumer == null)
-				this.consumer = newConsumer();
-			return new EzyKafkaServer(consumer, pollTimeOut, threadPoolSize);
+				this.consumer = newConsumer(deserializer);
+			return new EzyKafkaServer(topic, consumer, pollTimeOut, threadPoolSize);
 		}
 		
 	}

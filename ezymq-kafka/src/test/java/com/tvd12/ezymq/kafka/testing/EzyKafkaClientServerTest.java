@@ -59,18 +59,17 @@ public class EzyKafkaClientServerTest extends BaseTest {
 	
 	private EzyKafkaHandler newServer() {
 		Consumer consumer = newConsumer();
-		EzyKafkaServer server = new EzyKafkaServer(consumer, 100, t -> new EzyThreadList(1, t, "test-kafka-server"));
+		EzyKafkaServer server = new EzyKafkaServer(TOPIC, consumer, 100, t -> new EzyThreadList(1, t, "test-kafka-server"));
 		EzyKafkaDataCodec dataCodec = EzyKafkaBytesDataCodec.builder()
 				.unmarshaller(unmarshaller)
 				.messageDeserializer(messageDeserializer)
 				.mapRequestType(TOPIC, KafkaChatMessage.class)
 				.build();
 		EzyKafkaRequestHandlers requestHandlers = new EzyKafkaRequestHandlers();
-		requestHandlers.addHandler(TOPIC, new EzyKafkaRequestHandler<KafkaChatMessage, Boolean>() {
+		requestHandlers.addHandler(TOPIC, new EzyKafkaRequestHandler<KafkaChatMessage>() {
 					@Override
-					public Boolean handle(KafkaChatMessage message) throws Exception {
+					public void process(KafkaChatMessage message) throws Exception {
 						System.out.println("GREAT! We have just received message: " + message);
-						return Boolean.TRUE;
 					}
 				});
 		EzyKafkaHandler handler = new EzyKafkaHandler(server, dataCodec, requestHandlers);
@@ -80,7 +79,7 @@ public class EzyKafkaClientServerTest extends BaseTest {
 	private EzyKafkaCaller newClient() {
 		EzySimpleIdFetcherImplementer.setDebug(true);
 		Producer producer = newProducer();
-		EzyKafkaClient client = new EzyKafkaClient(producer);
+		EzyKafkaClient client = new EzyKafkaClient(null, producer);
 		EzyEntityCodec entityCodec = EzyKafkaBytesEntityCodec.builder()
 				.marshaller(marshaller)
 				.messageSerializer(messageSerializer)

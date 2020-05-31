@@ -49,6 +49,9 @@ public class EzyKafkaHandler
 	@Override
 	public void handleRecord(ConsumerRecord record) {
 		String cmd = record.topic();
+		Object key = record.key();
+		if(key != null)
+			cmd = new String((byte[])key);
         Object requestEntity = null;
         Object responseEntity = null;
         try {

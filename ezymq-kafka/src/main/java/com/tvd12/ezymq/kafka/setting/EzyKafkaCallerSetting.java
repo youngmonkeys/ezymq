@@ -13,8 +13,9 @@ public class EzyKafkaCallerSetting extends EzyKafkaEndpointSetting {
 	protected final Producer producer;
     
     public EzyKafkaCallerSetting(
+    		String topic,
     		Producer producer, Map<String, Object> properties) {
-    	super(properties);
+    	super(topic, properties);
     	this.producer = producer;
 	}
     
@@ -32,6 +33,7 @@ public class EzyKafkaCallerSetting extends EzyKafkaEndpointSetting {
 		}
 		
 		public Builder(EzyKafkaSettings.Builder parent) {
+			super();
 			this.parent = parent;
 		}
 		
@@ -46,7 +48,7 @@ public class EzyKafkaCallerSetting extends EzyKafkaEndpointSetting {
 		
 		@Override
 		public EzyKafkaCallerSetting build() {
-			return new EzyKafkaCallerSetting(producer, properties);
+			return new EzyKafkaCallerSetting(topic, producer, properties);
 		}
 		
 	}
