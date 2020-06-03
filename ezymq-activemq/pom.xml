@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.tvd12</groupId>
 		<artifactId>ezymq</artifactId>
-		<version>1.1.1</version>
+		<version>1.1.1a</version>
 	</parent>
 	<artifactId>ezymq-activemq</artifactId>
 	<name>ezymq-activemq</name>
@@ -19,12 +19,12 @@
 		<dependency>
 			<groupId>com.tvd12</groupId>
 			<artifactId>ezyfox-binding-codec</artifactId>
-			<version>${project.version}</version>
+			<version>${ezy.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.tvd12</groupId>
 			<artifactId>ezyfox-message</artifactId>
-			<version>${project.version}</version>
+			<version>${ezy.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
@@ -34,7 +34,7 @@
 		<dependency>
 			<groupId>com.tvd12</groupId>
 			<artifactId>ezyfox-msgpack</artifactId>
-			<version>${project.version}</version>
+			<version>${ezy.version}</version>
 		</dependency>
 	</dependencies>
 
