@@ -167,12 +167,6 @@ public class EzyRabbitRpcHandler
         return responseBytes;
 	}
 	
-	protected BasicProperties newReplyProps(BasicProperties rev) {
-		return new BasicProperties.Builder()
-	        .correlationId(rev.getCorrelationId())
-	        .build();
-	}
-	
 	public static Builder builder() {
 		return new Builder();
 	}

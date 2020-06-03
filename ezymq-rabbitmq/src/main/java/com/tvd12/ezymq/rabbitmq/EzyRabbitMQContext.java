@@ -45,6 +45,10 @@ public class EzyRabbitMQContext {
 		return rpcHandlerManager.getRpcHandler(name);
 	}
 	
+	public void close() {
+		rpcHandlerManager.close();
+	}
+	
 	protected EzyRabbitTopicManager newTopicManager() {
 		return new EzyRabbitTopicManager(
 				dataCodec,

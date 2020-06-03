@@ -18,6 +18,7 @@ public class RabbitMQContextBuildertest extends RabbitBaseTest {
 		channel.queueBind("rmqia-rpc-queue", "rmqia-rpc-exchange", "rmqia-rpc-routing-key");
 		channel.queueBind("rmqia-rpc-client-queue", "rmqia-rpc-exchange", "rmqia-rpc-client-routing-key");
 		EzyRabbitMQContext context = EzyRabbitMQContext.builder()
+//				.connectionFactory(connectionFactory)
 				.scan("com.tvd12.ezymq.rabbitmq.testing.entity")
 				.mapRequestType("fibonaci", int.class)
 				.mapRequestType("test", String.class)
