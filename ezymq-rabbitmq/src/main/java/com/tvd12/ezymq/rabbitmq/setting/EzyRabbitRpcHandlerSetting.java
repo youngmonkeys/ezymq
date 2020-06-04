@@ -1,5 +1,7 @@
 package com.tvd12.ezymq.rabbitmq.setting;
 
+import java.util.Map;
+
 import com.rabbitmq.client.Channel;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitActionInterceptor;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandler;
@@ -93,6 +95,15 @@ public class EzyRabbitRpcHandlerSetting extends EzyRabbitEndpointSetting {
 			if(requestHandlers == null)
 				requestHandlers = new EzyRabbitRequestHandlers();
 			requestHandlers.addHandler(cmd, handler);
+			return this;
+	    }
+		
+		@SuppressWarnings("rawtypes")
+		public Builder addRequestHandler(Map<String, EzyRabbitRequestHandler> handlers) {
+			for(String cmd : handlers.keySet()) {
+				EzyRabbitRequestHandler handler = handlers.get(cmd);
+				addRequestHandler(cmd, handler);
+			}
 			return this;
 	    }
 		

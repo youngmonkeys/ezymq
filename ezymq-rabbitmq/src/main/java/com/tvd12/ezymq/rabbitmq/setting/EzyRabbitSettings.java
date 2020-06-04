@@ -12,14 +12,17 @@ import lombok.Getter;
 @Getter
 public class EzyRabbitSettings {
 
+	protected final Map<String, Map<String, Object>> queueArguments;
 	protected final Map<String, EzyRabbitTopicSetting> topicSettings;
 	protected final Map<String, EzyRabbitRpcCallerSetting> rpcCallerSettings;
 	protected final Map<String, EzyRabbitRpcHandlerSetting> rpcHandlerSettings;
 	
 	public EzyRabbitSettings(
+			Map<String, Map<String, Object>> queueArguments,
 			Map<String, EzyRabbitTopicSetting> topicSettings,
 			Map<String, EzyRabbitRpcCallerSetting> rpcCallerSettings,
 			Map<String, EzyRabbitRpcHandlerSetting> rpcHandlerSettings) {
+		this.queueArguments = Collections.unmodifiableMap(queueArguments);
 		this.topicSettings = Collections.unmodifiableMap(topicSettings);
 		this.rpcCallerSettings = Collections.unmodifiableMap(rpcCallerSettings);
 		this.rpcHandlerSettings = Collections.unmodifiableMap(rpcHandlerSettings);
@@ -32,6 +35,7 @@ public class EzyRabbitSettings {
 	public static class Builder implements EzyBuilder<EzyRabbitSettings> {
 		
 		protected EzyRabbitMQContextBuilder parent;
+		protected Map<String, Map<String, Object>> queueArguments;
 		protected Map<String, EzyRabbitTopicSetting> topicSettings;
 		protected Map<String, EzyRabbitRpcCallerSetting> rpcCallerSettings;
 		protected Map<String, EzyRabbitRpcHandlerSetting> rpcHandlerSettings;
@@ -46,6 +50,7 @@ public class EzyRabbitSettings {
 		public Builder(EzyRabbitMQContextBuilder parent) {
 			this.parent = parent;
 			this.topicSettings = new HashMap<>();
+			this.queueArguments = new HashMap<>();
 			this.rpcCallerSettings = new HashMap<>();
 			this.rpcHandlerSettings = new HashMap<>();
 			this.topicSettingBuilders = new HashMap<>();
@@ -53,18 +58,30 @@ public class EzyRabbitSettings {
 			this.rpcHandlerSettingBuilders = new HashMap<>();
 		}
 		
+		public Builder queueArgument(String queue, String key, Object value) {
+			this.queueArguments.computeIfAbsent(queue, k -> new HashMap<>())
+				.put(key, value);
+			return this;
+		}
+		
+		public Builder queueArguments(String queue, Map<String, Object> args) {
+			this.queueArguments.computeIfAbsent(queue, k -> new HashMap<>())
+				.putAll(args);
+			return this;
+		}
+		
 		public EzyRabbitTopicSetting.Builder topicSettingBuilder(String name) {
-			return topicSettingBuilders.computeIfAbsent(
+			return this.topicSettingBuilders.computeIfAbsent(
 					name, k -> new EzyRabbitTopicSetting.Builder(this));
 		}
 		
 		public EzyRabbitRpcCallerSetting.Builder rpcCallerSettingBuilder(String name) {
-			return rpcCallerSettingBuilders.computeIfAbsent(
+			return this.rpcCallerSettingBuilders.computeIfAbsent(
 					name, k -> new EzyRabbitRpcCallerSetting.Builder(this));
 		}
 		
 		public EzyRabbitRpcHandlerSetting.Builder rpcHandlerSettingBuilder(String name) {
-			return rpcHandlerSettingBuilders.computeIfAbsent(
+			return this.rpcHandlerSettingBuilders.computeIfAbsent(
 					name, k -> new EzyRabbitRpcHandlerSetting.Builder(this));
 		}
 		
@@ -102,7 +119,8 @@ public class EzyRabbitSettings {
 				EzyRabbitRpcHandlerSetting.Builder builder = rpcHandlerSettingBuilders.get(name);
 				rpcHandlerSettings.put(name, (EzyRabbitRpcHandlerSetting)builder.build());
 			}
-			return new EzyRabbitSettings(topicSettings, rpcCallerSettings, rpcHandlerSettings);
+			return new EzyRabbitSettings(
+					queueArguments, topicSettings, rpcCallerSettings, rpcHandlerSettings);
 		}
 		
 	}

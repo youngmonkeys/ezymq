@@ -1,5 +1,8 @@
 package com.tvd12.ezymq.rabbitmq.testing;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -81,7 +84,14 @@ public class RabbitRpcAllRunner3 extends RabbitBaseTest {
 		Channel channel = connection.createChannel();
 		channel.basicQos(1);
 		channel.exchangeDeclare("rmqia-rpc-exchange", "direct");
-		channel.queueDeclare("rmqia-rpc-queue", false, false, false, null);
+		try {
+			Map<String, Object> props = new HashMap<>();
+			props.put("x-max-length-bytes", 1024000);
+			channel.queueDeclare("rmqia-rpc-queue", false, false, false, props);
+		}
+		catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
 		channel.queueDeclare("rmqia-rpc-client-queue", false, false, false, null);
 		channel.queueDeclare("rmqia-rpc-client-queue-private", false, false, false, null);
 		channel.queueDeclare("rmqia-rpc-client-queue-backup", false, false, false, null);
@@ -116,7 +126,14 @@ public class RabbitRpcAllRunner3 extends RabbitBaseTest {
 		Channel channel = connection.createChannel();
 		channel.basicQos(1);
 		channel.exchangeDeclare("rmqia-rpc-exchange", "direct");
-		channel.queueDeclare("rmqia-rpc-queue", false, false, false, null);
+		try {
+			Map<String, Object> props = new HashMap<>();
+			props.put("x-max-length-bytes", 1024000);
+			channel.queueDeclare("rmqia-rpc-queue", false, false, false, props);
+		}
+		catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
 		channel.queueDeclare("rmqia-rpc-client-queue", false, false, false, null);
 		channel.queueDeclare("rmqia-rpc-client-queue-private", false, false, false, null);
 		channel.queueBind("rmqia-rpc-queue", "rmqia-rpc-exchange", "rmqia-rpc-routing-key");

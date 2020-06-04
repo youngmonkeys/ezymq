@@ -6,23 +6,20 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitMQContext;
 
-public class RabbitMQContextBuildertest extends RabbitBaseTest {
+public class RabbitMQContextBuilderTest extends RabbitBaseTest {
 
 	public static void main(String[] args) throws Exception {
 		Connection connection = connectionFactory.newConnection();
 		Channel channel = connection.createChannel();
 		channel.basicQos(1);
 		channel.exchangeDeclare("rmqia-rpc-exchange", "direct");
-		channel.queueDeclare("rmqia-rpc-queue", false, false, false, null);
-		channel.queueDeclare("rmqia-rpc-client-queue", false, false, false, null);
-		channel.queueBind("rmqia-rpc-queue", "rmqia-rpc-exchange", "rmqia-rpc-routing-key");
-		channel.queueBind("rmqia-rpc-client-queue", "rmqia-rpc-exchange", "rmqia-rpc-client-routing-key");
 		EzyRabbitMQContext context = EzyRabbitMQContext.builder()
 //				.connectionFactory(connectionFactory)
 				.scan("com.tvd12.ezymq.rabbitmq.testing.entity")
 				.mapRequestType("fibonaci", int.class)
 				.mapRequestType("test", String.class)
 				.settingsBuilder()
+				.queueArgument("rmqia-rpc-queue", "x-max-length-bytes", 1024000)
 				.rpcCallerSettingBuilder("fibonaci")
 					.defaultTimeout(300 * 1000)
 					.channel(channel)

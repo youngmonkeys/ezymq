@@ -15,14 +15,17 @@ public class EzyRabbitRpcCallerManager extends EzyRabbitAbstractManager {
 	
 	protected final EzyEntityCodec entityCodec;
 	protected final Map<String, EzyRabbitRpcCaller> rpcCallers;
+	protected final Map<String, Map<String, Object>> queueArguments;
 	protected final Map<String, EzyRabbitRpcCallerSetting> rpcCallerSettings;
 	
 	public EzyRabbitRpcCallerManager(
 			EzyEntityCodec entityCodec,
 			ConnectionFactory connectionFactory,
+			Map<String, Map<String, Object>> queueArguments,
 			Map<String, EzyRabbitRpcCallerSetting> rpcCallerSettings) {
 		super(connectionFactory);
 		this.entityCodec = entityCodec;
+		this.queueArguments = queueArguments;
 		this.rpcCallerSettings = rpcCallerSettings;
 		this.rpcCallers = createRpcCallers();
 	}
@@ -78,8 +81,10 @@ public class EzyRabbitRpcCallerManager extends EzyRabbitAbstractManager {
 			Channel channel, EzyRabbitRpcCallerSetting setting) throws Exception {
 		channel.basicQos(1);
 		channel.exchangeDeclare(setting.getExchange(), EzyRabbitExchangeTypes.DIRECT);
-		channel.queueDeclare(setting.getRequestQueueName(), false, false, false, null);
-		channel.queueDeclare(setting.getReplyQueueName(), false, false, false, null);
+		Map<String, Object> requestQueueArguments = queueArguments.get(setting.getRequestQueueName());
+		channel.queueDeclare(setting.getRequestQueueName(), false, false, false, requestQueueArguments);
+		Map<String, Object> replyQueueArguments = queueArguments.get(setting.getReplyQueueName());
+		channel.queueDeclare(setting.getReplyQueueName(), false, false, false, replyQueueArguments);
 		channel.queueBind(setting.getRequestQueueName(), setting.getExchange(), setting.getRequestRoutingKey());
 		channel.queueBind(setting.getReplyQueueName(), setting.getExchange(), setting.getReplyRoutingKey());
 	}

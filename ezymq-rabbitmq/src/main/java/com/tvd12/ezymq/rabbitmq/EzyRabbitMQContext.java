@@ -61,6 +61,7 @@ public class EzyRabbitMQContext {
 		return new EzyRabbitRpcCallerManager(
 				entityCodec,
 				connectionFactory,
+				settings.getQueueArguments(),
 				settings.getRpcCallerSettings()
 		);
 	}
