@@ -79,7 +79,7 @@ public class EzyRabbitRpcCallerManager extends EzyRabbitAbstractManager {
 	
 	protected void declareComponents(
 			Channel channel, EzyRabbitRpcCallerSetting setting) throws Exception {
-		channel.basicQos(1);
+		channel.basicQos(setting.getPrefetchCount());
 		channel.exchangeDeclare(setting.getExchange(), EzyRabbitExchangeTypes.DIRECT);
 		Map<String, Object> requestQueueArguments = queueArguments.get(setting.getRequestQueueName());
 		channel.queueDeclare(setting.getRequestQueueName(), false, false, false, requestQueueArguments);

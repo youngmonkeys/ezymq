@@ -53,6 +53,7 @@ public class EzyRabbitMQContext {
 		return new EzyRabbitTopicManager(
 				dataCodec,
 				connectionFactory,
+				settings.getQueueArguments(),
 				settings.getTopicSettings()
 		);
 	}

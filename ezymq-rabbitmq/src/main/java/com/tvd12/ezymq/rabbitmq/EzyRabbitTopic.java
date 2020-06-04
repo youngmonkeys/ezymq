@@ -102,7 +102,7 @@ public class EzyRabbitTopic<T> {
 			server.start();
 		}
 		catch (Exception e) {
-			throw new IllegalStateException("can't start topic server");
+			throw new IllegalStateException("can't start topic server", e);
 		}
 	}
 	

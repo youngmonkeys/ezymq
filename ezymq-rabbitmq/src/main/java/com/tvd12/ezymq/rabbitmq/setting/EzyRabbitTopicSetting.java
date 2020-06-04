@@ -15,11 +15,12 @@ public class EzyRabbitTopicSetting extends EzyRabbitEndpointSetting {
 	public EzyRabbitTopicSetting(
 			Channel channel, 
 			String exchange,
+			int prefetchCount,
 			boolean clientEnable,
 			String clientRoutingKey,
 			boolean serverEnable,
 			String serverQueueName) {
-		super(channel, exchange);
+		super(channel, exchange, prefetchCount);
 		this.clientEnable = clientEnable;
 		this.clientRoutingKey = clientRoutingKey;
 		this.serverEnable = serverEnable;
@@ -75,6 +76,7 @@ public class EzyRabbitTopicSetting extends EzyRabbitEndpointSetting {
 			return new EzyRabbitTopicSetting(
 					channel,
 					exchange,
+					prefetchCount,
 					clientEnable,
 					clientRoutingKey,
 					serverEnable,

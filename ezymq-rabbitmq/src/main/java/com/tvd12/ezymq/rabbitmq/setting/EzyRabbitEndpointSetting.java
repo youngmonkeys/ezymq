@@ -10,17 +10,28 @@ public class EzyRabbitEndpointSetting {
 
 	protected final Channel channel;
     protected final String exchange;
+    protected final int prefetchCount;
+    
+    public EzyRabbitEndpointSetting(
+			Channel channel, String exchange) {
+    	this(channel, exchange, 1);
+    }
 	
-	public EzyRabbitEndpointSetting(Channel channel, String exchange) {
+	public EzyRabbitEndpointSetting(
+			Channel channel, 
+			String exchange, int prefetchCount) {
         this.channel = channel;
         this.exchange = exchange;
+        this.prefetchCount = prefetchCount;
     }
 	
 	@SuppressWarnings("unchecked")
-	public static abstract class Builder<B extends Builder<B>> implements EzyBuilder<EzyRabbitEndpointSetting> {
+	public static abstract class Builder<B extends Builder<B>> 
+			implements EzyBuilder<EzyRabbitEndpointSetting> {
 		
 		protected Channel channel; 
 		protected String exchange; 
+		protected int prefetchCount = 1;
 		
 		public B channel(Channel channel) {
 			this.channel = channel;
@@ -29,6 +40,11 @@ public class EzyRabbitEndpointSetting {
 		
 		public B exchange(String exchange) {
 			this.exchange = exchange;
+			return (B)this;
+		}
+		
+		public B prefetchCount(int prefetchCount) {
+			this.prefetchCount = prefetchCount;
 			return (B)this;
 		}
 

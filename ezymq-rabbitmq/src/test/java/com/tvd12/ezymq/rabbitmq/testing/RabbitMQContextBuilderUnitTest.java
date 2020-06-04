@@ -6,7 +6,9 @@ import com.tvd12.ezyfox.exception.BadRequestException;
 import com.tvd12.ezyfox.exception.NotFoundException;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitMQContext;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcCaller;
+import com.tvd12.ezymq.rabbitmq.EzyRabbitTopic;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitActionInterceptor;
+import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitMessageConsumer;
 import com.tvd12.ezymq.rabbitmq.testing.mockup.ConnectionFactoryMockup;
 
 public class RabbitMQContextBuilderUnitTest {
@@ -19,7 +21,15 @@ public class RabbitMQContextBuilderUnitTest {
 				.scan("com.tvd12.ezymq.rabbitmq.testing.entity")
 				.mapRequestType("fibonaci", int.class)
 				.mapRequestType("test", String.class)
+				.mapRequestType("", String.class)
 				.settingsBuilder()
+				.topicSettingBuilder("test")
+					.exchange("rmqia-topic-exchange")
+					.clientEnable(true)
+					.clientRoutingKey("rmqia-topic-routing-key")
+					.serverEnable(true)
+					.serverQueueName("mqia-topic")
+					.parent()
 				.rpcCallerSettingBuilder("fibonaci")
 					.defaultTimeout(300 * 1000)
 					.exchange("rmqia-rpc-exchange")
@@ -66,6 +76,15 @@ public class RabbitMQContextBuilderUnitTest {
 					.parent()
 				.parent()
 				.build();
+		EzyRabbitTopic<String> topic = context.getTopic("test");
+		topic.addConsumer(new EzyRabbitMessageConsumer<String>() {
+			
+			@Override
+			public void consume(String message) {
+				System.out.println("topic message: " + message);
+			}
+		});
+		topic.publish("hello topic");
 		EzyRabbitRpcCaller caller = context.getRpcCaller("fibonaci");
 		long start = System.currentTimeMillis();
 		for(int i = 0 ; i < 1 ; ++i) {

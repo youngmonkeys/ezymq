@@ -1,7 +1,9 @@
 package com.tvd12.ezymq.rabbitmq.testing;
 
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcCaller;
+import com.tvd12.ezymq.rabbitmq.EzyRabbitTopic;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitActionInterceptor;
+import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitMessageConsumer;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitMQContext;
@@ -18,8 +20,16 @@ public class RabbitMQContextBuilderTest extends RabbitBaseTest {
 				.scan("com.tvd12.ezymq.rabbitmq.testing.entity")
 				.mapRequestType("fibonaci", int.class)
 				.mapRequestType("test", String.class)
+				.mapRequestType("", String.class)
 				.settingsBuilder()
 				.queueArgument("rmqia-rpc-queue", "x-max-length-bytes", 1024000)
+				.topicSettingBuilder("test")
+					.exchange("rmqia-topic-exchange")
+					.clientEnable(true)
+					.clientRoutingKey("rmqia-topic-routing-key")
+					.serverEnable(true)
+					.serverQueueName("mqia-topic")
+					.parent()
 				.rpcCallerSettingBuilder("fibonaci")
 					.defaultTimeout(300 * 1000)
 					.channel(channel)
@@ -56,6 +66,15 @@ public class RabbitMQContextBuilderTest extends RabbitBaseTest {
 					.parent()
 				.parent()
 				.build();
+		EzyRabbitTopic<String> topic = context.getTopic("test");
+		topic.addConsumer(new EzyRabbitMessageConsumer<String>() {
+			
+			@Override
+			public void consume(String message) {
+				System.out.println("topic message: " + message);
+			}
+		});
+		topic.publish("hello topic");
 		EzyRabbitRpcCaller caller = context.getRpcCaller("fibonaci");
 		long start = System.currentTimeMillis();
 		for(int i = 0 ; i < 1000 ; ++i) {

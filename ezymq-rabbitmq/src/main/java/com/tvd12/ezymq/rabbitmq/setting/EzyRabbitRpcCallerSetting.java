@@ -24,6 +24,7 @@ public class EzyRabbitRpcCallerSetting extends EzyRabbitEndpointSetting {
 	public EzyRabbitRpcCallerSetting(
 			Channel channel, 
 			String exchange,
+			int prefetchCount,
 			String requestQueueName,
 			String requestRoutingKey,
 			String replyQueueName,
@@ -32,7 +33,7 @@ public class EzyRabbitRpcCallerSetting extends EzyRabbitEndpointSetting {
 			int defaultTimeout, 
 			EzyRabbitCorrelationIdFactory correlationIdFactory,
 			EzyRabbitResponseConsumer unconsumedResponseConsumer) {
-		super(channel, exchange);
+		super(channel, exchange, prefetchCount);
 		this.capacity = capacity;
 		this.requestQueueName = requestQueueName;
         this.requestRoutingKey = requestRoutingKey;
@@ -118,6 +119,7 @@ public class EzyRabbitRpcCallerSetting extends EzyRabbitEndpointSetting {
 			return new EzyRabbitRpcCallerSetting(
 					channel, 
 					exchange, 
+					prefetchCount,
 					requestQueueName,
 					requestRoutingKey, 
 					replyQueueName, 

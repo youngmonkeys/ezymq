@@ -28,6 +28,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.ConsumerShutdownSignalCallback;
 import com.rabbitmq.client.DeliverCallback;
+import com.rabbitmq.client.Delivery;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.GetResponse;
 import com.rabbitmq.client.Method;
@@ -467,8 +468,34 @@ public class ChannelMockup extends EzyLoggable implements Channel {
 	@Override
 	public String basicConsume(String queue, DeliverCallback deliverCallback, CancelCallback cancelCallback)
 	        throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		return basicConsume(queue, true, new Consumer() {
+			
+			@Override
+			public void handleShutdownSignal(String consumerTag, ShutdownSignalException sig) {
+			}
+			
+			@Override
+			public void handleRecoverOk(String consumerTag) {
+			}
+			
+			@Override
+			public void handleDelivery(String arg0, Envelope arg1, BasicProperties arg2, byte[] arg3) throws IOException {
+				Delivery delivery = new Delivery(arg1, arg2, arg3);
+				deliverCallback.handle(arg0, delivery);
+			}
+			
+			@Override
+			public void handleConsumeOk(String consumerTag) {
+			}
+			
+			@Override
+			public void handleCancelOk(String consumerTag) {
+			}
+			
+			@Override
+			public void handleCancel(String consumerTag) throws IOException {
+			}
+		});
 	}
 
 	@Override
@@ -510,8 +537,7 @@ public class ChannelMockup extends EzyLoggable implements Channel {
 	@Override
 	public String basicConsume(String queue, boolean autoAck, DeliverCallback deliverCallback,
 	        CancelCallback cancelCallback) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		return basicConsume(queue, deliverCallback, cancelCallback);
 	}
 
 	@Override

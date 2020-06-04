@@ -7,6 +7,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitTopic;
 import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitDataCodec;
+import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitExchangeTypes;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitTopicClient;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitTopicServer;
 import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitTopicSetting;
@@ -16,15 +17,18 @@ public class EzyRabbitTopicManager extends EzyRabbitAbstractManager {
 
 	protected final EzyRabbitDataCodec dataCodec;
 	protected final Map<String, EzyRabbitTopic> topics;
+	protected final Map<String, Map<String, Object>> queueArguments;
 	protected final Map<String, EzyRabbitTopicSetting> topicSettings;
 	
 	public EzyRabbitTopicManager(
 			EzyRabbitDataCodec dataCodec,
 			ConnectionFactory connectionFactory,
+			Map<String, Map<String, Object>> queueArguments,
 			Map<String, EzyRabbitTopicSetting> topicSettings) {
 		super(connectionFactory);
 		this.dataCodec = dataCodec;
 		this.topicSettings = topicSettings;
+		this.queueArguments = queueArguments;
 		this.topics = createTopics();
 	}
 	
@@ -59,6 +63,7 @@ public class EzyRabbitTopicManager extends EzyRabbitAbstractManager {
 		EzyRabbitTopicClient client = null;
 		EzyRabbitTopicServer server = null;
 		Channel channel = getChannel(setting);
+		declareComponents(channel, setting);
 		if(setting.isClientEnable()) {
 			client = EzyRabbitTopicClient.builder()
 					.channel(channel)
@@ -68,7 +73,7 @@ public class EzyRabbitTopicManager extends EzyRabbitAbstractManager {
 		}
 		if(setting.isServerEnable()) {
 			server = EzyRabbitTopicServer.builder()
-					.channel(setting.getChannel())
+					.channel(channel)
 					.exchange(setting.getExchange())
 					.queueName(setting.getServerQueueName())
 					.build();
@@ -77,6 +82,17 @@ public class EzyRabbitTopicManager extends EzyRabbitAbstractManager {
 				.dataCodec(dataCodec)
 				.client(client)
 				.server(server).build();		
+	}
+	
+	protected void declareComponents(
+			Channel channel, EzyRabbitTopicSetting setting) throws Exception {
+		channel.basicQos(setting.getPrefetchCount());
+		channel.exchangeDeclare(setting.getExchange(), EzyRabbitExchangeTypes.FANOUT);
+		if(setting.getServerQueueName() == null)
+			return;
+		Map<String, Object> requestQueueArguments = queueArguments.get(setting.getServerQueueName());
+		channel.queueDeclare(setting.getServerQueueName(), false, false, false, requestQueueArguments);
+		channel.queueBind(setting.getServerQueueName(), setting.getExchange(), setting.getClientRoutingKey());
 	}
 	
 }
