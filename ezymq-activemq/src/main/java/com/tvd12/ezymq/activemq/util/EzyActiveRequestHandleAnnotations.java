@@ -6,6 +6,13 @@ public final class EzyActiveRequestHandleAnnotations {
 
 	private EzyActiveRequestHandleAnnotations() {}
 	
+	public static String getCommand(Object requestHandler) {
+		EzyActiveRequestHandle anno = requestHandler
+				.getClass()
+				.getAnnotation(EzyActiveRequestHandle.class);
+		return getCommand(anno);
+	}
+	
 	public static String getCommand(EzyActiveRequestHandle annotation) {
 		String cmd = annotation.value();
 		if(cmd.isEmpty())
