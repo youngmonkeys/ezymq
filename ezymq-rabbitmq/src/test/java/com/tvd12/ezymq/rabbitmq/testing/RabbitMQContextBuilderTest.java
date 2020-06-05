@@ -1,22 +1,23 @@
 package com.tvd12.ezymq.rabbitmq.testing;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.tvd12.ezymq.rabbitmq.EzyRabbitMQContext;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcCaller;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitTopic;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitActionInterceptor;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitMessageConsumer;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.tvd12.ezymq.rabbitmq.EzyRabbitMQContext;
 
 public class RabbitMQContextBuilderTest extends RabbitBaseTest {
 
+	protected static Logger logger = 
+			LoggerFactory.getLogger(RabbitMQContextBuilderTest.class);
+	
 	public static void main(String[] args) throws Exception {
-		Connection connection = connectionFactory.newConnection();
-		Channel channel = connection.createChannel();
-		channel.basicQos(1);
-		channel.exchangeDeclare("rmqia-rpc-exchange", "direct");
+		int prefetchCount = 100;
 		EzyRabbitMQContext context = EzyRabbitMQContext.builder()
-//				.connectionFactory(connectionFactory)
+				.connectionFactory(connectionFactory)
 				.scan("com.tvd12.ezymq.rabbitmq.testing.entity")
 				.mapRequestType("fibonaci", int.class)
 				.mapRequestType("test", String.class)
@@ -24,6 +25,7 @@ public class RabbitMQContextBuilderTest extends RabbitBaseTest {
 				.settingsBuilder()
 				.queueArgument("rmqia-rpc-queue", "x-max-length-bytes", 1024000)
 				.topicSettingBuilder("test")
+					.prefetchCount(prefetchCount)
 					.exchange("rmqia-topic-exchange")
 					.clientEnable(true)
 					.clientRoutingKey("rmqia-topic-routing-key")
@@ -31,8 +33,8 @@ public class RabbitMQContextBuilderTest extends RabbitBaseTest {
 					.serverQueueName("mqia-topic")
 					.parent()
 				.rpcCallerSettingBuilder("fibonaci")
+					.prefetchCount(prefetchCount)
 					.defaultTimeout(300 * 1000)
-					.channel(channel)
 					.exchange("rmqia-rpc-exchange")
 					.requestQueueName("rmqia-rpc-queue")
 					.requestRoutingKey("rmqia-rpc-routing-key")
@@ -40,6 +42,7 @@ public class RabbitMQContextBuilderTest extends RabbitBaseTest {
 					.replyRoutingKey("rmqia-rpc-client-routing-key")
 					.parent()
 				.rpcHandlerSettingBuilder("fibonaci")
+					.prefetchCount(prefetchCount)
 					.requestQueueName("rmqia-rpc-queue")
 					.exchange("rmqia-rpc-exchange")
 					.replyRoutingKey("rmqia-rpc-client-routing-key")
@@ -71,16 +74,23 @@ public class RabbitMQContextBuilderTest extends RabbitBaseTest {
 			
 			@Override
 			public void consume(String message) {
-				System.out.println("topic message: " + message);
+				logger.info("topic message: " + message);
 			}
 		});
-		topic.publish("hello topic");
+		long startTopicTime = System.currentTimeMillis();
+		for(int i = 0 ; i < 1000 ; ++i) {
+			topic.publish("hello topic " + i);
+		}
+		long elapsedTopicTime = System.currentTimeMillis() - startTopicTime;
+		System.out.println("elapsedTopicTime: " + elapsedTopicTime);
+		
 		EzyRabbitRpcCaller caller = context.getRpcCaller("fibonaci");
 		long start = System.currentTimeMillis();
 		for(int i = 0 ; i < 1000 ; ++i) {
-			System.out.println("rabbit rpc start call: " + i);
-			int result = caller.call("fibonaci", 100, int.class);
-			System.out.println("i = " + i + ", result = " + result);
+//			System.out.println("rabbit rpc start call: " + i);
+			caller.call("fibonaci", 100, int.class);
+//			int result = caller.call("fibonaci", 100, int.class);
+//			System.out.println("i = " + i + ", result = " + result);
 		}
 		System.out.println("elapsed = " + (System.currentTimeMillis() - start));
 	}

@@ -21,12 +21,13 @@ public class EzyRabbitRpcHandlerSetting extends EzyRabbitEndpointSetting {
 	public EzyRabbitRpcHandlerSetting(
 			Channel channel, 
 			String exchange, 
+			int prefetchCount,
 			String replyRoutingKey,
 			String requestQueueName,
 			int threadPoolSize,
 			EzyRabbitRequestHandlers requestHandlers,
 			EzyRabbitActionInterceptor actionInterceptor) {
-		super(channel, exchange);
+		super(channel, exchange, prefetchCount);
 		this.replyRoutingKey = replyRoutingKey;
 		this.requestQueueName = requestQueueName;
 		this.threadPoolSize = threadPoolSize;
@@ -118,6 +119,7 @@ public class EzyRabbitRpcHandlerSetting extends EzyRabbitEndpointSetting {
 			return new EzyRabbitRpcHandlerSetting(
 					channel, 
 					exchange,
+					prefetchCount,
 					replyRoutingKey, 
 					requestQueueName,
 					threadPoolSize,

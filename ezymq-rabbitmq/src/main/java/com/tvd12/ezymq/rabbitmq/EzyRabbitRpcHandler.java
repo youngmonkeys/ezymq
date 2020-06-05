@@ -1,6 +1,5 @@
 package com.tvd12.ezymq.rabbitmq;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadFactory;
@@ -63,15 +62,15 @@ public class EzyRabbitRpcHandler
 			executorService.execute();
 		}
 		else {
-			server.mainloop();
+			server.start();
 		}
 		
 	}
 	
 	protected void startLoop() {
 		try {
-			server.mainloop();
-		} catch (IOException e) {
+			server.start();
+		} catch (Exception e) {
 			logger.error("rpc loop has exception", e);
 		}
 	}
@@ -122,8 +121,7 @@ public class EzyRabbitRpcHandler
         Object requestEntity = null;
         byte[] responseBytes = null;
         Object responseEntity = null;
-        try
-        {
+        try {
             requestEntity = dataCodec.deserialize(cmd, requestBody);
             if (actionInterceptor != null)
                 actionInterceptor.intercept(cmd, requestEntity);

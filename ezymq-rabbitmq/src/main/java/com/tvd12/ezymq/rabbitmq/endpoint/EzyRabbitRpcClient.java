@@ -29,7 +29,7 @@ public class EzyRabbitRpcClient extends EzyRabbitEndpoint {
 	protected final EzyFutureMap<String> futureMap;
 	protected final EzyRabbitCorrelationIdFactory correlationIdFactory;
 	protected final EzyRabbitResponseConsumer unconsumedResponseConsumer;
-	private DefaultConsumer consumer;
+	protected DefaultConsumer consumer;
 	
 	protected final static int NO_TIMEOUT = -1;
 	

@@ -12,11 +12,6 @@ public class EzyRabbitEndpointSetting {
     protected final String exchange;
     protected final int prefetchCount;
     
-    public EzyRabbitEndpointSetting(
-			Channel channel, String exchange) {
-    	this(channel, exchange, 1);
-    }
-	
 	public EzyRabbitEndpointSetting(
 			Channel channel, 
 			String exchange, int prefetchCount) {
@@ -31,7 +26,7 @@ public class EzyRabbitEndpointSetting {
 		
 		protected Channel channel; 
 		protected String exchange; 
-		protected int prefetchCount = 1;
+		protected int prefetchCount;
 		
 		public B channel(Channel channel) {
 			this.channel = channel;

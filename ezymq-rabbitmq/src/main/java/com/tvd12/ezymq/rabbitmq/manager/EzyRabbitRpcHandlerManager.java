@@ -56,6 +56,7 @@ public class EzyRabbitRpcHandlerManager extends EzyRabbitAbstractManager {
 	protected EzyRabbitRpcHandler createRpcHandler(
 			EzyRabbitRpcHandlerSetting setting) throws Exception {
 		Channel channel = getChannel(setting);
+		channel.basicQos(setting.getPrefetchCount());
 		EzyRabbitRpcServer client = EzyRabbitRpcServer.builder()
 				.channel(channel)
 				.exchange(setting.getExchange())

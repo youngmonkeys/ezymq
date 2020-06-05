@@ -1,29 +1,36 @@
 package com.tvd12.ezymq.rabbitmq.endpoint;
 
 import java.io.IOException;
+import java.util.concurrent.CancellationException;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
-import com.rabbitmq.client.RpcServer;
+import com.rabbitmq.client.ShutdownSignalException;
 import com.tvd12.ezyfox.builder.EzyBuilder;
+import com.tvd12.ezyfox.util.EzyStartable;
+import com.tvd12.ezyfox.util.EzyStoppable;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRpcCallHandler;
 
 import lombok.Setter;
 
-public class EzyRabbitRpcServer extends RpcServer {
-	
+public class EzyRabbitRpcServer 
+		extends EzyRabbitEndpoint 
+		implements EzyStartable, EzyStoppable {
+
 	protected final String exchange;
 	protected final String replyRoutingKey;
-	protected final String queueName;
+	protected final String requestQueueName;
+	protected final EzyRabbitBufferConsumer consumer;
+	protected volatile boolean active;
 	@Setter
 	protected EzyRabbitRpcCallHandler callHandler;
 	
 	public EzyRabbitRpcServer(
 			Channel channel, 
 			String exchange,
-			String replyRoutingKey) throws IOException {
+			String replyRoutingKey) throws Exception {
 		this(channel, exchange, replyRoutingKey, null);
 	}
 	
@@ -31,14 +38,49 @@ public class EzyRabbitRpcServer extends RpcServer {
 			Channel channel, 
 			String exchange, 
 			String replyRoutingKey,
-			String queueName) throws IOException {
-		super(channel, queueName);
+			String requestQueueName) throws Exception {
+		super(channel, requestQueueName);
 		this.exchange = exchange;
 		this.replyRoutingKey = replyRoutingKey;
-		this.queueName = queueName;
+		this.requestQueueName = requestQueueName;
+		this.consumer = setupConsumer();
 	}
-
+	
+	protected EzyRabbitBufferConsumer setupConsumer() throws Exception {
+		EzyRabbitBufferConsumer consumer = new EzyRabbitBufferConsumer(channel);
+		channel.basicConsume(requestQueueName, true, consumer);
+		return consumer;
+	}
+	
 	@Override
+	public void start() throws Exception {
+		this.active = true;
+        while(active) {
+        	handleRequestOne();
+        }
+	}
+	
+	protected void handleRequestOne() {
+		Delivery request = null;
+		try {
+    		request = consumer.nextDelivery();
+    		processRequest(request);
+    	}
+    	catch (Exception e) {
+    		if(e instanceof CancellationException) {
+    			this.active = true;
+    			logger.info("rpc server by request queue: {} has cancelled", requestQueueName, e);
+    		}
+    		else if(e instanceof ShutdownSignalException) {
+    			this.active = true;
+    			logger.info("rpc server by request queue: {} has shutted down", requestQueueName, e);
+    		}
+    		else {
+    			logger.warn("process request: {} of queue: {} error", request, requestQueueName, e);
+    		}
+		}
+	}
+	
 	public void processRequest(Delivery request)
 	        throws IOException {
         AMQP.BasicProperties requestProperties = request.getProperties();
@@ -51,7 +93,7 @@ public class EzyRabbitRpcServer extends RpcServer {
             byte[] replyBody = handleCall(request, replyPropertiesBuilder);
             replyPropertiesBuilder.correlationId(correlationId);
             AMQP.BasicProperties replyProperties = replyPropertiesBuilder.build();
-            getChannel().basicPublish(exchange, responseRoutingKey, replyProperties, replyBody);
+            channel.basicPublish(exchange, responseRoutingKey, replyProperties, replyBody);
         } 
         else {
         	handleFire(request);
@@ -69,12 +111,12 @@ public class EzyRabbitRpcServer extends RpcServer {
 		return answer;
 	}
 	
-	public void stop() throws Exception {
+	public void stop() {
+		this.active = false;
 		this.callHandler = null;
-		this.close();
 	}
 	
-	public static Builder builder() {
+    public static Builder builder() {
 		return new Builder();
 	}
 	
@@ -117,8 +159,9 @@ public class EzyRabbitRpcServer extends RpcServer {
 						channel, exchange, replyRoutingKey, queueName);
 				server.setCallHandler(callHandler);
 				return server;
-			} catch (IOException e) {
-				throw new RuntimeException(e);
+			}
+			catch (Exception e) {
+				throw new IllegalStateException(e);
 			}
 		}
 		

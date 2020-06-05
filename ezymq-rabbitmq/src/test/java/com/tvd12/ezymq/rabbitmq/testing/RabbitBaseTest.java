@@ -31,7 +31,7 @@ public class RabbitBaseTest extends BaseTest {
 	
 	static {
 		connectionFactory = new EzyRabbitConnectionFactoryBuilder()
-				.sharedThreadPoolSize(8)
+				.sharedThreadPoolSize(1)
 				.build();
 		messageSerializer = newMessageSerializer();
 		messageDeserializer = newMessageDeserializer();
