@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.tvd12</groupId>
 		<artifactId>ezymq</artifactId>
-		<version>1.1.1b</version>
+		<version>1.1.1c</version>
 	</parent>
 	<artifactId>ezymq-activemq</artifactId>
 	<name>ezymq-activemq</name>
