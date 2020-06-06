@@ -75,7 +75,7 @@ public class EzyRabbitRpcHandlerManager extends EzyRabbitAbstractManager {
 	
 	public void close() {
 		for(EzyRabbitRpcHandler handler : rpcHandlers.values())
-			handler.stop();
+			handler.close();
 	}
 	
 }

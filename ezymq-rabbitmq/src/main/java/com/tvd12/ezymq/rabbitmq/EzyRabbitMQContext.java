@@ -2,13 +2,15 @@ package com.tvd12.ezymq.rabbitmq;
 
 import com.rabbitmq.client.ConnectionFactory;
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitDataCodec;
+import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitConnectionFactory;
 import com.tvd12.ezymq.rabbitmq.manager.EzyRabbitRpcCallerManager;
 import com.tvd12.ezymq.rabbitmq.manager.EzyRabbitRpcHandlerManager;
 import com.tvd12.ezymq.rabbitmq.manager.EzyRabbitTopicManager;
 import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitSettings;
 
-public class EzyRabbitMQContext {
+public class EzyRabbitMQContext implements EzyCloseable {
 
 	protected final EzyRabbitSettings settings;
 	protected final EzyEntityCodec entityCodec;
@@ -45,8 +47,12 @@ public class EzyRabbitMQContext {
 		return rpcHandlerManager.getRpcHandler(name);
 	}
 	
+	@Override
 	public void close() {
 		rpcHandlerManager.close();
+		rpcCallerManager.close();
+		if(connectionFactory instanceof EzyRabbitConnectionFactory)
+			((EzyRabbitConnectionFactory)connectionFactory).close();
 	}
 	
 	protected EzyRabbitTopicManager newTopicManager() {

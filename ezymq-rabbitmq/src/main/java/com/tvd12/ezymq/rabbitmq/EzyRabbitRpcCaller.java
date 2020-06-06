@@ -1,6 +1,5 @@
 package com.tvd12.ezymq.rabbitmq;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
@@ -13,13 +12,14 @@ import com.tvd12.ezyfox.exception.EzyTimeoutException;
 import com.tvd12.ezyfox.exception.InternalServerErrorException;
 import com.tvd12.ezyfox.exception.NotFoundException;
 import com.tvd12.ezyfox.message.EzyMessageTypeFetcher;
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyLoggable;
-import com.tvd12.ezyfox.util.EzyStoppable;
 import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitKeys;
 import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitStatusCodes;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcClient;
 
-public class EzyRabbitRpcCaller extends EzyLoggable implements EzyStoppable {
+public class EzyRabbitRpcCaller 
+		extends EzyLoggable implements EzyCloseable {
 	
 	protected final EzyRabbitRpcClient client;
 	protected final EzyEntityCodec entityCodec;
@@ -31,12 +31,8 @@ public class EzyRabbitRpcCaller extends EzyLoggable implements EzyStoppable {
     }
 
 	@Override
-	public void stop() {
-		try {
-			client.close();
-		} catch (IOException e) {
-			logger.error("stop rpc client error", e);
-		}
+	public void close() {
+		client.close();
 	}
 	
 	public void fire(Object data) {

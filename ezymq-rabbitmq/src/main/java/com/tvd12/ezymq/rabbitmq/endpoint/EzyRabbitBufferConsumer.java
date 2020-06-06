@@ -11,12 +11,14 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Delivery;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.ShutdownSignalException;
+import com.tvd12.ezyfox.util.EzyCloseable;
 
-public class EzyRabbitBufferConsumer extends DefaultConsumer {
+public class EzyRabbitBufferConsumer 
+		extends DefaultConsumer implements EzyCloseable {
 
 	protected volatile Exception exception;
     protected final BlockingQueue<Delivery> queue;
-    protected static final Delivery POISON = new Delivery(null, null, null);
+    protected final static Delivery POISON = new Delivery(null, null, null);
 
     public EzyRabbitBufferConsumer(Channel channel) {
     	super(channel);
@@ -25,8 +27,11 @@ public class EzyRabbitBufferConsumer extends DefaultConsumer {
 
     public Delivery nextDelivery() throws Exception {
         Delivery delivery = queue.take();
-        if(delivery == POISON)
-        	throw exception;
+        if(delivery == POISON) {
+        	if(exception != null)
+        		throw exception;
+        	return null;
+        }
         return delivery;
     }
 
@@ -50,6 +55,11 @@ public class EzyRabbitBufferConsumer extends DefaultConsumer {
         AMQP.BasicProperties properties,
         byte[] body) throws IOException {
         this.queue.add(new Delivery(envelope, properties, body));
+    }
+    
+    @Override
+    public void close() {
+    	this.queue.add(POISON);
     }
 
 }

@@ -2,6 +2,7 @@ package com.tvd12.ezymq.rabbitmq.endpoint;
 
 import java.io.IOException;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.AMQP.BasicProperties;
@@ -9,19 +10,20 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Delivery;
 import com.rabbitmq.client.ShutdownSignalException;
 import com.tvd12.ezyfox.builder.EzyBuilder;
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyStartable;
-import com.tvd12.ezyfox.util.EzyStoppable;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRpcCallHandler;
 
 import lombok.Setter;
 
 public class EzyRabbitRpcServer 
 		extends EzyRabbitEndpoint 
-		implements EzyStartable, EzyStoppable {
+		implements EzyStartable, EzyCloseable {
 
 	protected final String exchange;
 	protected final String replyRoutingKey;
 	protected final String requestQueueName;
+	protected final AtomicInteger startCount;
 	protected final EzyRabbitBufferConsumer consumer;
 	protected volatile boolean active;
 	@Setter
@@ -43,6 +45,7 @@ public class EzyRabbitRpcServer
 		this.exchange = exchange;
 		this.replyRoutingKey = replyRoutingKey;
 		this.requestQueueName = requestQueueName;
+		this.startCount = new AtomicInteger();
 		this.consumer = setupConsumer();
 	}
 	
@@ -55,6 +58,7 @@ public class EzyRabbitRpcServer
 	@Override
 	public void start() throws Exception {
 		this.active = true;
+		this.startCount.incrementAndGet();
         while(active) {
         	handleRequestOne();
         }
@@ -64,7 +68,10 @@ public class EzyRabbitRpcServer
 		Delivery request = null;
 		try {
     		request = consumer.nextDelivery();
-    		processRequest(request);
+    		if(request != null)
+    			processRequest(request);
+    		else
+    			active = false;
     	}
     	catch (Exception e) {
     		if(e instanceof CancellationException) {
@@ -111,9 +118,12 @@ public class EzyRabbitRpcServer
 		return answer;
 	}
 	
-	public void stop() {
+	@Override
+	public void close() {
 		this.active = false;
 		this.callHandler = null;
+		for(int i = 0 ; i < startCount.get() ; ++i)
+			this.consumer.close();
 	}
 	
     public static Builder builder() {

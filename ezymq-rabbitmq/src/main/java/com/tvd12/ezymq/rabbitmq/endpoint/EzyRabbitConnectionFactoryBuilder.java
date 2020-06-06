@@ -76,7 +76,7 @@ public class EzyRabbitConnectionFactoryBuilder implements EzyBuilder<ConnectionF
 			threadFactory = newThreadFactory();
 		if(exceptionHandler == null)
 			exceptionHandler = newExceptionHandler();
-		ConnectionFactory factory = new ConnectionFactory();
+		ConnectionFactory factory = new EzyRabbitConnectionFactory();
 		if(EzyStrings.isNoContent(uri)) {
 			factory.setHost(host);
 			factory.setPort(port);

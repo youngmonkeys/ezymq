@@ -9,9 +9,9 @@ import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.concurrent.EzyThreadList;
 import com.tvd12.ezyfox.exception.BadRequestException;
 import com.tvd12.ezyfox.exception.NotFoundException;
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.ezyfox.util.EzyStartable;
-import com.tvd12.ezyfox.util.EzyStoppable;
 import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitDataCodec;
 import com.tvd12.ezymq.rabbitmq.concurrent.EzyRabbitThreadFactory;
 import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitErrorCodes;
@@ -26,7 +26,7 @@ import lombok.Setter;
 
 public class EzyRabbitRpcHandler
 		extends EzyLoggable
-		implements EzyRabbitRpcCallHandler, EzyStartable, EzyStoppable {
+		implements EzyRabbitRpcCallHandler, EzyStartable, EzyCloseable {
 
 	protected final int threadPoolSize;
 	protected final EzyRabbitRpcServer server;
@@ -84,13 +84,9 @@ public class EzyRabbitRpcHandler
 	}
 	
 	@Override
-	public void stop() {
-		try {
-			server.stop();
-			executorService = null;
-		} catch (Exception e) {
-			logger.error("stop rpc server error", e);
-		}
+	public void close() {
+		server.close();
+		executorService = null;
 	}
 	
 	@Override

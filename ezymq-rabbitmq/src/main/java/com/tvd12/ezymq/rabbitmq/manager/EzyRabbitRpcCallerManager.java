@@ -6,12 +6,14 @@ import java.util.Map;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcCaller;
 import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitExchangeTypes;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcClient;
 import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitRpcCallerSetting;
 
-public class EzyRabbitRpcCallerManager extends EzyRabbitAbstractManager {
+public class EzyRabbitRpcCallerManager
+		extends EzyRabbitAbstractManager implements EzyCloseable {
 	
 	protected final EzyEntityCodec entityCodec;
 	protected final Map<String, EzyRabbitRpcCaller> rpcCallers;
@@ -87,6 +89,11 @@ public class EzyRabbitRpcCallerManager extends EzyRabbitAbstractManager {
 		channel.queueDeclare(setting.getReplyQueueName(), false, false, false, replyQueueArguments);
 		channel.queueBind(setting.getRequestQueueName(), setting.getExchange(), setting.getRequestRoutingKey());
 		channel.queueBind(setting.getReplyQueueName(), setting.getExchange(), setting.getReplyRoutingKey());
+	}
+	
+	public void close() {
+		for(EzyRabbitRpcCaller caller : rpcCallers.values())
+			caller.close();
 	}
 	
 }

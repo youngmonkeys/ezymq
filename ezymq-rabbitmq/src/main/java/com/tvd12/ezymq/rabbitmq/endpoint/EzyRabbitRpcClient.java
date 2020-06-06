@@ -1,12 +1,12 @@
 package com.tvd12.ezymq.rabbitmq.endpoint;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.RpcClient.Response;
@@ -14,12 +14,14 @@ import com.rabbitmq.client.ShutdownSignalException;
 import com.tvd12.ezyfox.concurrent.EzyFuture;
 import com.tvd12.ezyfox.concurrent.EzyFutureConcurrentHashMap;
 import com.tvd12.ezyfox.concurrent.EzyFutureMap;
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.rabbitmq.exception.EzyRabbitMaxCapacity;
 import com.tvd12.ezymq.rabbitmq.factory.EzyRabbitCorrelationIdFactory;
 import com.tvd12.ezymq.rabbitmq.factory.EzyRabbitSimpleCorrelationIdFactory;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitResponseConsumer;
 
-public class EzyRabbitRpcClient extends EzyRabbitEndpoint {
+public class EzyRabbitRpcClient 
+		extends EzyRabbitEndpoint implements EzyCloseable {
 
 	protected final int capacity;
     protected final int defaultTimeout;
@@ -29,7 +31,7 @@ public class EzyRabbitRpcClient extends EzyRabbitEndpoint {
 	protected final EzyFutureMap<String> futureMap;
 	protected final EzyRabbitCorrelationIdFactory correlationIdFactory;
 	protected final EzyRabbitResponseConsumer unconsumedResponseConsumer;
-	protected DefaultConsumer consumer;
+	protected final Consumer consumer;
 	
 	protected final static int NO_TIMEOUT = -1;
 	
@@ -83,7 +85,6 @@ public class EzyRabbitRpcClient extends EzyRabbitEndpoint {
                 Map<String, EzyFuture> remainFutures = futureMap.clear();
                 for(EzyFuture future : remainFutures.values())
                 	future.setResult(signal);
-                consumer = null;
             }
 
             @Override
@@ -112,7 +113,6 @@ public class EzyRabbitRpcClient extends EzyRabbitEndpoint {
 	
 	public void doFire(AMQP.BasicProperties props, byte[] message)
 	        throws IOException {
-		checkConsumer();
         AMQP.BasicProperties.Builder propertiesBuilder = (props != null) 
         			? props.builder() 
         			: new AMQP.BasicProperties.Builder();
@@ -128,7 +128,6 @@ public class EzyRabbitRpcClient extends EzyRabbitEndpoint {
  
 	public Response doCall(AMQP.BasicProperties props, byte[] message, int timeout)
 	        throws Exception {
-        checkConsumer();
         if(futureMap.size() >= capacity)
 			throw new EzyRabbitMaxCapacity("rpc client too many request, capacity: " + capacity);
         String replyId = correlationIdFactory.newCorrelationId();
@@ -171,18 +170,8 @@ public class EzyRabbitRpcClient extends EzyRabbitEndpoint {
 		channel.basicPublish(exchange, requestRoutingKey, props, message);
 	}
 	
-	public void checkConsumer() throws IOException {
-		if (consumer == null) {
-            throw new EOFException("RpcClient is closed");
-        }
-	}
-	
-	public void close() throws IOException {
-        if (consumer != null) {
-            channel.basicCancel(consumer.getConsumerTag());
-            consumer = null;
-        }
-    }
+	@Override
+	public void close() {}
 	
 	public static Builder builder() {
 		return new Builder();

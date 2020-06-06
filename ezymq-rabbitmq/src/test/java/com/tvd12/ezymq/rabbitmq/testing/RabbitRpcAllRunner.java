@@ -29,6 +29,7 @@ public class RabbitRpcAllRunner extends RabbitBaseTest {
 //		runner.rpc();
 	}
 	
+	@SuppressWarnings("resource")
 	protected void startServer() throws Exception {
 		try {
 			System.out.println("thread-" + Thread.currentThread().getName() + ": start server");
@@ -57,6 +58,7 @@ public class RabbitRpcAllRunner extends RabbitBaseTest {
 		.start();
 	}
 	
+	@SuppressWarnings("resource")
 	protected void rpc() throws Exception {
 		EzyRabbitRpcClient client = newClient();
 		EzyRabbitRpcCaller caller = new EzyRabbitRpcCaller(client, entityCodec);

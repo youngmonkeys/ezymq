@@ -93,6 +93,7 @@ public class RabbitMQContextBuilderTest extends RabbitBaseTest {
 //			System.out.println("i = " + i + ", result = " + result);
 		}
 		System.out.println("elapsed = " + (System.currentTimeMillis() - start));
+		context.close();
 	}
 	
 }
