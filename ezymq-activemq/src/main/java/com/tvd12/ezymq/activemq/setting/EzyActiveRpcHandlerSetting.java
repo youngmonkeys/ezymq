@@ -1,5 +1,7 @@
 package com.tvd12.ezymq.activemq.setting;
 
+import java.util.Map;
+
 import javax.jms.Destination;
 import javax.jms.Session;
 
@@ -69,6 +71,15 @@ public class EzyActiveRpcHandlerSetting extends EzyActiveRpcEndpointSetting {
 			if(requestHandlers == null)
 				requestHandlers = new EzyActiveRequestHandlers();
 			requestHandlers.addHandler(cmd, handler);
+			return this;
+	    }
+		
+		@SuppressWarnings("rawtypes")
+		public Builder addRequestHandler(Map<String, EzyActiveRequestHandler> handlers) {
+			for(String cmd : handlers.keySet()) {
+				EzyActiveRequestHandler handler = handlers.get(cmd);
+				addRequestHandler(cmd, handler);
+			}
 			return this;
 	    }
 		
