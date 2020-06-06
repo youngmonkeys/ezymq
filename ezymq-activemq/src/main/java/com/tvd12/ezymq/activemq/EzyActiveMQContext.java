@@ -3,13 +3,15 @@ package com.tvd12.ezymq.activemq;
 import javax.jms.ConnectionFactory;
 
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.activemq.codec.EzyActiveDataCodec;
+import com.tvd12.ezymq.activemq.endpoint.EzyActiveConnectionFactory;
 import com.tvd12.ezymq.activemq.manager.EzyActiveRpcCallerManager;
 import com.tvd12.ezymq.activemq.manager.EzyActiveRpcHandlerManager;
 import com.tvd12.ezymq.activemq.manager.EzyActiveTopicManager;
 import com.tvd12.ezymq.activemq.setting.EzyActiveSettings;
 
-public class EzyActiveMQContext {
+public class EzyActiveMQContext implements EzyCloseable {
 
 	protected final EzyActiveSettings settings;
 	protected final EzyEntityCodec entityCodec;
@@ -44,6 +46,15 @@ public class EzyActiveMQContext {
 	
 	public EzyActiveRpcHandler getActiveRpcHandler(String name) {
 		return rpcHandlerManager.getRpcHandler(name);
+	}
+	
+	@Override
+	public void close() {
+		topicManager.close();
+		rpcHandlerManager.close();
+		rpcCallerManager.close();
+		if(connectionFactory instanceof EzyActiveConnectionFactory)
+			((EzyActiveConnectionFactory)connectionFactory).close();
 	}
 	
 	protected EzyActiveTopicManager newTopicManager() {

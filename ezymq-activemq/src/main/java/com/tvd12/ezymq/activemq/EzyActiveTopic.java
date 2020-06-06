@@ -4,6 +4,7 @@ import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.exception.InternalServerErrorException;
 import com.tvd12.ezyfox.io.EzyStrings;
 import com.tvd12.ezyfox.message.EzyMessageTypeFetcher;
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.activemq.codec.EzyActiveDataCodec;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveTopicClient;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveTopicServer;
@@ -12,7 +13,7 @@ import com.tvd12.ezymq.activemq.handler.EzyActiveMessageConsumers;
 import com.tvd12.ezymq.activemq.handler.EzyActiveMessageHandler;
 import com.tvd12.ezymq.activemq.util.EzyActiveProperties;
 
-public class EzyActiveTopic<T> {
+public class EzyActiveTopic<T> implements EzyCloseable {
 
 	protected final EzyActiveTopicClient client;
 	protected final EzyActiveTopicServer server;
@@ -104,6 +105,14 @@ public class EzyActiveTopic<T> {
 		catch (Exception e) {
 			throw new IllegalStateException("can't start topic server");
 		}
+	}
+	
+	@Override
+	public void close() {
+		if(client != null)
+			client.close();
+		if(server != null)
+			server.close();
 	}
 	
 	public static Builder builder() {

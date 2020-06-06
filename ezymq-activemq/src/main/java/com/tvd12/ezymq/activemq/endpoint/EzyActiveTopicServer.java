@@ -9,8 +9,8 @@ import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
 import com.tvd12.ezyfox.concurrent.EzyThreadList;
+import com.tvd12.ezyfox.util.EzyProcessor;
 import com.tvd12.ezyfox.util.EzyStartable;
-import com.tvd12.ezyfox.util.EzyStoppable;
 import com.tvd12.ezymq.activemq.concurrent.EzyActiveThreadFactory;
 import com.tvd12.ezymq.activemq.handler.EzyActiveMessageHandler;
 import com.tvd12.ezymq.activemq.util.EzyActiveProperties;
@@ -18,8 +18,7 @@ import com.tvd12.ezymq.activemq.util.EzyActiveProperties;
 import lombok.Setter;
 
 public class EzyActiveTopicServer 
-		extends EzyActiveTopicEndpoint 
-		implements EzyStartable, EzyStoppable  {
+		extends EzyActiveTopicEndpoint implements EzyStartable  {
 
 	protected volatile boolean active;
 	protected final int threadPoolSize;
@@ -49,6 +48,8 @@ public class EzyActiveTopicServer
 			BytesMessage message = null;
 			try {
 				message = (BytesMessage)consumer.receive();
+				if(message == null)
+					return;
 				EzyActiveProperties props = getMessageProperties(message);
 				byte[] body = getMessageBody(message);
 				messageHandler.handle(props, body);
@@ -71,9 +72,10 @@ public class EzyActiveTopicServer
 	}
 	
 	@Override
-	public void stop() {
+	public void close() {
 		this.active = false;
 		this.executorService = null;
+		EzyProcessor.processWithLogException(() -> consumer.close());
 	}
 	
 	public static Builder builder() {

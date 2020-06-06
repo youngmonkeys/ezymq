@@ -47,7 +47,8 @@ public class EzyActiveRpcServer
 		BytesMessage message = null;
 		try {
 			message = (BytesMessage) consumer.receive();
-			processRequest(message);
+			if(message != null)
+				processRequest(message);
 		}
 		catch (Exception e) {
 			logger.warn("handle message: {} error", message, e);

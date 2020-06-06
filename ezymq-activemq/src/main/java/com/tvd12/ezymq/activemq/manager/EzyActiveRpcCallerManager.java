@@ -74,4 +74,9 @@ public class EzyActiveRpcCallerManager extends EzyActiveAbstractManager {
 		return caller;
 	}
 	
+	public void close() {
+		for(EzyActiveRpcCaller caller : rpcCallers.values())
+			caller.close();
+	}
+	
 }

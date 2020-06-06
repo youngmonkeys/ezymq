@@ -10,15 +10,15 @@ import com.tvd12.ezyfox.exception.EzyTimeoutException;
 import com.tvd12.ezyfox.exception.InternalServerErrorException;
 import com.tvd12.ezyfox.exception.NotFoundException;
 import com.tvd12.ezyfox.message.EzyMessageTypeFetcher;
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyLoggable;
-import com.tvd12.ezyfox.util.EzyStoppable;
 import com.tvd12.ezymq.activemq.constant.EzyActiveKeys;
 import com.tvd12.ezymq.activemq.constant.EzyActiveStatusCodes;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveMessage;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveRpcClient;
 import com.tvd12.ezymq.activemq.util.EzyActiveProperties;
 
-public class EzyActiveRpcCaller extends EzyLoggable implements EzyStoppable {
+public class EzyActiveRpcCaller extends EzyLoggable implements EzyCloseable {
 	
 	protected final EzyActiveRpcClient client;
 	protected final EzyEntityCodec entityCodec;
@@ -30,12 +30,8 @@ public class EzyActiveRpcCaller extends EzyLoggable implements EzyStoppable {
     }
 
 	@Override
-	public void stop() {
-		try {
-			client.close();
-		} catch (Exception e) {
-			logger.warn("stop rpc client error", e);
-		}
+	public void close() {
+		client.close();
 	}
 	
 	public void fire(Object data) {

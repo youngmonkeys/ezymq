@@ -6,12 +6,14 @@ import java.util.Map;
 import javax.jms.ConnectionFactory;
 import javax.jms.Session;
 
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.activemq.EzyActiveRpcHandler;
 import com.tvd12.ezymq.activemq.codec.EzyActiveDataCodec;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveRpcServer;
 import com.tvd12.ezymq.activemq.setting.EzyActiveRpcHandlerSetting;
 
-public class EzyActiveRpcHandlerManager extends EzyActiveAbstractManager {
+public class EzyActiveRpcHandlerManager 
+		extends EzyActiveAbstractManager implements EzyCloseable {
 	
 	protected final EzyActiveDataCodec dataCodec;
 	protected final Map<String, EzyActiveRpcHandler> rpcHandlers;
@@ -72,6 +74,11 @@ public class EzyActiveRpcHandlerManager extends EzyActiveAbstractManager {
 				.server(client).build();
 		handler.start();
 		return handler;
+	}
+	
+	public void close() {
+		for(EzyActiveRpcHandler handler : rpcHandlers.values())
+			handler.close();
 	}
 	
 }

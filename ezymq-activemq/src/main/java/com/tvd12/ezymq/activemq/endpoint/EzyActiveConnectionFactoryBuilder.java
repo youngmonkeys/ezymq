@@ -45,7 +45,7 @@ public class EzyActiveConnectionFactoryBuilder implements EzyBuilder<ConnectionF
 	public ConnectionFactory build() {
 		if(exceptionListener == null)
 			exceptionListener = newExceptionListner();
-		ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory();
+		ActiveMQConnectionFactory factory = new EzyActiveConnectionFactory();
 		if(!EzyStrings.isNoContent(uri))
 			setConnectionURI(factory);
 		if(!EzyStrings.isEmpty(username))

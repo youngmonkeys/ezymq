@@ -83,6 +83,8 @@ public class EzyActiveRpcClient extends EzyActiveRpcEndpoint {
 		EzyActiveProperties properties = null;
 		try {
 			BytesMessage message = (BytesMessage) consumer.receive();
+			if(message == null)
+				return;
 			replyId = message.getJMSCorrelationID();
 			future = futureMap.removeFuture(replyId);
 			properties = getMessageProperties(message);

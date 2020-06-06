@@ -3,9 +3,11 @@ package com.tvd12.ezymq.activemq.endpoint;
 import javax.jms.Destination;
 import javax.jms.Session;
 
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.activemq.constant.EzyActiveDestinationType;
 
-public abstract class EzyActiveTopicEndpoint extends EzyActiveEndpoint {
+public abstract class EzyActiveTopicEndpoint 
+		extends EzyActiveEndpoint implements EzyCloseable {
 
     protected final Destination topic;
 	

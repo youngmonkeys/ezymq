@@ -30,6 +30,7 @@ public class ActiveMQRpcAllRunner extends ActiveMQBaseTest {
 		runner.rpc();
 	}
 	
+	@SuppressWarnings("resource")
 	protected void startServer() throws Exception {
 		try {
 			System.out.println("thread-" + Thread.currentThread().getName() + ": start server");
@@ -58,6 +59,7 @@ public class ActiveMQRpcAllRunner extends ActiveMQBaseTest {
 		.start();
 	}
 	
+	@SuppressWarnings("resource")
 	protected void rpc() throws Exception {
 		EzyActiveRpcClient client = newClient();
 		EzyActiveRpcCaller caller = new EzyActiveRpcCaller(client, entityCodec);

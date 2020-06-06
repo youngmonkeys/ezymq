@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.jms.ConnectionFactory;
 import javax.jms.Session;
 
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.activemq.EzyActiveTopic;
 import com.tvd12.ezymq.activemq.codec.EzyActiveDataCodec;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveTopicClient;
@@ -13,7 +14,8 @@ import com.tvd12.ezymq.activemq.endpoint.EzyActiveTopicServer;
 import com.tvd12.ezymq.activemq.setting.EzyActiveTopicSetting;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class EzyActiveTopicManager extends EzyActiveAbstractManager {
+public class EzyActiveTopicManager 
+		extends EzyActiveAbstractManager implements EzyCloseable {
 
 	protected final EzyActiveDataCodec dataCodec;
 	protected final Map<String, EzyActiveTopic> topics;
@@ -69,7 +71,7 @@ public class EzyActiveTopicManager extends EzyActiveAbstractManager {
 		}
 		if(setting.isServerEnable()) {
 			server = EzyActiveTopicServer.builder()
-					.session(setting.getSession())
+					.session(session)
 					.topic(setting.getTopic())
 					.topicName(setting.getTopicName())
 					.build();
@@ -78,6 +80,12 @@ public class EzyActiveTopicManager extends EzyActiveAbstractManager {
 				.dataCodec(dataCodec)
 				.client(client)
 				.server(server).build();		
+	}
+	
+	@Override
+	public void close() {
+		for(EzyActiveTopic topic : topics.values())
+			topic.close();
 	}
 	
 }

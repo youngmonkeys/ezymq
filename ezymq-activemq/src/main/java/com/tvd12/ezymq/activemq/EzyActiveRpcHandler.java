@@ -6,9 +6,9 @@ import java.util.Map;
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.exception.BadRequestException;
 import com.tvd12.ezyfox.exception.NotFoundException;
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.ezyfox.util.EzyStartable;
-import com.tvd12.ezyfox.util.EzyStoppable;
 import com.tvd12.ezymq.activemq.codec.EzyActiveDataCodec;
 import com.tvd12.ezymq.activemq.constant.EzyActiveErrorCodes;
 import com.tvd12.ezymq.activemq.constant.EzyActiveKeys;
@@ -23,7 +23,7 @@ import lombok.Setter;
 
 public class EzyActiveRpcHandler
 		extends EzyLoggable
-		implements EzyActiveRpcCallHandler, EzyStartable, EzyStoppable {
+		implements EzyActiveRpcCallHandler, EzyStartable, EzyCloseable {
 
 	protected final EzyActiveRpcServer server;
 	protected final EzyActiveDataCodec dataCodec;
@@ -56,7 +56,7 @@ public class EzyActiveRpcHandler
 	}
 	
 	@Override
-	public void stop() {
+	public void close() {
 		server.close();
 	}
 	
