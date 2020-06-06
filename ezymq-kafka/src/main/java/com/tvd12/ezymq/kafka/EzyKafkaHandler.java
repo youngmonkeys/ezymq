@@ -3,9 +3,9 @@ package com.tvd12.ezymq.kafka;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import com.tvd12.ezyfox.builder.EzyBuilder;
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.ezyfox.util.EzyStartable;
-import com.tvd12.ezyfox.util.EzyStoppable;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaDataCodec;
 import com.tvd12.ezymq.kafka.endpoint.EzyKafkaServer;
 import com.tvd12.ezymq.kafka.handler.EzyKafkaActionInterceptor;
@@ -17,7 +17,7 @@ import lombok.Setter;
 @SuppressWarnings("rawtypes")
 public class EzyKafkaHandler
 		extends EzyLoggable
-		implements EzyKafkaRecordsHandler, EzyStartable, EzyStoppable {
+		implements EzyKafkaRecordsHandler, EzyStartable, EzyCloseable {
 
 	@Setter
 	protected EzyKafkaActionInterceptor actionInterceptor;
@@ -42,8 +42,8 @@ public class EzyKafkaHandler
 	}
 	
 	@Override
-	public void stop() {
-		server.stop();
+	public void close() {
+		server.close();
 	}
 	
 	@Override

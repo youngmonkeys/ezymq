@@ -1,18 +1,19 @@
 package com.tvd12.ezymq.kafka;
 
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaDataCodec;
 import com.tvd12.ezymq.kafka.manager.EzyKafkaCallerManager;
 import com.tvd12.ezymq.kafka.manager.EzyKafkaHandlerManager;
 import com.tvd12.ezymq.kafka.setting.EzyKafkaSettings;
 
-public class EzyKafkaContext {
+public class EzyKafkaContext implements EzyCloseable {
 
 	protected final EzyKafkaSettings settings;
 	protected final EzyEntityCodec entityCodec;
 	protected final EzyKafkaDataCodec dataCodec;
-	protected final EzyKafkaCallerManager rpcCallerManager;
-	protected final EzyKafkaHandlerManager rpcHandlerManager;
+	protected final EzyKafkaCallerManager callerManager;
+	protected final EzyKafkaHandlerManager handlerManager;
 	
 	public EzyKafkaContext(
 			EzyEntityCodec entityCodec,
@@ -21,17 +22,23 @@ public class EzyKafkaContext {
 		this.settings = settings;
 		this.dataCodec = dataCodec;
 		this.entityCodec = entityCodec;
-		this.rpcCallerManager = newCallerManager();
-		this.rpcHandlerManager = newKafkaHandlerManager();
+		this.callerManager = newCallerManager();
+		this.handlerManager = newKafkaHandlerManager();
 		
 	}
 	
 	public EzyKafkaCaller getCaller(String name) {
-		return rpcCallerManager.getCaller(name);
+		return callerManager.getCaller(name);
 	}
 	
 	public EzyKafkaHandler getKafkaHandler(String name) {
-		return rpcHandlerManager.getHandler(name);
+		return handlerManager.getHandler(name);
+	}
+	
+	@Override
+	public void close() {
+		callerManager.close();
+		handlerManager.close();
 	}
 	
 	protected EzyKafkaCallerManager newCallerManager() {

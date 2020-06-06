@@ -9,10 +9,9 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.serialization.Deserializer;
 
 import com.tvd12.ezyfox.concurrent.EzyThreadList;
-import com.tvd12.ezyfox.util.EzyDestroyable;
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyProcessor;
 import com.tvd12.ezyfox.util.EzyStartable;
-import com.tvd12.ezyfox.util.EzyStoppable;
 import com.tvd12.ezymq.kafka.handler.EzyKafkaRecordsHandler;
 
 import lombok.Setter;
@@ -20,7 +19,7 @@ import lombok.Setter;
 @SuppressWarnings("rawtypes")
 public class EzyKafkaServer 
 		extends EzyKafkaEndpoint
-		implements EzyStartable, EzyStoppable, EzyDestroyable {
+		implements EzyStartable, EzyCloseable {
 	
 	protected final long pollTimeOut;
 	protected final Consumer consumer;
@@ -93,19 +92,17 @@ public class EzyKafkaServer
 			recordsHandler.handleRecords(records);
 		}
 		catch(Exception e) {
-			logger.warn("poll and handle records error", e);
+			if(active)
+				logger.warn("poll and handle records error", e);
 		}
 	}
 	
 	@Override
-	public void stop() {
+	public void close() {
 		this.active = false;
-	}
-	
-	@Override
-	public void destroy() {
-		this.active = false;
-		EzyProcessor.processWithLogException(() -> consumer.close());
+		synchronized (this) {
+			EzyProcessor.processWithLogException(() -> consumer.close());
+		}
 	}
 	
 	public static Builder builder() {

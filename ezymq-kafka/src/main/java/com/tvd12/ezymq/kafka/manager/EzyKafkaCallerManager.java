@@ -4,11 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.kafka.EzyKafkaCaller;
 import com.tvd12.ezymq.kafka.endpoint.EzyKafkaClient;
 import com.tvd12.ezymq.kafka.setting.EzyKafkaCallerSetting;
 
-public class EzyKafkaCallerManager extends EzyKafkaAbstractManager {
+public class EzyKafkaCallerManager 
+		extends EzyKafkaAbstractManager implements EzyCloseable {
 	
 	protected final EzyEntityCodec entityCodec;
 	protected final Map<String, EzyKafkaCaller> callers;
@@ -59,6 +61,12 @@ public class EzyKafkaCallerManager extends EzyKafkaAbstractManager {
 				.entityCodec(entityCodec)
 				.client(client).build();
 		return caller;
+	}
+	
+	@Override
+	public void close() {
+		for(EzyKafkaCaller caller : callers.values())
+			caller.close();
 	}
 	
 }

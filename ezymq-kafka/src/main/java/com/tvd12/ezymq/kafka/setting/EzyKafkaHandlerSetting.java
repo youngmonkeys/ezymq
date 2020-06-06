@@ -90,6 +90,14 @@ public class EzyKafkaHandlerSetting extends EzyKafkaEndpointSetting {
 			return this;
 	    }
 		
+		public Builder addRequestHandler(Map<String, EzyKafkaRequestHandler> handlers) {
+			for(String cmd : handlers.keySet()) {
+				EzyKafkaRequestHandler handler = handlers.get(cmd);
+				addRequestHandler(cmd, handler);
+			}
+			return this;
+	    }
+		
 		public EzyKafkaSettings.Builder parent() {
 			return parent;
 		}

@@ -7,10 +7,11 @@ import com.tvd12.ezyfox.codec.EzyEntityCodec;
 import com.tvd12.ezyfox.exception.EzyTimeoutException;
 import com.tvd12.ezyfox.exception.InternalServerErrorException;
 import com.tvd12.ezyfox.message.EzyMessageTypeFetcher;
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.ezymq.kafka.endpoint.EzyKafkaClient;
 
-public class EzyKafkaCaller extends EzyLoggable {
+public class EzyKafkaCaller extends EzyLoggable implements EzyCloseable {
 
 	protected final EzyKafkaClient client;
 	protected final EzyEntityCodec entityCodec;
@@ -43,6 +44,11 @@ public class EzyKafkaCaller extends EzyLoggable {
     	catch (Exception e) {
     		throw new InternalServerErrorException(e.getMessage(), e);
 		}
+    }
+    
+    @Override
+    public void close() {
+    	client.close();
     }
     
     public static Builder builder() {

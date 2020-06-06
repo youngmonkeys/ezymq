@@ -10,7 +10,7 @@ import com.tvd12.ezymq.kafka.handler.EzyKafkaRequestHandler;
 
 public class KafkaContextBuilderTest extends KafkaBaseTest {
 
-	public void test() {
+	public void test() throws Exception {
 		EzyKafkaContext kafkaContext = EzyKafkaContext.builder()
 				.scan("com.tvd12.ezymq.kafka.testing.entity")
 				.mapRequestType("hello", String.class)
@@ -52,10 +52,15 @@ public class KafkaContextBuilderTest extends KafkaBaseTest {
 				.build();
 		EzyKafkaCaller caller = kafkaContext.getCaller("clientA");
 		caller.send("hello", "world");
+		Thread.sleep(1000);
+		kafkaContext.close();
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		new KafkaContextBuilderTest().test();
+		while(true) {
+			Thread.sleep(1000);
+		}
 	}
 	
 }

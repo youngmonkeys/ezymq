@@ -4,8 +4,12 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serializer;
 
+import com.tvd12.ezyfox.util.EzyCloseable;
+import com.tvd12.ezyfox.util.EzyProcessor;
+
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class EzyKafkaClient extends EzyKafkaEndpoint {
+public class EzyKafkaClient 
+		extends EzyKafkaEndpoint implements EzyCloseable {
 
 	protected final Producer producer;
 	
@@ -21,6 +25,11 @@ public class EzyKafkaClient extends EzyKafkaEndpoint {
 		else 
 			record = new ProducerRecord<>(topic, cmd, message);
 		producer.send(record);
+	}
+	
+	@Override
+	public void close() {
+		EzyProcessor.processWithLogException(() -> producer.close());
 	}
 	
 	public static Builder builder() {
