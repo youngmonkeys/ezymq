@@ -2,13 +2,26 @@ package com.tvd12.ezymq.rabbitmq.testing;
 
 import org.testng.annotations.Test;
 
+import com.tvd12.ezyfox.binding.EzyBindingContext;
+import com.tvd12.ezyfox.codec.EzyEntityCodec;
+import com.tvd12.ezyfox.codec.EzyMessageDeserializer;
+import com.tvd12.ezyfox.codec.EzyMessageSerializer;
+import com.tvd12.ezyfox.codec.MsgPackSimpleDeserializer;
+import com.tvd12.ezyfox.codec.MsgPackSimpleSerializer;
+import com.tvd12.ezyfox.collect.Sets;
 import com.tvd12.ezyfox.exception.BadRequestException;
 import com.tvd12.ezyfox.exception.NotFoundException;
+import com.tvd12.ezyfox.reflect.EzyReflectionProxy;
+import com.tvd12.ezyfox.util.EzyMapBuilder;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitMQContext;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcCaller;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitTopic;
+import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitBytesDataCodec;
+import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitBytesEntityCodec;
+import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitDataCodec;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitActionInterceptor;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitMessageConsumer;
+import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitSettings;
 import com.tvd12.ezymq.rabbitmq.testing.mockup.ConnectionFactoryMockup;
 
 public class RabbitMQContextBuilderUnitTest {
@@ -137,6 +150,57 @@ public class RabbitMQContextBuilderUnitTest {
 		Thread.sleep(100);
 		System.out.println("elapsed = " + (System.currentTimeMillis() - start));
 		context.close();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testSetComponents() throws Exception {
+		EzyRabbitSettings settings = EzyRabbitSettings.builder()
+				.build();
+		EzyBindingContext bindingContext = EzyBindingContext.builder()
+				.scan("com.tvd12.ezymq.rabbitmq.testing.entity")
+				.build();
+		EzyMessageSerializer messageSerializer = newMessageSerializer();
+		EzyMessageDeserializer messageDeserializer = newMessageDeserializer();
+		EzyEntityCodec entityCodec = EzyRabbitBytesEntityCodec.builder()
+				.marshaller(bindingContext.newMarshaller())
+				.unmarshaller(bindingContext.newUnmarshaller())
+				.messageSerializer(messageSerializer)
+				.messageDeserializer(messageDeserializer)
+				.build();
+		EzyRabbitDataCodec dataCodec = EzyRabbitBytesDataCodec.builder()
+				.marshaller(bindingContext.newMarshaller())
+				.unmarshaller(bindingContext.newUnmarshaller())
+				.messageSerializer(messageSerializer)
+				.messageDeserializer(messageDeserializer)
+				.mapRequestType("fibonaci", int.class)
+				.mapRequestType("test", String.class)
+				.build();
+		EzyRabbitMQContext.builder()
+				.scan("com.tvd12.ezymq.rabbitmq.testing.entity")
+				.scan("com.tvd12.ezymq.rabbitmq.testing.entity", "com.tvd12.ezymq.rabbitmq.testing.entity")
+				.scan(Sets.newHashSet("com.tvd12.ezymq.rabbitmq.testing.entity"))
+				.scan(new EzyReflectionProxy("com.tvd12.ezymq.rabbitmq.testing.entity"))
+				.settings(settings)
+				.bindingContext(bindingContext)
+				.marshaller(bindingContext.newMarshaller())
+				.unmarshaller(bindingContext.newUnmarshaller())
+				.messageSerializer(messageSerializer)
+				.messageDeserializer(messageDeserializer)
+				.entityCodec(entityCodec)
+				.dataCodec(dataCodec)
+				.mapRequestTypes(EzyMapBuilder.mapBuilder()
+						.put("a", int.class)
+						.build())
+				.build();
+	}
+	
+	protected static EzyMessageSerializer newMessageSerializer() {
+		return new MsgPackSimpleSerializer();
+	}
+	
+	protected static EzyMessageDeserializer newMessageDeserializer() {
+		return new MsgPackSimpleDeserializer();
 	}
 	
 }

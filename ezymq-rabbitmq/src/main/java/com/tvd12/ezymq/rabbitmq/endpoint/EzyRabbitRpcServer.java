@@ -31,13 +31,6 @@ public class EzyRabbitRpcServer
 	
 	public EzyRabbitRpcServer(
 			Channel channel, 
-			String exchange,
-			String replyRoutingKey) throws Exception {
-		this(channel, exchange, replyRoutingKey, null);
-	}
-	
-	public EzyRabbitRpcServer(
-			Channel channel, 
 			String exchange, 
 			String replyRoutingKey,
 			String requestQueueName) throws Exception {
@@ -75,11 +68,11 @@ public class EzyRabbitRpcServer
     	}
     	catch (Exception e) {
     		if(e instanceof CancellationException) {
-    			this.active = true;
+    			this.active = false;
     			logger.info("rpc server by request queue: {} has cancelled", requestQueueName, e);
     		}
     		else if(e instanceof ShutdownSignalException) {
-    			this.active = true;
+    			this.active = false;
     			logger.info("rpc server by request queue: {} has shutted down", requestQueueName, e);
     		}
     		else {

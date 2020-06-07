@@ -43,10 +43,12 @@ public class ChannelMockup extends EzyLoggable implements Channel {
 
 	protected static final Map<String, String> queueNames;
 	protected static final Map<String, BlockingQueue> queues;
+	protected static final Map<String, Consumer> consumers;
 	
 	static {
 		queues = new ConcurrentHashMap<>();
 		queueNames = new ConcurrentHashMap<>();
+		consumers = new ConcurrentHashMap<>();
 	}
 	
 	@Override
@@ -514,6 +516,7 @@ public class ChannelMockup extends EzyLoggable implements Channel {
 
 	@Override
 	public String basicConsume(String queue, boolean autoAck, Consumer callback) throws IOException {
+		consumers.put(queue, callback);
 		BlockingQueue q = queues.computeIfAbsent(queue, k -> new LinkedBlockingQueue<>());
 		Thread thread = new Thread(() -> {
 			int i = 0;
@@ -644,8 +647,22 @@ public class ChannelMockup extends EzyLoggable implements Channel {
 
 	@Override
 	public void basicCancel(String consumerTag) throws IOException {
-		// TODO Auto-generated method stub
-		
+		String action = "cancel";
+		String queueName = consumerTag;
+		if(consumerTag.startsWith("cancel_")) {
+			queueName = consumerTag.substring("cancel_".length());
+		}
+		else if(consumerTag.startsWith("shutdown_")) {
+			action = "shutdown";
+			queueName = consumerTag.substring("shutdown_".length());
+		}
+		Consumer consumer = consumers.get(queueName);
+		if(consumer == null)
+			return;
+		if("shutdown".equals(action))
+			consumer.handleShutdownSignal(consumerTag, new ShutdownSignalException(true, true, null, null));
+		else
+			consumer.handleCancel(queueName);
 	}
 
 	@Override
