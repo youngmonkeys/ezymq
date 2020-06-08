@@ -657,6 +657,7 @@ public class ChannelMockup extends EzyLoggable implements Channel {
 			queueName = consumerTag.substring("shutdown_".length());
 		}
 		Consumer consumer = consumers.get(queueName);
+		System.out.println("basic cancel, action: " + action + ", queue: " + queueName + ", consumer: " + consumer);
 		if(consumer == null)
 			return;
 		if("shutdown".equals(action))

@@ -1,8 +1,6 @@
 package com.tvd12.ezymq.rabbitmq.setting;
 
 import com.rabbitmq.client.Channel;
-import com.tvd12.ezyfox.concurrent.EzyFutureConcurrentHashMap;
-import com.tvd12.ezyfox.concurrent.EzyFutureMap;
 import com.tvd12.ezymq.rabbitmq.factory.EzyRabbitCorrelationIdFactory;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitResponseConsumer;
 
@@ -17,7 +15,6 @@ public class EzyRabbitRpcCallerSetting extends EzyRabbitEndpointSetting {
 	protected final String replyQueueName;
 	protected final String replyRoutingKey;
 	protected final String requestRoutingKey;
-	protected final EzyFutureMap<String> futureMap;
 	protected final EzyRabbitCorrelationIdFactory correlationIdFactory;
 	protected final EzyRabbitResponseConsumer unconsumedResponseConsumer;
     
@@ -41,7 +38,6 @@ public class EzyRabbitRpcCallerSetting extends EzyRabbitEndpointSetting {
         this.replyRoutingKey = replyRoutingKey;
         this.defaultTimeout = defaultTimeout;
         this.correlationIdFactory = correlationIdFactory;
-        this.futureMap = new EzyFutureConcurrentHashMap<>(); 
         this.unconsumedResponseConsumer = unconsumedResponseConsumer;
     }
     

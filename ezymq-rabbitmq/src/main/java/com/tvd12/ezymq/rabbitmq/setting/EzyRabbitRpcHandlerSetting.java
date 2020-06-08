@@ -56,16 +56,6 @@ public class EzyRabbitRpcHandlerSetting extends EzyRabbitEndpointSetting {
 			this.parent = parent;
 		}
 		
-		public Builder channel(Channel channel) {
-			this.channel = channel;
-			return this;
-		}
-		
-		public Builder exchange(String exchange) {
-			this.exchange = exchange;
-			return this;
-		}
-		
 		public Builder threadPoolSize(int threadPoolSize) {
 			this.threadPoolSize = threadPoolSize;
 			return this;

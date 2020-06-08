@@ -72,7 +72,7 @@ public class EzyRabbitTopicSetting extends EzyRabbitEndpointSetting {
 		}
 		
 		@Override
-		public EzyRabbitEndpointSetting build() {
+		public EzyRabbitTopicSetting build() {
 			return new EzyRabbitTopicSetting(
 					channel,
 					exchange,

@@ -59,7 +59,7 @@ public class EzyRabbitRpcClientTest {
 		for(int i = 0 ; i < threads.length ; ++i)
 			threads[i].start();
 		Thread.sleep(500);
-		channel.basicCancel("EzyRabbitRpcClientTest-replyQueueName");
+		channel.basicCancel("shutdown_EzyRabbitRpcClientTest-replyQueueName");
 		Thread.sleep(500);
 	}
 	

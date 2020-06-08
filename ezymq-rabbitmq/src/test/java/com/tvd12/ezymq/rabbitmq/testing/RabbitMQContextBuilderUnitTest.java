@@ -22,6 +22,7 @@ import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitDataCodec;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitActionInterceptor;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitMessageConsumer;
 import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitSettings;
+import com.tvd12.ezymq.rabbitmq.testing.entity.FiboRequest2;
 import com.tvd12.ezymq.rabbitmq.testing.mockup.ConnectionFactoryMockup;
 
 public class RabbitMQContextBuilderUnitTest {
@@ -33,6 +34,7 @@ public class RabbitMQContextBuilderUnitTest {
 				.connectionFactory(connectionFactory)
 				.scan("com.tvd12.ezymq.rabbitmq.testing.entity")
 				.mapRequestType("fibonaci", int.class)
+				.mapRequestType("fibonaci2", FiboRequest2.class)
 				.mapRequestType("test", String.class)
 				.mapRequestType("", String.class)
 				.settingsBuilder()
@@ -68,6 +70,9 @@ public class RabbitMQContextBuilderUnitTest {
 						if(value < -3)
 							throw new IllegalStateException("server maintain");
 						return value + 3;
+					})
+					.addRequestHandler("fibonaci2", a -> {
+						return 1;
 					})
 					.actionInterceptor(new EzyRabbitActionInterceptor() {
 						
@@ -146,6 +151,30 @@ public class RabbitMQContextBuilderUnitTest {
 			catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+		try {
+			caller.call(new Object(), int.class);
+		}
+		catch (Exception e) {
+			assert e instanceof IllegalArgumentException;
+		}
+		try {
+			caller.call(new FiboRequest2(), int.class);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			caller.fire(new Object());
+		}
+		catch (Exception e) {
+			assert e instanceof IllegalArgumentException;
+		}
+		try {
+			caller.fire(new FiboRequest2());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
 		}
 		Thread.sleep(100);
 		System.out.println("elapsed = " + (System.currentTimeMillis() - start));
