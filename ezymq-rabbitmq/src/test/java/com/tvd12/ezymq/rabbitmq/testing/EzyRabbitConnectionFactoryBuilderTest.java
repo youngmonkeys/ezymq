@@ -17,6 +17,7 @@ public class EzyRabbitConnectionFactoryBuilderTest {
 				.vhost("/")
 				.username("guest")
 				.password("guest")
+				.requestedHeartbeat(0)
 				.threadFactory(EzyRabbitThreadFactory.create("test"))
 				.exceptionHandler(new DefaultExceptionHandler())
 				.build();

@@ -17,6 +17,7 @@ public class EzyRabbitConnectionFactoryBuilder implements EzyBuilder<ConnectionF
 	protected String host = "localhost";
 	protected String vhost = "/";
 	protected String uri = null;
+	protected int requestedHeartbeat = 15;
 	protected int sharedThreadPoolSize;
 	protected ThreadFactory threadFactory;
 	protected ExceptionHandler exceptionHandler;
@@ -60,6 +61,11 @@ public class EzyRabbitConnectionFactoryBuilder implements EzyBuilder<ConnectionF
 		return threadFactory(EzyRabbitThreadFactory.create(poolName));
 	}
 	
+	public EzyRabbitConnectionFactoryBuilder requestedHeartbeat(int requestedHeartbeat) {
+		this.requestedHeartbeat = requestedHeartbeat;
+		return this;
+	}
+	
 	public EzyRabbitConnectionFactoryBuilder sharedThreadPoolSize(int sharedThreadPoolSize) {
 		this.sharedThreadPoolSize = sharedThreadPoolSize;
 		return this;
@@ -89,6 +95,8 @@ public class EzyRabbitConnectionFactoryBuilder implements EzyBuilder<ConnectionF
 		}
 		factory.setThreadFactory(threadFactory);
 		factory.setExceptionHandler(exceptionHandler);
+		if(requestedHeartbeat > 0)
+			factory.setRequestedHeartbeat(requestedHeartbeat);
 		if(sharedThreadPoolSize > 0)
 			factory.setSharedExecutor(Executors.newFixedThreadPool(sharedThreadPoolSize, threadFactory));
 		return factory;
