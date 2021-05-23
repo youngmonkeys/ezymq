@@ -3,7 +3,7 @@ package com.tvd12.ezymq.rabbitmq.testing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tvd12.ezymq.rabbitmq.EzyRabbitMQContext;
+import com.tvd12.ezymq.rabbitmq.EzyRabbitMQProxy;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcCaller;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitTopic;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitActionInterceptor;
@@ -16,7 +16,7 @@ public class RabbitMQContextBuilderTest extends RabbitBaseTest {
 	
 	public static void main(String[] args) throws Exception {
 		int prefetchCount = 100;
-		EzyRabbitMQContext context = EzyRabbitMQContext.builder()
+		EzyRabbitMQProxy context = EzyRabbitMQProxy.builder()
 				.connectionFactory(connectionFactory)
 				.scan("com.tvd12.ezymq.rabbitmq.testing.entity")
 				.mapRequestType("fibonaci", int.class)

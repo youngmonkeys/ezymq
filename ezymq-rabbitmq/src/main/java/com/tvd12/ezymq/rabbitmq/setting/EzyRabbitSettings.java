@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.tvd12.ezyfox.builder.EzyBuilder;
-import com.tvd12.ezymq.rabbitmq.EzyRabbitMQContextBuilder;
+import com.tvd12.ezymq.rabbitmq.EzyRabbitMQProxyBuilder;
 
 import lombok.Getter;
 
@@ -34,7 +34,7 @@ public class EzyRabbitSettings {
 	
 	public static class Builder implements EzyBuilder<EzyRabbitSettings> {
 		
-		protected EzyRabbitMQContextBuilder parent;
+		protected EzyRabbitMQProxyBuilder parent;
 		protected Map<String, Map<String, Object>> queueArguments;
 		protected Map<String, EzyRabbitTopicSetting> topicSettings;
 		protected Map<String, EzyRabbitRpcCallerSetting> rpcCallerSettings;
@@ -47,7 +47,7 @@ public class EzyRabbitSettings {
 			this(null);
 		}
 		
-		public Builder(EzyRabbitMQContextBuilder parent) {
+		public Builder(EzyRabbitMQProxyBuilder parent) {
 			this.parent = parent;
 			this.topicSettings = new HashMap<>();
 			this.queueArguments = new HashMap<>();
@@ -101,7 +101,7 @@ public class EzyRabbitSettings {
 		}
 		
 		
-		public EzyRabbitMQContextBuilder parent() {
+		public EzyRabbitMQProxyBuilder parent() {
 			return parent;
 		}
 		

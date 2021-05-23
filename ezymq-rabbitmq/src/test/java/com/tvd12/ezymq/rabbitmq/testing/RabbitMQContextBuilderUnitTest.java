@@ -13,7 +13,7 @@ import com.tvd12.ezyfox.exception.BadRequestException;
 import com.tvd12.ezyfox.exception.NotFoundException;
 import com.tvd12.ezyfox.reflect.EzyReflectionProxy;
 import com.tvd12.ezyfox.util.EzyMapBuilder;
-import com.tvd12.ezymq.rabbitmq.EzyRabbitMQContext;
+import com.tvd12.ezymq.rabbitmq.EzyRabbitMQProxy;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcCaller;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitTopic;
 import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitBytesDataCodec;
@@ -30,7 +30,7 @@ public class RabbitMQContextBuilderUnitTest {
 	@Test
 	public void test() throws Exception {
 		ConnectionFactoryMockup connectionFactory = new ConnectionFactoryMockup();
-		EzyRabbitMQContext context = EzyRabbitMQContext.builder()
+		EzyRabbitMQProxy context = EzyRabbitMQProxy.builder()
 				.connectionFactory(connectionFactory)
 				.scan("com.tvd12.ezymq.rabbitmq.testing.entity")
 				.mapRequestType("fibonaci", int.class)
@@ -205,7 +205,7 @@ public class RabbitMQContextBuilderUnitTest {
 				.mapRequestType("fibonaci", int.class)
 				.mapRequestType("test", String.class)
 				.build();
-		EzyRabbitMQContext.builder()
+		EzyRabbitMQProxy.builder()
 				.scan("com.tvd12.ezymq.rabbitmq.testing.entity")
 				.scan("com.tvd12.ezymq.rabbitmq.testing.entity", "com.tvd12.ezymq.rabbitmq.testing.entity")
 				.scan(Sets.newHashSet("com.tvd12.ezymq.rabbitmq.testing.entity"))

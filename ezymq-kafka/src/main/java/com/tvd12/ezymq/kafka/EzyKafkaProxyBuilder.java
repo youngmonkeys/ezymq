@@ -1,4 +1,4 @@
-package com.tvd12.ezymq.activemq;
+package com.tvd12.ezymq.kafka;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,8 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.jms.ConnectionFactory;
 
 import com.tvd12.ezyfox.binding.EzyBindingContext;
 import com.tvd12.ezyfox.binding.EzyBindingContextBuilder;
@@ -23,118 +21,111 @@ import com.tvd12.ezyfox.codec.MsgPackSimpleDeserializer;
 import com.tvd12.ezyfox.codec.MsgPackSimpleSerializer;
 import com.tvd12.ezyfox.reflect.EzyReflection;
 import com.tvd12.ezyfox.reflect.EzyReflectionProxy;
-import com.tvd12.ezymq.activemq.codec.EzyActiveBytesDataCodec;
-import com.tvd12.ezymq.activemq.codec.EzyActiveBytesEntityCodec;
-import com.tvd12.ezymq.activemq.codec.EzyActiveDataCodec;
-import com.tvd12.ezymq.activemq.endpoint.EzyActiveConnectionFactoryBuilder;
-import com.tvd12.ezymq.activemq.setting.EzyActiveSettings;
+import com.tvd12.ezymq.kafka.codec.EzyKafkaBytesDataCodec;
+import com.tvd12.ezymq.kafka.codec.EzyKafkaBytesEntityCodec;
+import com.tvd12.ezymq.kafka.codec.EzyKafkaDataCodec;
+import com.tvd12.ezymq.kafka.setting.EzyKafkaSettings;
 
 @SuppressWarnings("rawtypes")
-public class EzyActiveMQContextBuilder implements EzyBuilder<EzyActiveMQContext> {
+public class EzyKafkaProxyBuilder implements EzyBuilder<EzyKafkaProxy> {
 
-	protected EzyActiveSettings settings;
+	protected EzyKafkaSettings settings;
 	protected Set<String> packagesToScan;
 	protected EzyMarshaller marshaller;
 	protected EzyUnmarshaller unmarshaller;
 	protected EzyEntityCodec entityCodec;
-	protected EzyActiveDataCodec dataCodec;
+	protected EzyKafkaDataCodec dataCodec;
 	protected Map<String, Class> requestTypes;
 	protected EzyBindingContext bindingContext;
-	protected ConnectionFactory connectionFactory;
 	protected EzyMessageSerializer messageSerializer;
 	protected EzyMessageDeserializer messageDeserializer;
 	protected List<EzyReflection> reflectionsToScan;
-	protected EzyActiveSettings.Builder settingsBuilder;
+	protected EzyKafkaSettings.Builder settingsBuilder;
 	
-	public EzyActiveMQContextBuilder() {
+	public EzyKafkaProxyBuilder() {
 		this.requestTypes = new HashMap<>();
 		this.packagesToScan = new HashSet<>();
 		this.reflectionsToScan = new ArrayList<>();
 	}
 	
-	public EzyActiveMQContextBuilder scan(String packageName) {
+	public EzyKafkaProxyBuilder scan(String packageName) {
 		this.packagesToScan.add(packageName);
 		return this;
 	}
 	
-	public EzyActiveMQContextBuilder scan(String... packageNames) {
+	public EzyKafkaProxyBuilder scan(String... packageNames) {
 		return scan(Arrays.asList(packageNames));
 	}
 	
-	public EzyActiveMQContextBuilder scan(Iterable<String> packageNames) {
+	public EzyKafkaProxyBuilder scan(Iterable<String> packageNames) {
 		for(String packageName : packageNames)
 			scan(packageName);
 		return this;
 	}
 	
-	public EzyActiveMQContextBuilder scan(EzyReflection reflection) {
+	public EzyKafkaProxyBuilder scan(EzyReflection reflection) {
 		this.reflectionsToScan.add(reflection);
 		return this;
 	}
 	
-	public EzyActiveSettings.Builder settingsBuilder() {
+	public EzyKafkaSettings.Builder settingsBuilder() {
 		if(settingsBuilder == null)
-			settingsBuilder = new EzyActiveSettings.Builder(this);
+			settingsBuilder = new EzyKafkaSettings.Builder(this);
 		return settingsBuilder;
 	}
 	
-	public EzyActiveMQContextBuilder settings(EzyActiveSettings settings) {
+	public EzyKafkaProxyBuilder settings(EzyKafkaSettings settings) {
 		this.settings = settings;
 		return this;
 	}
 	
-	public EzyActiveMQContextBuilder marshaller(EzyMarshaller marshaller) {
+	public EzyKafkaProxyBuilder marshaller(EzyMarshaller marshaller) {
 		this.marshaller = marshaller;
 		return this;
 	}
 	
-	public EzyActiveMQContextBuilder unmarshaller(EzyUnmarshaller unmarshaller) {
+	public EzyKafkaProxyBuilder unmarshaller(EzyUnmarshaller unmarshaller) {
 		this.unmarshaller = unmarshaller;
 		return this;
 	}
 	
-	public EzyActiveMQContextBuilder entityCodec(EzyEntityCodec entityCodec) {
+	public EzyKafkaProxyBuilder entityCodec(EzyEntityCodec entityCodec) {
 		this.entityCodec = entityCodec;
 		return this;
 	}
 	
-	public EzyActiveMQContextBuilder dataCodec(EzyActiveDataCodec dataCodec) {
+	public EzyKafkaProxyBuilder dataCodec(EzyKafkaDataCodec dataCodec) {
 		this.dataCodec = dataCodec;
 		return this;
 	}
 	
-	public EzyActiveMQContextBuilder bindingContext(EzyBindingContext bindingContext) {
+	public EzyKafkaProxyBuilder bindingContext(EzyBindingContext bindingContext) {
 		this.bindingContext = bindingContext;
 		return this;
 	}
 	
-	public EzyActiveMQContextBuilder connectionFactory(ConnectionFactory connectionFactory) {
-		this.connectionFactory = connectionFactory;
-		return this;
-	}
-	
-	public EzyActiveMQContextBuilder messageSerializer(EzyMessageSerializer messageSerializer) {
+	public EzyKafkaProxyBuilder messageSerializer(EzyMessageSerializer messageSerializer) {
 		this.messageSerializer = messageSerializer;
 		return this;
 	}
 	
-	public EzyActiveMQContextBuilder messageDeserializer(EzyMessageDeserializer messageDeserializer) {
+	public EzyKafkaProxyBuilder messageDeserializer(EzyMessageDeserializer messageDeserializer) {
 		this.messageDeserializer = messageDeserializer;
 		return this;
 	}
 	
-	public EzyActiveMQContextBuilder mapRequestType(String cmd, Class<?> type) {
+	public EzyKafkaProxyBuilder mapRequestType(String cmd, Class<?> type) {
 		this.requestTypes.put(cmd, type);
 		return this;
 	}
 	
-	public EzyActiveMQContextBuilder mapRequestTypes(Map<String, Class> requestTypes) {
+	public EzyKafkaProxyBuilder mapRequestTypes(Map<String, Class> requestTypes) {
 		this.requestTypes.putAll(requestTypes);
 		return this;
 	}
 	
 	@Override
-	public EzyActiveMQContext build() {
+	public EzyKafkaProxy build() {
 		if(settingsBuilder != null)
 			settings = settingsBuilder.build();
 		if(settings == null)
@@ -157,13 +148,11 @@ public class EzyActiveMQContextBuilder implements EzyBuilder<EzyActiveMQContext>
 			dataCodec = newDataCodec();
 		if(entityCodec == null)
 			entityCodec = newEntityCodec();
-		if(connectionFactory == null)
-			connectionFactory = new EzyActiveConnectionFactoryBuilder().build();
-		return new EzyActiveMQContext(entityCodec, dataCodec, settings, connectionFactory);
+		return new EzyKafkaProxy(entityCodec, dataCodec, settings);
 	}
 	
 	protected EzyEntityCodec newEntityCodec() {
-		return EzyActiveBytesEntityCodec.builder()
+		return EzyKafkaBytesEntityCodec.builder()
 				.marshaller(marshaller)
 				.unmarshaller(unmarshaller)
 				.messageSerializer(messageSerializer)
@@ -171,8 +160,8 @@ public class EzyActiveMQContextBuilder implements EzyBuilder<EzyActiveMQContext>
 				.build();
 	}
 	
-	protected EzyActiveDataCodec newDataCodec() {
-		return EzyActiveBytesDataCodec.builder()
+	protected EzyKafkaDataCodec newDataCodec() {
+		return EzyKafkaBytesDataCodec.builder()
 				.marshaller(marshaller)
 				.unmarshaller(unmarshaller)
 				.messageSerializer(messageSerializer)

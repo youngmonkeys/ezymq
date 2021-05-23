@@ -4,14 +4,14 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 
 import com.tvd12.ezymq.kafka.EzyKafkaCaller;
-import com.tvd12.ezymq.kafka.EzyKafkaContext;
+import com.tvd12.ezymq.kafka.EzyKafkaProxy;
 import com.tvd12.ezymq.kafka.handler.EzyKafkaActionInterceptor;
 import com.tvd12.ezymq.kafka.handler.EzyKafkaRequestHandler;
 
 public class KafkaContextBuilderTest extends KafkaBaseTest {
 
 	public void test() throws Exception {
-		EzyKafkaContext kafkaContext = EzyKafkaContext.builder()
+		EzyKafkaProxy kafkaContext = EzyKafkaProxy.builder()
 				.scan("com.tvd12.ezymq.kafka.testing.entity")
 				.mapRequestType("hello", String.class)
 				.settingsBuilder()

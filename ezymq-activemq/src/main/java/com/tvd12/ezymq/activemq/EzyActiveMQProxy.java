@@ -11,7 +11,7 @@ import com.tvd12.ezymq.activemq.manager.EzyActiveRpcHandlerManager;
 import com.tvd12.ezymq.activemq.manager.EzyActiveTopicManager;
 import com.tvd12.ezymq.activemq.setting.EzyActiveSettings;
 
-public class EzyActiveMQContext implements EzyCloseable {
+public class EzyActiveMQProxy implements EzyCloseable {
 
 	protected final EzyActiveSettings settings;
 	protected final EzyEntityCodec entityCodec;
@@ -21,7 +21,7 @@ public class EzyActiveMQContext implements EzyCloseable {
 	protected final EzyActiveRpcCallerManager rpcCallerManager;
 	protected final EzyActiveRpcHandlerManager rpcHandlerManager;
 	
-	public EzyActiveMQContext(
+	public EzyActiveMQProxy(
 			EzyEntityCodec entityCodec,
 			EzyActiveDataCodec dataCodec,
 			EzyActiveSettings settings,
@@ -81,8 +81,8 @@ public class EzyActiveMQContext implements EzyCloseable {
 		);
 	}
 	
-	public static EzyActiveMQContextBuilder builder() {
-		return new EzyActiveMQContextBuilder();
+	public static EzyActiveMQProxyBuilder builder() {
+		return new EzyActiveMQProxyBuilder();
 	}
 	
 }

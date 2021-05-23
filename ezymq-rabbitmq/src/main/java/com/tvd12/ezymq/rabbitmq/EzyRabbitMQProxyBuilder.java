@@ -29,7 +29,7 @@ import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitConnectionFactoryBuilder;
 import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitSettings;
 
 @SuppressWarnings("rawtypes")
-public class EzyRabbitMQContextBuilder implements EzyBuilder<EzyRabbitMQContext> {
+public class EzyRabbitMQProxyBuilder implements EzyBuilder<EzyRabbitMQProxy> {
 
 	protected EzyRabbitSettings settings;
 	protected Set<String> packagesToScan;
@@ -45,28 +45,28 @@ public class EzyRabbitMQContextBuilder implements EzyBuilder<EzyRabbitMQContext>
 	protected List<EzyReflection> reflectionsToScan;
 	protected EzyRabbitSettings.Builder settingsBuilder;
 	
-	public EzyRabbitMQContextBuilder() {
+	public EzyRabbitMQProxyBuilder() {
 		this.requestTypes = new HashMap<>();
 		this.packagesToScan = new HashSet<>();
 		this.reflectionsToScan = new ArrayList<>();
 	}
 	
-	public EzyRabbitMQContextBuilder scan(String packageName) {
+	public EzyRabbitMQProxyBuilder scan(String packageName) {
 		this.packagesToScan.add(packageName);
 		return this;
 	}
 	
-	public EzyRabbitMQContextBuilder scan(String... packageNames) {
+	public EzyRabbitMQProxyBuilder scan(String... packageNames) {
 		return scan(Arrays.asList(packageNames));
 	}
 	
-	public EzyRabbitMQContextBuilder scan(Iterable<String> packageNames) {
+	public EzyRabbitMQProxyBuilder scan(Iterable<String> packageNames) {
 		for(String packageName : packageNames)
 			scan(packageName);
 		return this;
 	}
 	
-	public EzyRabbitMQContextBuilder scan(EzyReflection reflection) {
+	public EzyRabbitMQProxyBuilder scan(EzyReflection reflection) {
 		this.reflectionsToScan.add(reflection);
 		return this;
 	}
@@ -77,63 +77,63 @@ public class EzyRabbitMQContextBuilder implements EzyBuilder<EzyRabbitMQContext>
 		return settingsBuilder;
 	}
 	
-	public EzyRabbitMQContextBuilder settings(EzyRabbitSettings settings) {
+	public EzyRabbitMQProxyBuilder settings(EzyRabbitSettings settings) {
 		this.settings = settings;
 		return this;
 	}
 	
-	public EzyRabbitMQContextBuilder marshaller(EzyMarshaller marshaller) {
+	public EzyRabbitMQProxyBuilder marshaller(EzyMarshaller marshaller) {
 		this.marshaller = marshaller;
 		return this;
 	}
 	
-	public EzyRabbitMQContextBuilder unmarshaller(EzyUnmarshaller unmarshaller) {
+	public EzyRabbitMQProxyBuilder unmarshaller(EzyUnmarshaller unmarshaller) {
 		this.unmarshaller = unmarshaller;
 		return this;
 	}
 	
-	public EzyRabbitMQContextBuilder entityCodec(EzyEntityCodec entityCodec) {
+	public EzyRabbitMQProxyBuilder entityCodec(EzyEntityCodec entityCodec) {
 		this.entityCodec = entityCodec;
 		return this;
 	}
 	
-	public EzyRabbitMQContextBuilder dataCodec(EzyRabbitDataCodec dataCodec) {
+	public EzyRabbitMQProxyBuilder dataCodec(EzyRabbitDataCodec dataCodec) {
 		this.dataCodec = dataCodec;
 		return this;
 	}
 	
-	public EzyRabbitMQContextBuilder bindingContext(EzyBindingContext bindingContext) {
+	public EzyRabbitMQProxyBuilder bindingContext(EzyBindingContext bindingContext) {
 		this.bindingContext = bindingContext;
 		return this;
 	}
 	
-	public EzyRabbitMQContextBuilder connectionFactory(ConnectionFactory connectionFactory) {
+	public EzyRabbitMQProxyBuilder connectionFactory(ConnectionFactory connectionFactory) {
 		this.connectionFactory = connectionFactory;
 		return this;
 	}
 	
-	public EzyRabbitMQContextBuilder messageSerializer(EzyMessageSerializer messageSerializer) {
+	public EzyRabbitMQProxyBuilder messageSerializer(EzyMessageSerializer messageSerializer) {
 		this.messageSerializer = messageSerializer;
 		return this;
 	}
 	
-	public EzyRabbitMQContextBuilder messageDeserializer(EzyMessageDeserializer messageDeserializer) {
+	public EzyRabbitMQProxyBuilder messageDeserializer(EzyMessageDeserializer messageDeserializer) {
 		this.messageDeserializer = messageDeserializer;
 		return this;
 	}
 	
-	public EzyRabbitMQContextBuilder mapRequestType(String cmd, Class<?> type) {
+	public EzyRabbitMQProxyBuilder mapRequestType(String cmd, Class<?> type) {
 		this.requestTypes.put(cmd, type);
 		return this;
 	}
 	
-	public EzyRabbitMQContextBuilder mapRequestTypes(Map<String, Class> requestTypes) {
+	public EzyRabbitMQProxyBuilder mapRequestTypes(Map<String, Class> requestTypes) {
 		this.requestTypes.putAll(requestTypes);
 		return this;
 	}
 	
 	@Override
-	public EzyRabbitMQContext build() {
+	public EzyRabbitMQProxy build() {
 		if(settingsBuilder != null)
 			settings = settingsBuilder.build();
 		if(settings == null)
@@ -158,7 +158,7 @@ public class EzyRabbitMQContextBuilder implements EzyBuilder<EzyRabbitMQContext>
 			entityCodec = newEntityCodec();
 		if(connectionFactory == null)
 			connectionFactory = new EzyRabbitConnectionFactoryBuilder().build();
-		return new EzyRabbitMQContext(entityCodec, dataCodec, settings, connectionFactory);
+		return new EzyRabbitMQProxy(entityCodec, dataCodec, settings, connectionFactory);
 	}
 	
 	protected EzyEntityCodec newEntityCodec() {

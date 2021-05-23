@@ -7,7 +7,7 @@ import java.util.Map;
 import org.apache.kafka.clients.producer.ProducerConfig;
 
 import com.tvd12.ezyfox.builder.EzyBuilder;
-import com.tvd12.ezymq.kafka.EzyKafkaContextBuilder;
+import com.tvd12.ezymq.kafka.EzyKafkaProxyBuilder;
 
 import lombok.Getter;
 
@@ -30,7 +30,7 @@ public class EzyKafkaSettings {
 	
 	public static class Builder implements EzyBuilder<EzyKafkaSettings> {
 		
-		protected EzyKafkaContextBuilder parent;
+		protected EzyKafkaProxyBuilder parent;
 		protected Map<String, Object> properties;
 		protected Map<String, EzyKafkaCallerSetting> callerSettings;
 		protected Map<String, EzyKafkaHandlerSetting> handlerSettings;
@@ -41,7 +41,7 @@ public class EzyKafkaSettings {
 			this(null);
 		}
 		
-		public Builder(EzyKafkaContextBuilder parent) {
+		public Builder(EzyKafkaProxyBuilder parent) {
 			this.parent = parent;
 			this.properties = new HashMap<>();
 			this.callerSettings = new HashMap<>();
@@ -81,7 +81,7 @@ public class EzyKafkaSettings {
 		}
 		
 		
-		public EzyKafkaContextBuilder parent() {
+		public EzyKafkaProxyBuilder parent() {
 			return parent;
 		}
 		

@@ -7,7 +7,7 @@ import com.tvd12.ezymq.kafka.manager.EzyKafkaCallerManager;
 import com.tvd12.ezymq.kafka.manager.EzyKafkaHandlerManager;
 import com.tvd12.ezymq.kafka.setting.EzyKafkaSettings;
 
-public class EzyKafkaContext implements EzyCloseable {
+public class EzyKafkaProxy implements EzyCloseable {
 
 	protected final EzyKafkaSettings settings;
 	protected final EzyEntityCodec entityCodec;
@@ -15,7 +15,7 @@ public class EzyKafkaContext implements EzyCloseable {
 	protected final EzyKafkaCallerManager callerManager;
 	protected final EzyKafkaHandlerManager handlerManager;
 	
-	public EzyKafkaContext(
+	public EzyKafkaProxy(
 			EzyEntityCodec entityCodec,
 			EzyKafkaDataCodec dataCodec,
 			EzyKafkaSettings settings) {
@@ -55,8 +55,8 @@ public class EzyKafkaContext implements EzyCloseable {
 		);
 	}
 	
-	public static EzyKafkaContextBuilder builder() {
-		return new EzyKafkaContextBuilder();
+	public static EzyKafkaProxyBuilder builder() {
+		return new EzyKafkaProxyBuilder();
 	}
 	
 }

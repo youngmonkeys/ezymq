@@ -3,7 +3,7 @@ package com.tvd12.ezymq.activemq.test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tvd12.ezymq.activemq.EzyActiveMQContext;
+import com.tvd12.ezymq.activemq.EzyActiveMQProxy;
 import com.tvd12.ezymq.activemq.EzyActiveRpcCaller;
 import com.tvd12.ezymq.activemq.EzyActiveTopic;
 import com.tvd12.ezymq.activemq.handler.EzyActiveActionInterceptor;
@@ -15,7 +15,7 @@ public class ActiveMQContextBuilderTest extends ActiveMQBaseTest {
 			LoggerFactory.getLogger(ActiveMQContextBuilderTest.class);
 	
 	public static void main(String[] args) throws Exception {
-		EzyActiveMQContext context = EzyActiveMQContext.builder()
+		EzyActiveMQProxy context = EzyActiveMQProxy.builder()
 				.scan("com.tvd12.ezymq.activemq.test.entity")
 				.mapRequestType("fibonaci", int.class)
 				.mapRequestType("test", String.class)

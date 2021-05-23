@@ -10,7 +10,7 @@ import com.tvd12.ezymq.rabbitmq.manager.EzyRabbitRpcHandlerManager;
 import com.tvd12.ezymq.rabbitmq.manager.EzyRabbitTopicManager;
 import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitSettings;
 
-public class EzyRabbitMQContext implements EzyCloseable {
+public class EzyRabbitMQProxy implements EzyCloseable {
 
 	protected final EzyRabbitSettings settings;
 	protected final EzyEntityCodec entityCodec;
@@ -20,7 +20,7 @@ public class EzyRabbitMQContext implements EzyCloseable {
 	protected final EzyRabbitRpcCallerManager rpcCallerManager;
 	protected final EzyRabbitRpcHandlerManager rpcHandlerManager;
 	
-	public EzyRabbitMQContext(
+	public EzyRabbitMQProxy(
 			EzyEntityCodec entityCodec,
 			EzyRabbitDataCodec dataCodec,
 			EzyRabbitSettings settings,
@@ -81,8 +81,8 @@ public class EzyRabbitMQContext implements EzyCloseable {
 		);
 	}
 	
-	public static EzyRabbitMQContextBuilder builder() {
-		return new EzyRabbitMQContextBuilder();
+	public static EzyRabbitMQProxyBuilder builder() {
+		return new EzyRabbitMQProxyBuilder();
 	}
 	
 }
