@@ -11,22 +11,22 @@ import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.ezymq.kafka.endpoint.EzyKafkaClient;
 
-public class EzyKafkaCaller extends EzyLoggable implements EzyCloseable {
+public class EzyKafkaProducer extends EzyLoggable implements EzyCloseable {
 
 	protected final EzyKafkaClient client;
 	protected final EzyEntityCodec entityCodec;
 
-	public EzyKafkaCaller(
+	public EzyKafkaProducer(
 			EzyKafkaClient client, EzyEntityCodec entityCodec) {
         this.client = client;
         this.entityCodec = entityCodec;
     }
 	
 	public void send(Object data) {
-        if (!(data instanceof EzyMessageTypeFetcher))
-            throw new IllegalArgumentException("data class must implement 'EzyMessageTypeFetcher'");
-        EzyMessageTypeFetcher mdata = (EzyMessageTypeFetcher)data;
-        send(mdata.getMessageType(), data);
+		String command = "";
+        if (data instanceof EzyMessageTypeFetcher)
+        	command = ((EzyMessageTypeFetcher)data).getMessageType();
+        send(command, data);
     }
 
     public void send(String cmd, Object data) {
@@ -55,7 +55,7 @@ public class EzyKafkaCaller extends EzyLoggable implements EzyCloseable {
     	return new Builder();
     }
     
-    public static class Builder implements EzyBuilder<EzyKafkaCaller> {
+    public static class Builder implements EzyBuilder<EzyKafkaProducer> {
 
     	protected EzyKafkaClient client;
     	protected EzyEntityCodec entityCodec;
@@ -71,8 +71,8 @@ public class EzyKafkaCaller extends EzyLoggable implements EzyCloseable {
     	}
     	
 		@Override
-		public EzyKafkaCaller build() {
-			return new EzyKafkaCaller(client, entityCodec);
+		public EzyKafkaProducer build() {
+			return new EzyKafkaProducer(client, entityCodec);
 		}
     	
     }

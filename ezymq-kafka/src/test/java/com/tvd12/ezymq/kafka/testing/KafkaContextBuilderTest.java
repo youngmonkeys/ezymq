@@ -3,10 +3,10 @@ package com.tvd12.ezymq.kafka.testing;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 
-import com.tvd12.ezymq.kafka.EzyKafkaCaller;
+import com.tvd12.ezymq.kafka.EzyKafkaProducer;
 import com.tvd12.ezymq.kafka.EzyKafkaProxy;
-import com.tvd12.ezymq.kafka.handler.EzyKafkaActionInterceptor;
-import com.tvd12.ezymq.kafka.handler.EzyKafkaRequestHandler;
+import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageInterceptor;
+import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageHandler;
 
 public class KafkaContextBuilderTest extends KafkaBaseTest {
 
@@ -16,41 +16,41 @@ public class KafkaContextBuilderTest extends KafkaBaseTest {
 				.mapRequestType("hello", String.class)
 				.settingsBuilder()
 					.property(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS)
-					.callerSettingBuilder("clientA")
+					.producerSettingBuilder("clientA")
 						.topic(TOPIC)
 						.property(ProducerConfig.CLIENT_ID_CONFIG, "KafkaExampleProducer")
 					.parent()
-					.handlerSettingBuilder("serverA")
+					.consumerSettingBuilder("serverA")
 						.topic(TOPIC)
 						.property(ConsumerConfig.GROUP_ID_CONFIG, "KafkaExampleConsumer")
-						.addRequestHandler("hello", new EzyKafkaRequestHandler<String>() {
+						.addMessageHandler("hello", new EzyKafkaMessageHandler<String>() {
 							@Override
 							public void process(String request) throws Exception {
 								System.out.println("hello: " + request);
 							}
 						})
-						.actionInterceptor(new EzyKafkaActionInterceptor() {
+						.messageInterceptor(new EzyKafkaMessageInterceptor() {
 							
 							@Override
-							public void intercept(String cmd, Object requestData, Exception e) {
+							public void postHandle(String cmd, Object requestData, Throwable e) {
 								e.printStackTrace();
 							}
 							
 							@Override
-							public void intercept(String cmd, Object requestData, Object responseData) {
+							public void postHandle(String cmd, Object requestData, Object responseData) {
 								System.out.println(Thread.currentThread() + ": response: " + cmd);
 								
 							}
 							
 							@Override
-							public void intercept(String cmd, Object requestData) {
+							public void preHandle(String cmd, Object requestData) {
 								System.out.println(Thread.currentThread() + ": request: " + cmd);
 							}
 						})
 					.parent()
 				.parent()
 				.build();
-		EzyKafkaCaller caller = kafkaContext.getCaller("clientA");
+		EzyKafkaProducer caller = kafkaContext.getProducer("clientA");
 		caller.send("hello", "world");
 		Thread.sleep(1000);
 		kafkaContext.close();

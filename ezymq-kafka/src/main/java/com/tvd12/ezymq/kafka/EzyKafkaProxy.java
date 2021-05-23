@@ -3,8 +3,8 @@ package com.tvd12.ezymq.kafka;
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaDataCodec;
-import com.tvd12.ezymq.kafka.manager.EzyKafkaCallerManager;
-import com.tvd12.ezymq.kafka.manager.EzyKafkaHandlerManager;
+import com.tvd12.ezymq.kafka.manager.EzyKafkaProducerManager;
+import com.tvd12.ezymq.kafka.manager.EzyKafkaConsumerManager;
 import com.tvd12.ezymq.kafka.setting.EzyKafkaSettings;
 
 public class EzyKafkaProxy implements EzyCloseable {
@@ -12,8 +12,8 @@ public class EzyKafkaProxy implements EzyCloseable {
 	protected final EzyKafkaSettings settings;
 	protected final EzyEntityCodec entityCodec;
 	protected final EzyKafkaDataCodec dataCodec;
-	protected final EzyKafkaCallerManager callerManager;
-	protected final EzyKafkaHandlerManager handlerManager;
+	protected final EzyKafkaProducerManager producerManager;
+	protected final EzyKafkaConsumerManager consumerManager;
 	
 	public EzyKafkaProxy(
 			EzyEntityCodec entityCodec,
@@ -22,36 +22,36 @@ public class EzyKafkaProxy implements EzyCloseable {
 		this.settings = settings;
 		this.dataCodec = dataCodec;
 		this.entityCodec = entityCodec;
-		this.callerManager = newCallerManager();
-		this.handlerManager = newKafkaHandlerManager();
+		this.producerManager = newProducerManager();
+		this.consumerManager = newConsumerManager();
 		
 	}
 	
-	public EzyKafkaCaller getCaller(String name) {
-		return callerManager.getCaller(name);
+	public EzyKafkaProducer getProducer(String name) {
+		return producerManager.getProducer(name);
 	}
 	
-	public EzyKafkaHandler getKafkaHandler(String name) {
-		return handlerManager.getHandler(name);
+	public EzyKafkaConsumer getConsumer(String name) {
+		return consumerManager.getConsumer(name);
 	}
 	
 	@Override
 	public void close() {
-		callerManager.close();
-		handlerManager.close();
+		producerManager.close();
+		consumerManager.close();
 	}
 	
-	protected EzyKafkaCallerManager newCallerManager() {
-		return new EzyKafkaCallerManager(
+	protected EzyKafkaProducerManager newProducerManager() {
+		return new EzyKafkaProducerManager(
 				entityCodec,
-				settings.getCallerSettings()
+				settings.getProducerSettings()
 		);
 	}
 	
-	protected EzyKafkaHandlerManager newKafkaHandlerManager() {
-		return new EzyKafkaHandlerManager(
+	protected EzyKafkaConsumerManager newConsumerManager() {
+		return new EzyKafkaConsumerManager(
 				dataCodec,
-				settings.getHandlerSettings()
+				settings.getConsumerSettings()
 		);
 	}
 	

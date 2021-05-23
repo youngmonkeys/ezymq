@@ -8,11 +8,11 @@ import lombok.Getter;
 
 @Getter
 @SuppressWarnings("rawtypes")
-public class EzyKafkaCallerSetting extends EzyKafkaEndpointSetting {
+public class EzyKafkaProducerSetting extends EzyKafkaEndpointSetting {
 
 	protected final Producer producer;
     
-    public EzyKafkaCallerSetting(
+    public EzyKafkaProducerSetting(
     		String topic,
     		Producer producer, Map<String, Object> properties) {
     	super(topic, properties);
@@ -47,8 +47,10 @@ public class EzyKafkaCallerSetting extends EzyKafkaEndpointSetting {
 		}
 		
 		@Override
-		public EzyKafkaCallerSetting build() {
-			return new EzyKafkaCallerSetting(topic, producer, properties);
+		public EzyKafkaProducerSetting build() {
+			if(topic == null)
+				throw new NullPointerException("topic can not be null");
+			return new EzyKafkaProducerSetting(topic, producer, properties);
 		}
 		
 	}

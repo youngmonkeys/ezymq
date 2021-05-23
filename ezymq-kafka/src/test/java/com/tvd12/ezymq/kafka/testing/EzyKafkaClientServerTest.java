@@ -13,19 +13,18 @@ import com.tvd12.ezyfox.codec.EzyMessageDeserializer;
 import com.tvd12.ezyfox.codec.EzyMessageSerializer;
 import com.tvd12.ezyfox.codec.MsgPackSimpleDeserializer;
 import com.tvd12.ezyfox.codec.MsgPackSimpleSerializer;
-import com.tvd12.ezyfox.concurrent.EzyThreadList;
 import com.tvd12.ezyfox.identifier.EzyIdFetchers;
 import com.tvd12.ezyfox.identifier.EzySimpleIdFetcherImplementer;
 import com.tvd12.ezyfox.message.EzyMessageIdFetchers;
-import com.tvd12.ezymq.kafka.EzyKafkaCaller;
-import com.tvd12.ezymq.kafka.EzyKafkaHandler;
+import com.tvd12.ezymq.kafka.EzyKafkaConsumer;
+import com.tvd12.ezymq.kafka.EzyKafkaProducer;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaBytesDataCodec;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaBytesEntityCodec;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaDataCodec;
 import com.tvd12.ezymq.kafka.endpoint.EzyKafkaClient;
 import com.tvd12.ezymq.kafka.endpoint.EzyKafkaServer;
-import com.tvd12.ezymq.kafka.handler.EzyKafkaRequestHandler;
-import com.tvd12.ezymq.kafka.handler.EzyKafkaRequestHandlers;
+import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageHandler;
+import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageHandlers;
 import com.tvd12.ezymq.kafka.testing.entity.KafkaChatMessage;
 import com.tvd12.test.base.BaseTest;
 
@@ -51,32 +50,32 @@ public class EzyKafkaClientServerTest extends BaseTest {
 	}
 	
 	private void run() throws Exception {
-		EzyKafkaCaller client = newClient();
+		EzyKafkaProducer client = newClient();
 		runClient(client, 5);
 		runServer();
 		Thread.sleep(3000L);
 	}
 	
-	private EzyKafkaHandler newServer() {
+	private EzyKafkaConsumer newServer() {
 		Consumer consumer = newConsumer();
-		EzyKafkaServer server = new EzyKafkaServer(TOPIC, consumer, 100, t -> new EzyThreadList(1, t, "test-kafka-server"));
+		EzyKafkaServer server = new EzyKafkaServer(TOPIC, consumer, 100);
 		EzyKafkaDataCodec dataCodec = EzyKafkaBytesDataCodec.builder()
 				.unmarshaller(unmarshaller)
 				.messageDeserializer(messageDeserializer)
 				.mapRequestType(TOPIC, KafkaChatMessage.class)
 				.build();
-		EzyKafkaRequestHandlers requestHandlers = new EzyKafkaRequestHandlers();
-		requestHandlers.addHandler(TOPIC, new EzyKafkaRequestHandler<KafkaChatMessage>() {
+		EzyKafkaMessageHandlers requestHandlers = new EzyKafkaMessageHandlers();
+		requestHandlers.addHandler(TOPIC, new EzyKafkaMessageHandler<KafkaChatMessage>() {
 					@Override
 					public void process(KafkaChatMessage message) throws Exception {
 						System.out.println("GREAT! We have just received message: " + message);
 					}
 				});
-		EzyKafkaHandler handler = new EzyKafkaHandler(server, dataCodec, requestHandlers);
+		EzyKafkaConsumer handler = new EzyKafkaConsumer(server, dataCodec, requestHandlers);
 		return handler;
 	}
 	
-	private EzyKafkaCaller newClient() {
+	private EzyKafkaProducer newClient() {
 		EzySimpleIdFetcherImplementer.setDebug(true);
 		Producer producer = newProducer();
 		EzyKafkaClient client = new EzyKafkaClient(null, producer);
@@ -84,7 +83,7 @@ public class EzyKafkaClientServerTest extends BaseTest {
 				.marshaller(marshaller)
 				.messageSerializer(messageSerializer)
 				.build();
-		EzyKafkaCaller caller = new EzyKafkaCaller(client, entityCodec);
+		EzyKafkaProducer caller = new EzyKafkaProducer(client, entityCodec);
 		return caller;
 	}
 	
@@ -120,11 +119,11 @@ public class EzyKafkaClientServerTest extends BaseTest {
 	}
 	
 	private void runServer() throws Exception {
-		EzyKafkaHandler server = newServer();
+		EzyKafkaConsumer server = newServer();
 		server.start();
 	}
 	
-	private void runClient(EzyKafkaCaller client, int sendMessageCount) throws Exception {
+	private void runClient(EzyKafkaProducer client, int sendMessageCount) throws Exception {
 		long time = System.currentTimeMillis();
 		for (long index = time; index < time + sendMessageCount; index++) {
 			KafkaChatMessage message = new KafkaChatMessage(index, "Meessage#" + index);

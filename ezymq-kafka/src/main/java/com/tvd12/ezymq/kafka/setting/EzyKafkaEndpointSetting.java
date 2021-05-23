@@ -60,7 +60,8 @@ public class EzyKafkaEndpointSetting {
 		}
 		
 		public B properties(Map<String, Object> properties) {
-			this.properties.putAll(properties);
+			if(properties != null)
+				this.properties.putAll(properties);
 			return (B)this;
 		}
 

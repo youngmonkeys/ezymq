@@ -36,7 +36,7 @@ public abstract class EzyKafkaAbstractDataCodec implements EzyKafkaDataCodec {
 	protected Object unmarshallData(String cmd, Object value) {
 		Class requestType = requestTypeMap.get(cmd);
 		if(requestType == null)
-			throw new IllegalArgumentException("has no request type with command: " + cmd);
+			throw new IllegalArgumentException("has no message mapped to command: " + cmd);
 		Object answer = unmarshaller.unmarshal(value, requestType);
 		return answer;
 	}

@@ -2,13 +2,14 @@ package com.tvd12.ezymq.kafka.endpoint;
 
 import java.time.Duration;
 import java.util.Collections;
-import java.util.function.Function;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.serialization.Deserializer;
 
-import com.tvd12.ezyfox.concurrent.EzyThreadList;
+import com.tvd12.ezyfox.concurrent.EzyExecutors;
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyProcessor;
 import com.tvd12.ezyfox.util.EzyStartable;
@@ -24,10 +25,18 @@ public class EzyKafkaServer
 	protected final long pollTimeOut;
 	protected final Consumer consumer;
 	protected volatile boolean active;
-	protected final EzyThreadList executorService;
+	protected final Thread poolRecordThread;
+	protected final ExecutorService executorService;
 	
 	@Setter
 	protected EzyKafkaRecordsHandler recordsHandler;
+	
+	public EzyKafkaServer(
+			String topic, 
+			Consumer consumer, 
+			long poolTimeOut) {
+		this(topic, consumer, poolTimeOut, 1);
+	}
 	
 	public EzyKafkaServer(
 			String topic, 
@@ -37,7 +46,7 @@ public class EzyKafkaServer
 			topic, 
 			consumer, 
 			poolTimeOut, 
-			newExecutorServiceSupplier(threadPoolSize)
+			newExecutorService(topic, threadPoolSize)
 		);
 	}
 	
@@ -45,26 +54,24 @@ public class EzyKafkaServer
 			String topic,
 			Consumer consumer, 
 			long poolTimeOut, 
-			Function<Runnable, EzyThreadList> executorServiceSupplier) {
+			ExecutorService executorService) {
 		super(topic);
 		this.consumer = consumer;
 		this.pollTimeOut = poolTimeOut;
-		this.executorService = newExecutorService(executorServiceSupplier);
+		this.executorService = executorService;
+		this.poolRecordThread = newPoolRecordThread(topic);
 	}
 	
-	protected EzyThreadList newExecutorService(
-			Function<Runnable, EzyThreadList> executorServiceSupplier) {
-		EzyThreadList answer = null;
-		if(executorServiceSupplier != null)
-			answer = executorServiceSupplier.apply(() -> loop());
-		return answer;
+	protected Thread newPoolRecordThread(String topic) {
+		return EzyExecutors.newThreadFactory("kafka-consumer-pool-" + topic)
+				.newThread(() -> loop());
 	}
 	
-	protected static Function<Runnable, EzyThreadList> newExecutorServiceSupplier(
-			int threadPoolSize) {
-		if(threadPoolSize <= 0)
-			return null;
-		return t -> new EzyThreadList(threadPoolSize, t, "kafka-server");
+	protected static ExecutorService newExecutorService(String topic, int threadPoolSize) {
+		ExecutorService executorService = EzyExecutors
+				.newFixedThreadPool(threadPoolSize, "kafka-consumer-" + topic);
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> executorService.shutdown()));
+		return executorService;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -72,10 +79,7 @@ public class EzyKafkaServer
 	public void start() throws Exception {
 		this.active = true;
 		this.consumer.subscribe(Collections.singletonList(topic));
-		if(executorService == null)
-			loop();
-		else
-			executorService.execute();
+		this.poolRecordThread.start();
 	}
 	
 	protected void loop() {
@@ -83,17 +87,28 @@ public class EzyKafkaServer
 			pollRecords();
 	}
 	
+	@SuppressWarnings("unchecked")
 	protected void pollRecords() {
 		try {
 			ConsumerRecords records = ConsumerRecords.EMPTY;
 			synchronized (this) {
 				records = consumer.poll(Duration.ofMillis(pollTimeOut));
 			}
-			recordsHandler.handleRecords(records);
+			records.forEach(record -> {
+				executorService.execute(() -> {
+					try {
+						recordsHandler.handleRecord((ConsumerRecord) record);
+					}
+					catch (Throwable e) {
+						if(active)
+							logger.warn("handle record: {} error", record, e);
+					}
+				});
+			});
 		}
 		catch(Exception e) {
 			if(active)
-				logger.warn("poll and handle records error", e);
+				logger.warn("poll records error", e);
 		}
 	}
 	
@@ -103,6 +118,7 @@ public class EzyKafkaServer
 		synchronized (this) {
 			EzyProcessor.processWithLogException(() -> consumer.close());
 		}
+		this.executorService.shutdown();
 	}
 	
 	public static Builder builder() {

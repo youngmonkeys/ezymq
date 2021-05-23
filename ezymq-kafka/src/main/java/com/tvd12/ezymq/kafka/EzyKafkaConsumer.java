@@ -8,32 +8,32 @@ import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.ezyfox.util.EzyStartable;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaDataCodec;
 import com.tvd12.ezymq.kafka.endpoint.EzyKafkaServer;
-import com.tvd12.ezymq.kafka.handler.EzyKafkaActionInterceptor;
+import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageInterceptor;
 import com.tvd12.ezymq.kafka.handler.EzyKafkaRecordsHandler;
-import com.tvd12.ezymq.kafka.handler.EzyKafkaRequestHandlers;
+import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageHandlers;
 
 import lombok.Setter;
 
 @SuppressWarnings("rawtypes")
-public class EzyKafkaHandler
+public class EzyKafkaConsumer
 		extends EzyLoggable
 		implements EzyKafkaRecordsHandler, EzyStartable, EzyCloseable {
 
 	@Setter
-	protected EzyKafkaActionInterceptor actionInterceptor;
+	protected EzyKafkaMessageInterceptor messageInterceptor;
 	
 	protected final EzyKafkaServer server;
 	protected final EzyKafkaDataCodec dataCodec;
-	protected final EzyKafkaRequestHandlers requestHandlers;
+	protected final EzyKafkaMessageHandlers messageHandlers;
 	
-	public EzyKafkaHandler(
+	public EzyKafkaConsumer(
 			EzyKafkaServer server,
 			EzyKafkaDataCodec dataCodec,
-			EzyKafkaRequestHandlers requestHandlers) {
+			EzyKafkaMessageHandlers messageHandlers) {
 		this.server = server;
 		this.server.setRecordsHandler(this);
 		this.dataCodec = dataCodec;
-		this.requestHandlers = requestHandlers;
+		this.messageHandlers = messageHandlers;
 	}
 	
 	@Override
@@ -52,20 +52,22 @@ public class EzyKafkaHandler
 		Object key = record.key();
 		if(key != null)
 			cmd = new String((byte[])key);
-        Object requestEntity = null;
-        Object responseEntity = null;
+        Object message = null;
+        Object result = null;
         try {
         	byte[] requestBody = (byte[])record.value();
-            requestEntity = dataCodec.deserialize(cmd, requestBody);
-            if (actionInterceptor != null)
-                actionInterceptor.intercept(cmd, requestEntity);
-            responseEntity = requestHandlers.handle(cmd, requestEntity);
-            if (actionInterceptor != null)
-                actionInterceptor.intercept(cmd, requestEntity, responseEntity);
+        	message = dataCodec.deserialize(cmd, requestBody);
+            if (messageInterceptor != null)
+                messageInterceptor.preHandle(cmd, message);
+            result = messageHandlers.handle(cmd, message);
+            if (messageInterceptor != null)
+                messageInterceptor.postHandle(cmd, message, result);
         }
-        catch (Exception e) {
-        	if (actionInterceptor != null)
-                actionInterceptor.intercept(cmd, requestEntity, e);
+        catch (Throwable e) {
+        	if (messageInterceptor != null)
+                messageInterceptor.postHandle(cmd, message, e);
+        	else
+        		logger.warn("handle command: {}, message: {} error", cmd, message, e);
         }
 	}
 	
@@ -73,12 +75,12 @@ public class EzyKafkaHandler
 		return new Builder();
 	}
 	
-	public static class Builder implements EzyBuilder<EzyKafkaHandler> {
+	public static class Builder implements EzyBuilder<EzyKafkaConsumer> {
 		
 		protected EzyKafkaServer server;
 		protected EzyKafkaDataCodec dataCodec;
-		protected EzyKafkaRequestHandlers requestHandlers;
-		protected EzyKafkaActionInterceptor actionInterceptor;
+		protected EzyKafkaMessageHandlers messageHandlers;
+		protected EzyKafkaMessageInterceptor messageInterceptor;
 		
 		public Builder server(EzyKafkaServer server) {
 			this.server = server;
@@ -90,20 +92,20 @@ public class EzyKafkaHandler
 			return this;
 		}
 		
-		public Builder requestHandlers(EzyKafkaRequestHandlers requestHandlers) {
-			this.requestHandlers = requestHandlers;
+		public Builder messageHandlers(EzyKafkaMessageHandlers messageHandlers) {
+			this.messageHandlers = messageHandlers;
 			return this;
 		}
 		
-		public Builder actionInterceptor(EzyKafkaActionInterceptor actionInterceptor) {
-			this.actionInterceptor = actionInterceptor;
+		public Builder messageInterceptor(EzyKafkaMessageInterceptor messageInterceptor) {
+			this.messageInterceptor = messageInterceptor;
 			return this;
 		}
 		
 		@Override
-		public EzyKafkaHandler build() {
-			EzyKafkaHandler handler = new EzyKafkaHandler(server, dataCodec, requestHandlers);
-			handler.setActionInterceptor(actionInterceptor);
+		public EzyKafkaConsumer build() {
+			EzyKafkaConsumer handler = new EzyKafkaConsumer(server, dataCodec, messageHandlers);
+			handler.setMessageInterceptor(messageInterceptor);
 			return handler;
 		}
 		

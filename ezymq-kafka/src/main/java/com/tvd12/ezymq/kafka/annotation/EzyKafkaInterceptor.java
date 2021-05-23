@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE })
-public @interface EzyKafkaRequestHandle {
+public @interface EzyKafkaInterceptor {
     
 	/**
 	 * command name
@@ -30,5 +30,5 @@ public @interface EzyKafkaRequestHandle {
      * 
      * @return server event name
      */
-	public String cmd() default "";
+	public String command() default "";
 }
