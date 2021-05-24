@@ -13,7 +13,7 @@ public abstract class EzyKafkaAbstractDataCodecBuilder<B extends EzyKafkaAbstrac
 
 	protected EzyMarshaller marshaller;
 	protected EzyUnmarshaller unmarshaller;
-	protected Map<String, Class> requestTypeMap = new HashMap<>();
+	protected Map<String, Map<String, Class>> messageTypesByTopic = new HashMap<>();
 	
 	public B marshaller(EzyMarshaller marshaller) {
 		this.marshaller = marshaller;
@@ -25,13 +25,24 @@ public abstract class EzyKafkaAbstractDataCodecBuilder<B extends EzyKafkaAbstrac
 		return (B)this;
 	}
 	
-	public B mapRequestType(String cmd, Class requestType) {
-		this.requestTypeMap.put(cmd, requestType);
+	public B mapMessageType(String topic, Class messageType) {
+		return mapMessageType(topic, "", messageType);
+	}
+	
+	public B mapMessageType(String topic, String cmd, Class messageType) {
+		this.messageTypesByTopic.computeIfAbsent(topic, k -> new HashMap<>())
+			.put(cmd, messageType);
+	return (B)this;
+	}
+	
+	public B mapMessageTypes(String topic, Map<String, Class> messageTypeByCommand) {
+		this.messageTypesByTopic.computeIfAbsent(topic, k -> new HashMap<>())
+			.putAll(messageTypeByCommand);
 		return (B)this;
 	}
 	
-	public B mapRequestTypes(Map<String, Class> requestTypes) {
-		this.requestTypeMap.putAll(requestTypes);
+	public B mapMessageTypes(Map<String, Map<String, Class>> messageTypesByTopic) {
+		this.messageTypesByTopic.putAll(messageTypesByTopic);
 		return (B)this;
 	}
 	
@@ -40,7 +51,7 @@ public abstract class EzyKafkaAbstractDataCodecBuilder<B extends EzyKafkaAbstrac
 		EzyKafkaAbstractDataCodec product = newProduct();
 		product.setMarshaller(marshaller);
 		product.setUnmarshaller(unmarshaller);
-		product.setRequestTypeMap(requestTypeMap);
+		product.setMessageTypesByTopic(messageTypesByTopic);
 		return product;
 	}
 	

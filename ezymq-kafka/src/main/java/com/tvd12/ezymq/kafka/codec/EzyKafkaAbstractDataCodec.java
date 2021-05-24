@@ -13,19 +13,17 @@ public abstract class EzyKafkaAbstractDataCodec implements EzyKafkaDataCodec {
 
 	protected EzyMarshaller marshaller;
 	protected EzyUnmarshaller unmarshaller;
-	protected Map<String, Class> requestTypeMap;
+	protected Map<String, Map<String, Class>> messageTypesByTopic;
 	
-	public EzyKafkaAbstractDataCodec() {
-	}
+	public EzyKafkaAbstractDataCodec() {}
 	
 	public EzyKafkaAbstractDataCodec(
 			EzyMarshaller marshaller,
 			EzyUnmarshaller unmarshaller,
-			Map<String, Class> requestTypeMap,
-			Map<String, Class> responseTypeMap) {
+			Map<String, Map<String, Class>> messageTypesByTopic) {
 		this.marshaller = marshaller;
 		this.unmarshaller = unmarshaller;
-		this.requestTypeMap = requestTypeMap;
+		this.messageTypesByTopic = messageTypesByTopic;
 	}
 	
 	protected Object marshallEntity(Object entity) {
@@ -33,11 +31,14 @@ public abstract class EzyKafkaAbstractDataCodec implements EzyKafkaDataCodec {
 		return answer;
 	}
 	
-	protected Object unmarshallData(String cmd, Object value) {
-		Class requestType = requestTypeMap.get(cmd);
-		if(requestType == null)
-			throw new IllegalArgumentException("has no message mapped to command: " + cmd);
-		Object answer = unmarshaller.unmarshal(value, requestType);
+	protected Object unmarshallData(String topic, String cmd, Object value) {
+		Map<String, Class> messageTypeByCommand = messageTypesByTopic.get(topic);
+		if(messageTypeByCommand == null)
+			throw new IllegalArgumentException("has no message type mapped to topic: " + topic + " and command: " + cmd);
+		Class messageType = messageTypeByCommand.get(cmd);
+		if(messageType == null)
+			throw new IllegalArgumentException("has no message type mapped to topic: " + topic + " and command: " + cmd);
+		Object answer = unmarshaller.unmarshal(value, messageType);
 		return answer;
 	}
 	

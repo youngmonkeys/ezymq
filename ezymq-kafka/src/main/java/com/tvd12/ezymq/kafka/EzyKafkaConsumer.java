@@ -48,7 +48,8 @@ public class EzyKafkaConsumer
 	
 	@Override
 	public void handleRecord(ConsumerRecord record) {
-		String cmd = record.topic();
+		String cmd = "";
+		String topic = record.topic();
 		Object key = record.key();
 		if(key != null)
 			cmd = new String((byte[])key);
@@ -56,16 +57,16 @@ public class EzyKafkaConsumer
         Object result = null;
         try {
         	byte[] requestBody = (byte[])record.value();
-        	message = dataCodec.deserialize(cmd, requestBody);
+        	message = dataCodec.deserialize(topic, cmd, requestBody);
             if (messageInterceptor != null)
-                messageInterceptor.preHandle(cmd, message);
+                messageInterceptor.preHandle(topic, cmd, message);
             result = messageHandlers.handle(cmd, message);
             if (messageInterceptor != null)
-                messageInterceptor.postHandle(cmd, message, result);
+                messageInterceptor.postHandle(topic, cmd, message, result);
         }
         catch (Throwable e) {
         	if (messageInterceptor != null)
-                messageInterceptor.postHandle(cmd, message, e);
+                messageInterceptor.postHandle(topic, cmd, message, e);
         	else
         		logger.warn("handle command: {}, message: {} error", cmd, message, e);
         }

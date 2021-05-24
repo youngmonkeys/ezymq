@@ -13,7 +13,7 @@ public class KafkaContextBuilderTest extends KafkaBaseTest {
 	public void test() throws Exception {
 		EzyKafkaProxy kafkaContext = EzyKafkaProxy.builder()
 				.scan("com.tvd12.ezymq.kafka.testing.entity")
-				.mapRequestType("hello", String.class)
+				.mapMessageType("hello", String.class)
 				.settingsBuilder()
 					.property(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS)
 					.producerSettingBuilder("clientA")
@@ -32,18 +32,18 @@ public class KafkaContextBuilderTest extends KafkaBaseTest {
 						.messageInterceptor(new EzyKafkaMessageInterceptor() {
 							
 							@Override
-							public void postHandle(String cmd, Object requestData, Throwable e) {
+							public void postHandle(String topic, String cmd, Object requestData, Throwable e) {
 								e.printStackTrace();
 							}
 							
 							@Override
-							public void postHandle(String cmd, Object requestData, Object responseData) {
+							public void postHandle(String topic, String cmd, Object requestData, Object responseData) {
 								System.out.println(Thread.currentThread() + ": response: " + cmd);
 								
 							}
 							
 							@Override
-							public void preHandle(String cmd, Object requestData) {
+							public void preHandle(String topic, String cmd, Object requestData) {
 								System.out.println(Thread.currentThread() + ": request: " + cmd);
 							}
 						})

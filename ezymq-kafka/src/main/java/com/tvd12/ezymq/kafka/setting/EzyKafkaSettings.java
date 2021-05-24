@@ -1,5 +1,6 @@
 package com.tvd12.ezymq.kafka.setting;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,17 +13,20 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 
 import com.tvd12.ezyfox.builder.EzyBuilder;
+import com.tvd12.ezyfox.reflect.EzyClasses;
 import com.tvd12.ezymq.kafka.EzyKafkaProxyBuilder;
 import com.tvd12.ezymq.kafka.annotation.EzyKafkaHandler;
-import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageInterceptor;
 import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageHandler;
+import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageInterceptor;
 import com.tvd12.properties.file.util.PropertiesUtil;
 
 import lombok.Getter;
 
 @Getter
+@SuppressWarnings("rawtypes")
 public class EzyKafkaSettings {
 
+	protected final Map<String, Map<String, Class>> messageTypesByTopic;
 	protected final Map<String, EzyKafkaProducerSetting> producerSettings;
 	protected final Map<String, EzyKafkaConsumerSetting> consumerSettings;
 	
@@ -30,24 +34,35 @@ public class EzyKafkaSettings {
 	public static final String CONSUMERS_KEY = "kafka.consumers";
 	public static final String TOPIC_KEY = "topic";
 	public static final String THREAD_POOL_SIZE_KEY = "thread_pool_size";
+	public static final String MESSAGE_TYPE = "message_type";
+	public static final String MESSAGE_TYPES = "message_types";
 	
 	public EzyKafkaSettings(
+			Map<String, Map<String, Class>> messageTypesByTopic,
 			Map<String, EzyKafkaProducerSetting> callerSettings,
 			Map<String, EzyKafkaConsumerSetting> handlerSettings) {
 		this.producerSettings = Collections.unmodifiableMap(callerSettings);
 		this.consumerSettings = Collections.unmodifiableMap(handlerSettings);
+		this.messageTypesByTopic = Collections.unmodifiableMap(messageTypesByTopic);
+	}
+	
+	public List<Class> getMessageTypeList() {
+		List<Class> list = new ArrayList<>();
+		for(Map<String, Class> messageByCommand : messageTypesByTopic.values())
+			list.addAll(messageByCommand.values());
+		return list;
 	}
 	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
-	@SuppressWarnings("rawtypes")
 	public static class Builder implements EzyBuilder<EzyKafkaSettings> {
 		
 		protected EzyKafkaProxyBuilder parent;
 		protected Map<String, Object> properties;
 		protected EzyKafkaMessageInterceptor consumerInterceptor;
+		protected Map<String, Map<String, Class>> messageTypesByTopic;
 		protected Map<String, EzyKafkaProducerSetting> producerSettings;
 		protected Map<String, EzyKafkaConsumerSetting> consumerSettings;
 		protected Map<String, EzyKafkaProducerSetting.Builder> producerSettingBuilders;
@@ -63,6 +78,7 @@ public class EzyKafkaSettings {
 			this.properties = new HashMap<>();
 			this.producerSettings = new HashMap<>();
 			this.consumerSettings = new HashMap<>();
+			this.messageTypesByTopic = new HashMap<>();
 			this.producerSettingBuilders = new HashMap<>();
 			this.consumerSettingBuilders = new HashMap<>();
 			this.consumerMessageHandlers = new HashMap<>();
@@ -91,6 +107,7 @@ public class EzyKafkaSettings {
 				this.consumerMessageHandlers
 					.computeIfAbsent(topic, k -> new HashMap<>())
 					.put(command, handler);
+				mapMessageType(topic, command, handler.getMessageType());
 			}
 			return this;
 		}
@@ -112,6 +129,27 @@ public class EzyKafkaSettings {
 		
 		public Builder addConsumerSetting(String name, EzyKafkaConsumerSetting setting) {
 			this.consumerSettings.put(name, setting);
+			return this;
+		}
+		
+		public Builder mapMessageType(String topic, Class messageType) {
+			return mapMessageType(topic, "", messageType);
+		}
+		
+		public Builder mapMessageType(String topic, String cmd, Class messageType) {
+			this.messageTypesByTopic.computeIfAbsent(topic, k -> new HashMap<>())
+				.put(cmd, messageType);
+			return this;
+		}
+		
+		public Builder mapMessageTypes(String topic, Map<String, Class> messageTypeByCommand) {
+			this.messageTypesByTopic.computeIfAbsent(topic, k -> new HashMap<>())
+				.putAll(messageTypeByCommand);
+			return this;
+		}
+		
+		public Builder mapMessageTypes(Map<String, Map<String, Class>> messageTypesByTopic) {
+			this.messageTypesByTopic.putAll(messageTypesByTopic);
 			return this;
 		}
 		
@@ -140,15 +178,21 @@ public class EzyKafkaSettings {
 				if(!producerProperties.containsKey(ProducerConfig.CLIENT_ID_CONFIG))
 					producerProperties.put(ProducerConfig.CLIENT_ID_CONFIG, name);
 				EzyKafkaProducerSetting.Builder builder = producerSettingBuilders.get(name);
+				String topic = producerProperties.getProperty(TOPIC_KEY);
+				if(topic == null)
+					topic = name;
 				if(builder == null) {
-					String topic = producerProperties.getProperty(TOPIC_KEY);
-					if(topic == null)
-						topic = name;
 					builder = EzyKafkaProducerSetting.builder()
 							.topic(topic);
 				}
 				builder.properties((Map) producerProperties);
 				producerSettings.put(name, (EzyKafkaProducerSetting)builder.build());
+				String messageType = producersProperties.getProperty(MESSAGE_TYPE);
+				if(messageType != null)
+					mapMessageType(name, EzyClasses.getClass(messageType));
+				Properties messageTypes = PropertiesUtil.getPropertiesByPrefix(producersProperties, MESSAGE_TYPES);
+				for(Object cmd : messageTypes.keySet()) 
+					mapMessageType(topic, cmd.toString(), EzyClasses.getClass(messageTypes.get(cmd).toString()));
 			}
 			Properties consumersProperties = 
 					PropertiesUtil.getPropertiesByPrefix(properties, CONSUMERS_KEY);
@@ -176,8 +220,14 @@ public class EzyKafkaSettings {
 				builder.messageInterceptor(consumerInterceptor);
 				builder.addMessageHandlers(consumerMessageHandlers.get(topic));
 				consumerSettings.put(name, (EzyKafkaConsumerSetting)builder.build());
+				String messageType = consumerProperties.getProperty(MESSAGE_TYPE);
+				if(messageType != null)
+					mapMessageType(name, EzyClasses.getClass(messageType));
+				Properties messageTypes = PropertiesUtil.getPropertiesByPrefix(consumerProperties, MESSAGE_TYPES);
+				for(Object cmd : messageTypes.keySet()) 
+					mapMessageType(topic, cmd.toString(), EzyClasses.getClass(messageTypes.get(cmd).toString()));
 			}
-			return new EzyKafkaSettings(producerSettings, consumerSettings);
+			return new EzyKafkaSettings(messageTypesByTopic, producerSettings, consumerSettings);
 		}
 		
 	}

@@ -30,17 +30,16 @@ public class EzyKafkaBytesDataCodec extends EzyKafkaAbstractDataCodec  {
 			EzyUnmarshaller unmarshaller,
 			EzyMessageSerializer messageSerializer,
 			EzyMessageDeserializer messageDeserializer,
-	        Map<String, Class> requestTypeMap, 
-	        Map<String, Class> responseTypeMap) {
-		super(marshaller, unmarshaller, requestTypeMap, responseTypeMap);
+	        Map<String, Map<String, Class>> messageTypesByTopic) {
+		super(marshaller, unmarshaller, messageTypesByTopic);
 		this.messageSerializer = messageSerializer;
 		this.messageDeserializer = messageDeserializer;
 	}
 	
 	@Override
-	public Object deserialize(String cmd, byte[] request) {
+	public Object deserialize(String topic, String cmd, byte[] request) {
 		Object data = messageDeserializer.deserialize(request);
-		Object entity = unmarshallData(cmd, data);
+		Object entity = unmarshallData(topic, cmd, data);
 		return entity;
 	}
 

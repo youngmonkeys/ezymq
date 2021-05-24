@@ -20,9 +20,11 @@ import com.tvd12.ezyfox.codec.EzyMessageDeserializer;
 import com.tvd12.ezyfox.codec.EzyMessageSerializer;
 import com.tvd12.ezyfox.codec.MsgPackSimpleDeserializer;
 import com.tvd12.ezyfox.codec.MsgPackSimpleSerializer;
+import com.tvd12.ezyfox.entity.EzyData;
 import com.tvd12.ezyfox.message.annotation.EzyMessage;
 import com.tvd12.ezyfox.reflect.EzyReflection;
 import com.tvd12.ezyfox.reflect.EzyReflectionProxy;
+import com.tvd12.ezyfox.reflect.EzyTypes;
 import com.tvd12.ezyfox.util.EzyPropertiesKeeper;
 import com.tvd12.ezymq.kafka.annotation.EzyKafkaHandler;
 import com.tvd12.ezymq.kafka.annotation.EzyKafkaInterceptor;
@@ -43,15 +45,15 @@ public class EzyKafkaProxyBuilder
 	protected EzyUnmarshaller unmarshaller;
 	protected EzyEntityCodec entityCodec;
 	protected EzyKafkaDataCodec dataCodec;
-	protected Map<String, Class> requestTypes;
 	protected EzyBeanContext beanContext;
 	protected EzyBindingContext bindingContext;
 	protected EzyMessageSerializer messageSerializer;
 	protected EzyMessageDeserializer messageDeserializer;
 	protected EzyKafkaSettings.Builder settingsBuilder;
+	protected Map<String, Map<String, Class>> messageTypesByTopic;
 	
 	public EzyKafkaProxyBuilder() {
-		this.requestTypes = new HashMap<>();
+		this.messageTypesByTopic = new HashMap<>();
 		this.packagesToScan = new HashSet<>();
 	}
 	
@@ -121,13 +123,24 @@ public class EzyKafkaProxyBuilder
 		return this;
 	}
 	
-	public EzyKafkaProxyBuilder mapRequestType(String cmd, Class<?> type) {
-		this.requestTypes.put(cmd, type);
+	public EzyKafkaProxyBuilder mapMessageType(String topic, Class messageType) {
+		return mapMessageType(topic, "", messageType);
+	}
+	
+	public EzyKafkaProxyBuilder mapMessageType(String topic, String cmd, Class messageType) {
+		this.messageTypesByTopic.computeIfAbsent(topic, k -> new HashMap<>())
+			.put(cmd, messageType);
+	return this;
+	}
+	
+	public EzyKafkaProxyBuilder mapMessageTypes(String topic, Map<String, Class> messageTypeByCommand) {
+		this.messageTypesByTopic.computeIfAbsent(topic, k -> new HashMap<>())
+			.putAll(messageTypeByCommand);
 		return this;
 	}
 	
-	public EzyKafkaProxyBuilder mapRequestTypes(Map<String, Class> requestTypes) {
-		this.requestTypes.putAll(requestTypes);
+	public EzyKafkaProxyBuilder mapMessageTypes(Map<String, Map<String, Class>> messageTypesByTopic) {
+		this.messageTypesByTopic.putAll(messageTypesByTopic);
 		return this;
 	}
 	
@@ -137,6 +150,21 @@ public class EzyKafkaProxyBuilder
 		if(beanContext == null)
 			beanContext = newBeanContext();
 		
+		if(settings == null) {
+			if(settingsBuilder == null)
+				settingsBuilder = EzyKafkaSettings.builder();
+			settingsBuilder.properties((Map)beanContext.getProperties());
+			settingsBuilder.mapMessageTypes(messageTypesByTopic);
+			List interceptors = beanContext.getSingletons(EzyKafkaInterceptor.class);
+			List dataHandlers = beanContext.getSingletons(EzyKafkaHandler.class);
+			EzyKafkaMessageInterceptor interceptor = interceptors.isEmpty()
+					? null
+					: (EzyKafkaMessageInterceptor)interceptors.get(0);
+			settings = settingsBuilder
+					.consumerInterceptor(interceptor)
+					.consumerMessageHandlers(dataHandlers)
+					.build();
+		}
 		if(bindingContext == null)
 			bindingContext = newBindingContext();
 		marshaller = bindingContext.newMarshaller();
@@ -150,20 +178,6 @@ public class EzyKafkaProxyBuilder
 			dataCodec = newDataCodec();
 		if(entityCodec == null)
 			entityCodec = newEntityCodec();
-		if(settings == null) {
-			if(settingsBuilder == null)
-				settingsBuilder = EzyKafkaSettings.builder();
-			settingsBuilder.properties((Map)beanContext.getProperties());
-			List interceptors = beanContext.getSingletons(EzyKafkaInterceptor.class);
-			List dataHandlers = beanContext.getSingletons(EzyKafkaHandler.class);
-			EzyKafkaMessageInterceptor interceptor = interceptors.isEmpty()
-					? null
-					: (EzyKafkaMessageInterceptor)interceptors.get(0);
-			settings = settingsBuilder
-					.consumerInterceptor(interceptor)
-					.consumerMessageHandlers(dataHandlers)
-					.build();
-		}
 		return new EzyKafkaProxy(entityCodec, dataCodec, settings);
 	}
 	
@@ -182,7 +196,7 @@ public class EzyKafkaProxyBuilder
 				.unmarshaller(unmarshaller)
 				.messageSerializer(messageSerializer)
 				.messageDeserializer(messageDeserializer)
-				.mapRequestTypes(requestTypes)
+				.mapMessageTypes(settings.getMessageTypesByTopic())
 				.build();
 	}
 	
@@ -209,6 +223,19 @@ public class EzyKafkaProxyBuilder
 	@SuppressWarnings("unchecked")
 	private EzyBindingContext newBindingContext() {
 		EzyBindingContextBuilder builder = EzySimpleBindingContext.builder();
+		for(Class messageType : settings.getMessageTypeList()) {
+			if(EzyTypes.ALL_TYPES.contains(messageType) ||
+					EzyData.class.isAssignableFrom(messageType)) {
+				builder.addClasses(messageType);
+			}
+		}
+		try {
+			builder.build();
+		}
+		catch (Throwable e) {
+			builder = EzySimpleBindingContext.builder();
+			logger.debug("can not create biding context, try again", e);
+		}
 		if(packagesToScan.size() > 0) {
 			EzyReflection reflection = new EzyReflectionProxy(packagesToScan);
 			builder.addClasses((Set)reflection.getAnnotatedClasses(EzyMessage.class));

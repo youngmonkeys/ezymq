@@ -62,7 +62,7 @@ public class EzyKafkaClientServerTest extends BaseTest {
 		EzyKafkaDataCodec dataCodec = EzyKafkaBytesDataCodec.builder()
 				.unmarshaller(unmarshaller)
 				.messageDeserializer(messageDeserializer)
-				.mapRequestType(TOPIC, KafkaChatMessage.class)
+				.mapMessageType(TOPIC, KafkaChatMessage.class)
 				.build();
 		EzyKafkaMessageHandlers requestHandlers = new EzyKafkaMessageHandlers();
 		requestHandlers.addHandler(TOPIC, new EzyKafkaMessageHandler<KafkaChatMessage>() {

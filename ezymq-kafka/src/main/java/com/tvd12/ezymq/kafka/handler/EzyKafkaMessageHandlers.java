@@ -3,8 +3,10 @@ package com.tvd12.ezymq.kafka.handler;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.tvd12.ezyfox.util.EzyLoggable;
+
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class EzyKafkaMessageHandlers {
+public class EzyKafkaMessageHandlers extends EzyLoggable {
 	protected final Map<String, EzyKafkaMessageHandler> handlers = new HashMap<>();
 
     public void addHandler(String cmd, EzyKafkaMessageHandler handler) {
@@ -19,6 +21,7 @@ public class EzyKafkaMessageHandlers {
         EzyKafkaMessageHandler handler = getHandler(cmd);
         if(handler != null)
         	return handler.handle(message);
+        logger.warn("has no handler for command: {}", cmd);
         return null;
     }
 }
