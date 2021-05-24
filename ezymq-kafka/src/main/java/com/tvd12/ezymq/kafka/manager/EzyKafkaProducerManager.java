@@ -9,10 +9,13 @@ import com.tvd12.ezymq.kafka.EzyKafkaProducer;
 import com.tvd12.ezymq.kafka.endpoint.EzyKafkaClient;
 import com.tvd12.ezymq.kafka.setting.EzyKafkaProducerSetting;
 
+import lombok.Getter;
+
 public class EzyKafkaProducerManager 
 		extends EzyKafkaAbstractManager implements EzyCloseable {
 	
 	protected final EzyEntityCodec entityCodec;
+	@Getter
 	protected final Map<String, EzyKafkaProducer> producers;
 	protected final Map<String, EzyKafkaProducerSetting> producerSettings;
 	

@@ -1,5 +1,7 @@
 package com.tvd12.ezymq.kafka;
 
+import java.util.Map;
+
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaDataCodec;
@@ -33,6 +35,14 @@ public class EzyKafkaProxy implements EzyCloseable {
 	
 	public EzyKafkaConsumer getConsumer(String name) {
 		return consumerManager.getConsumer(name);
+	}
+	
+	public void startConsumers() throws Exception {
+		consumerManager.startConsumers();
+	}
+	
+	public Map<String, EzyKafkaConsumer> getConsumers() {
+		return consumerManager.getConsumers();
 	}
 	
 	@Override

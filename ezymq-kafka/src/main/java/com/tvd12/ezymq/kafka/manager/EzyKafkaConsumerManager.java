@@ -9,10 +9,13 @@ import com.tvd12.ezymq.kafka.codec.EzyKafkaDataCodec;
 import com.tvd12.ezymq.kafka.endpoint.EzyKafkaServer;
 import com.tvd12.ezymq.kafka.setting.EzyKafkaConsumerSetting;
 
+import lombok.Getter;
+
 public class EzyKafkaConsumerManager 
 		extends EzyKafkaAbstractManager implements EzyCloseable {
 	
 	protected final EzyKafkaDataCodec dataCodec;
+	@Getter
 	protected final Map<String, EzyKafkaConsumer> consumers;
 	protected final Map<String, EzyKafkaConsumerSetting> consumerSettings;
 	
@@ -29,6 +32,11 @@ public class EzyKafkaConsumerManager
 		if(consumer == null)
 			throw new IllegalArgumentException("has no consumer with name: " + name);
 		return consumer;
+	}
+	
+	public void startConsumers() throws Exception {
+		for(EzyKafkaConsumer consumer : consumers.values())
+			consumer.start();
 	}
 	
 	protected Map<String, EzyKafkaConsumer> createRpcConsumers() {
