@@ -1,8 +1,8 @@
-# ezydata
+# ezymq <img src="https://github.com/youngmonkeys/ezyfox/blob/master/logo.png" width="64" />
 
 # Documentation
 
-[https://tvd12.com/](https://tvd12.com/)
+[https://youngmonkeys.org/](https://youngmonkeys.org/)
 
 # Synopsis
 
@@ -16,7 +16,7 @@ In an effort to bring Message Queue interaction to EzyFox ecosystem and help eve
 
 # API Reference
 
-[https://tvd12.com/](https://tvd12.com/)
+[https://youngmonkeys.org/](https://youngmonkeys.org/)
 
 # Tests
 
@@ -24,8 +24,7 @@ mvn test
 
 # Contributors
 
-- Project development
-  - [DungTV](mailto:itprono3@gmail.com)
+ - [DungTV](mailto:itprono3@gmail.com)
 
 # License
 
