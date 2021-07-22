@@ -4,4 +4,6 @@ public interface EzyKafkaDataDeserializer {
 
 	Object deserialize(String topic, String cmd, byte[] request);
 	
+	Object deserializeText(String topic, String cmd, byte[] request);
+	
 }

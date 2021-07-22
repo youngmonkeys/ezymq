@@ -15,14 +15,17 @@ public class EzyKafkaBytesDataCodec extends EzyKafkaAbstractDataCodec  {
 
 	protected EzyMessageSerializer messageSerializer;
 	protected EzyMessageDeserializer messageDeserializer;
+	protected EzyMessageDeserializer textMessageDeserializer;
 	
 	public EzyKafkaBytesDataCodec() {}
 	
 	public EzyKafkaBytesDataCodec(
 			EzyMessageSerializer messageSerializer,
-			EzyMessageDeserializer messageDeserializer) {
+			EzyMessageDeserializer messageDeserializer,
+			EzyMessageDeserializer textMessageDeserializer) {
 		this.messageSerializer = messageSerializer;
 		this.messageDeserializer = messageDeserializer;
+		this.textMessageDeserializer = textMessageDeserializer;
 	}
 	
 	public EzyKafkaBytesDataCodec(
@@ -30,10 +33,19 @@ public class EzyKafkaBytesDataCodec extends EzyKafkaAbstractDataCodec  {
 			EzyUnmarshaller unmarshaller,
 			EzyMessageSerializer messageSerializer,
 			EzyMessageDeserializer messageDeserializer,
+			EzyMessageDeserializer textMessageDeserializer,
 	        Map<String, Map<String, Class>> messageTypesByTopic) {
 		super(marshaller, unmarshaller, messageTypesByTopic);
 		this.messageSerializer = messageSerializer;
 		this.messageDeserializer = messageDeserializer;
+		this.textMessageDeserializer = textMessageDeserializer;
+	}
+	
+	@Override
+	public byte[] serialize(Object response) {
+		Object data = marshallEntity(response);
+		byte[] bytes = messageSerializer.serialize(data);
+		return bytes;
 	}
 	
 	@Override
@@ -42,14 +54,16 @@ public class EzyKafkaBytesDataCodec extends EzyKafkaAbstractDataCodec  {
 		Object entity = unmarshallData(topic, cmd, data);
 		return entity;
 	}
-
-	@Override
-	public byte[] serialize(Object response) {
-		Object data = marshallEntity(response);
-		byte[] bytes = messageSerializer.serialize(data);
-		return bytes;
-	}
 	
+	@Override
+	public Object deserializeText(String topic, String cmd, byte[] request) {
+		if(textMessageDeserializer == null)
+			throw new IllegalStateException("textMessageDeserializer is null, maybe you need add ezyfox-jackson to your project configuration");
+		Object data = textMessageDeserializer.deserialize(request);
+		Object entity = unmarshallData(topic, cmd, data);
+		return entity;
+	}
+
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -57,19 +71,26 @@ public class EzyKafkaBytesDataCodec extends EzyKafkaAbstractDataCodec  {
 	public static class Builder extends EzyKafkaAbstractDataCodecBuilder<Builder> {
 		protected EzyMessageSerializer messageSerializer;
 		protected EzyMessageDeserializer messageDeserializer;
+		protected EzyMessageDeserializer textMessageDeserializer;
 		
 		public Builder messageSerializer(EzyMessageSerializer messageSerializer) {
 			this.messageSerializer = messageSerializer;
 			return this;
 		}
+		
 		public Builder messageDeserializer(EzyMessageDeserializer messageDeserializer) {
 			this.messageDeserializer = messageDeserializer;
 			return this;
 		}
 		
+		public Builder textMessageDeserializer(EzyMessageDeserializer textMessageDeserializer) {
+			this.textMessageDeserializer = textMessageDeserializer;
+			return this;
+		}
+		
 		@Override
 		protected EzyKafkaAbstractDataCodec newProduct() {
-			return new EzyKafkaBytesDataCodec(messageSerializer, messageDeserializer);
+			return new EzyKafkaBytesDataCodec(messageSerializer, messageDeserializer, textMessageDeserializer);
 		}
 	}
 

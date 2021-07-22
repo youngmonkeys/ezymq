@@ -1,6 +1,9 @@
 package com.tvd12.ezymq.kafka;
 
+import java.util.Arrays;
+
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.header.Header;
 
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.util.EzyCloseable;
@@ -8,9 +11,9 @@ import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.ezyfox.util.EzyStartable;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaDataCodec;
 import com.tvd12.ezymq.kafka.endpoint.EzyKafkaServer;
+import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageHandlers;
 import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageInterceptor;
 import com.tvd12.ezymq.kafka.handler.EzyKafkaRecordsHandler;
-import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageHandlers;
 
 import lombok.Setter;
 
@@ -25,6 +28,8 @@ public class EzyKafkaConsumer
 	protected final EzyKafkaServer server;
 	protected final EzyKafkaDataCodec dataCodec;
 	protected final EzyKafkaMessageHandlers messageHandlers;
+	
+	protected static final byte[] BINARY_TYPE = new byte[] { (byte)'b' };
 	
 	public EzyKafkaConsumer(
 			EzyKafkaServer server,
@@ -53,11 +58,24 @@ public class EzyKafkaConsumer
 		Object key = record.key();
 		if(key != null)
 			cmd = new String((byte[])key);
+		Header contentTypeHeader = record.headers().lastHeader("c");
+		
         Object message = null;
         Object result = null;
         try {
         	byte[] requestBody = (byte[])record.value();
-        	message = dataCodec.deserialize(topic, cmd, requestBody);
+        	if(contentTypeHeader == null) {
+        		message = dataCodec.deserialize(topic, cmd, requestBody);
+        	}
+        	else {
+        		byte[] contentTypeBytes = contentTypeHeader.value();
+        		if(Arrays.equals(contentTypeBytes, BINARY_TYPE)) {
+        			message = dataCodec.deserialize(topic, cmd, requestBody);
+        		}
+        		else {
+        			message = dataCodec.deserializeText(topic, cmd, requestBody);
+        		}
+        	}
             if (messageInterceptor != null)
                 messageInterceptor.preHandle(topic, cmd, message);
             result = messageHandlers.handle(cmd, message);

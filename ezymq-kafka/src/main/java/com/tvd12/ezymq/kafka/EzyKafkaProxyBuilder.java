@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tvd12.ezyfox.bean.EzyBeanContext;
 import com.tvd12.ezyfox.bean.EzyBeanContextBuilder;
+import com.tvd12.ezyfox.bean.impl.EzyBeanNameParser;
 import com.tvd12.ezyfox.binding.EzyBindingContext;
 import com.tvd12.ezyfox.binding.EzyBindingContextBuilder;
 import com.tvd12.ezyfox.binding.EzyMarshaller;
@@ -18,6 +20,7 @@ import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
 import com.tvd12.ezyfox.codec.EzyMessageDeserializer;
 import com.tvd12.ezyfox.codec.EzyMessageSerializer;
+import com.tvd12.ezyfox.codec.JacksonSimpleDeserializer;
 import com.tvd12.ezyfox.codec.MsgPackSimpleDeserializer;
 import com.tvd12.ezyfox.codec.MsgPackSimpleSerializer;
 import com.tvd12.ezyfox.entity.EzyData;
@@ -47,14 +50,22 @@ public class EzyKafkaProxyBuilder
 	protected EzyKafkaDataCodec dataCodec;
 	protected EzyBeanContext beanContext;
 	protected EzyBindingContext bindingContext;
+	protected boolean ignoreUnknownComponents;
 	protected EzyMessageSerializer messageSerializer;
 	protected EzyMessageDeserializer messageDeserializer;
+	protected EzyMessageDeserializer textMessageDeserializer;
 	protected EzyKafkaSettings.Builder settingsBuilder;
+	protected EzyBeanContextBuilder beanContextBuilder;
 	protected Map<String, Map<String, Class>> messageTypesByTopic;
 	
 	public EzyKafkaProxyBuilder() {
 		this.messageTypesByTopic = new HashMap<>();
 		this.packagesToScan = new HashSet<>();
+		this.beanContextBuilder = EzyBeanContext.builder();
+	}
+	
+	public EzyKafkaProxyBuilder entryClass(Class<?> entryClass) {
+		return scan(entryClass.getPackage().getName());
 	}
 	
 	public EzyKafkaProxyBuilder scan(String packageName) {
@@ -103,13 +114,29 @@ public class EzyKafkaProxyBuilder
 		return this;
 	}
 	
+	public EzyKafkaProxyBuilder addSingleton(String name, Object singleton) {
+		this.beanContextBuilder.addSingleton(name, singleton);
+		return this;
+	}
+	
+	public EzyKafkaProxyBuilder addSingleton(Object singleton) {
+		return addSingleton(EzyBeanNameParser.getBeanName(singleton.getClass()), singleton);
+	}
+	
 	public EzyKafkaProxyBuilder beanContext(EzyBeanContext beanContext) {
-		this.beanContext = beanContext;
+		for(Object singleton : beanContext.getSingletons()) {
+			addSingleton(singleton);
+		}
 		return this;
 	}
 	
 	public EzyKafkaProxyBuilder bindingContext(EzyBindingContext bindingContext) {
 		this.bindingContext = bindingContext;
+		return this;
+	}
+	
+	public EzyKafkaProxyBuilder ignoreUnknownComponents(boolean ignoreUnknownComponents) {
+		this.ignoreUnknownComponents = ignoreUnknownComponents;
 		return this;
 	}
 	
@@ -120,6 +147,11 @@ public class EzyKafkaProxyBuilder
 	
 	public EzyKafkaProxyBuilder messageDeserializer(EzyMessageDeserializer messageDeserializer) {
 		this.messageDeserializer = messageDeserializer;
+		return this;
+	}
+	
+	public EzyKafkaProxyBuilder textMessageDeserializer(EzyMessageDeserializer textMessageDeserializer) {
+		this.textMessageDeserializer = textMessageDeserializer;
 		return this;
 	}
 	
@@ -147,8 +179,7 @@ public class EzyKafkaProxyBuilder
 	@SuppressWarnings("unchecked")
 	@Override
 	public EzyKafkaProxy build() {
-		if(beanContext == null)
-			beanContext = newBeanContext();
+		beanContext = newBeanContext();
 		
 		if(settings == null) {
 			if(settingsBuilder == null)
@@ -174,6 +205,8 @@ public class EzyKafkaProxyBuilder
 			messageSerializer = newMessageSerializer();
 		if(messageDeserializer == null)
 			messageDeserializer = newMessageDeserializer();
+		if(textMessageDeserializer == null)
+			textMessageDeserializer = newTextMessageDeserializer();
 		if(dataCodec == null)
 			dataCodec = newDataCodec();
 		if(entityCodec == null)
@@ -196,6 +229,7 @@ public class EzyKafkaProxyBuilder
 				.unmarshaller(unmarshaller)
 				.messageSerializer(messageSerializer)
 				.messageDeserializer(messageDeserializer)
+				.textMessageDeserializer(textMessageDeserializer)
 				.mapMessageTypes(settings.getMessageTypesByTopic())
 				.build();
 	}
@@ -208,16 +242,26 @@ public class EzyKafkaProxyBuilder
 		return new MsgPackSimpleDeserializer();
 	}
 	
+	protected EzyMessageDeserializer newTextMessageDeserializer() {
+		try {
+			return new JacksonSimpleDeserializer(new ObjectMapper());
+		}
+		catch (Throwable e) {
+			return null;
+		}
+	}
+	
 	@SuppressWarnings("unchecked")
 	private EzyBeanContext newBeanContext() {
-		EzyBeanContextBuilder builder = EzyBeanContext.builder();
 		if(packagesToScan.size() > 0) {
 			EzyReflection reflection = new EzyReflectionProxy(packagesToScan);
-			builder.addSingletonClasses((Set)reflection.getAnnotatedClasses(EzyKafkaInterceptor.class));
-			builder.addSingletonClasses((Set)reflection.getAnnotatedClasses(EzyKafkaHandler.class));
-			builder.addAllClasses(reflection);
+			beanContextBuilder.addSingletonClasses((Set)reflection.getAnnotatedClasses(EzyKafkaInterceptor.class));
+			beanContextBuilder.addSingletonClasses((Set)reflection.getAnnotatedClasses(EzyKafkaHandler.class));
+			
+			if(ignoreUnknownComponents)
+				beanContextBuilder.scan(packagesToScan);
 		}
-		return builder.build();
+		return beanContextBuilder.build();
 	}
 	
 	@SuppressWarnings("unchecked")
