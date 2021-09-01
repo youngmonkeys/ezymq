@@ -10,7 +10,6 @@ import java.util.Set;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tvd12.ezyfox.bean.EzyBeanContext;
 import com.tvd12.ezyfox.bean.EzyBeanContextBuilder;
-import com.tvd12.ezyfox.bean.impl.EzyBeanNameParser;
 import com.tvd12.ezyfox.binding.EzyBindingContext;
 import com.tvd12.ezyfox.binding.EzyBindingContextBuilder;
 import com.tvd12.ezyfox.binding.EzyMarshaller;
@@ -114,19 +113,18 @@ public class EzyKafkaProxyBuilder
 		return this;
 	}
 	
+	public EzyKafkaProxyBuilder addSingleton(Object singleton) {
+		this.beanContextBuilder.addSingleton(singleton);
+		return this;
+	}
+	
 	public EzyKafkaProxyBuilder addSingleton(String name, Object singleton) {
 		this.beanContextBuilder.addSingleton(name, singleton);
 		return this;
 	}
 	
-	public EzyKafkaProxyBuilder addSingleton(Object singleton) {
-		return addSingleton(EzyBeanNameParser.getBeanName(singleton.getClass()), singleton);
-	}
-	
 	public EzyKafkaProxyBuilder beanContext(EzyBeanContext beanContext) {
-		for(Object singleton : beanContext.getSingletons()) {
-			addSingleton(singleton);
-		}
+		this.beanContextBuilder.addSingletonsByKey(beanContext.getSingletonMapByKey());
 		return this;
 	}
 	
