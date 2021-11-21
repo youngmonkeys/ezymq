@@ -1,4 +1,4 @@
-# ezymq <img src="https://github.com/youngmonkeys/ezyfox/blob/master/logo.png" width="64" />
+# ezymq <img src="https://github.com/youngmonkeys/ezymq/blob/master/logo.png" width="64" />
 
 # Documentation
 
