@@ -5,10 +5,10 @@
 	<parent>
 		<groupId>com.tvd12</groupId>
 		<artifactId>ezyfox</artifactId>
-		<version>1.0.1</version>
+		<version>1.0.3</version>
 	</parent>
 	<artifactId>ezymq</artifactId>
-	<version>1.1.5</version>
+	<version>1.1.6</version>
 	<packaging>pom</packaging>
 
 	<name>ezymq</name>
@@ -62,7 +62,7 @@
 		</developer>
 	</developers>
 	<properties>
-		<ezy.version>1.2.0</ezy.version>
+		<ezy.version>1.2.2</ezy.version>
 	</properties>
 	<dependencies>
 		<dependency>
