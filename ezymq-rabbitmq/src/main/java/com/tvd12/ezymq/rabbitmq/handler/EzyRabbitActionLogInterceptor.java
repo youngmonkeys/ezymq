@@ -1,7 +1,6 @@
 package com.tvd12.ezymq.rabbitmq.handler;
 
 import com.tvd12.ezyfox.util.EzyLoggable;
-import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitActionInterceptor;
 
 public class EzyRabbitActionLogInterceptor extends EzyLoggable implements EzyRabbitActionInterceptor {
 
