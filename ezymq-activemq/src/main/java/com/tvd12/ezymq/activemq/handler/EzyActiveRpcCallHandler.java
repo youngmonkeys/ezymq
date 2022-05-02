@@ -6,10 +6,12 @@ public interface EzyActiveRpcCallHandler {
 
     void handleFire(
         EzyActiveProperties requestProperties,
-        byte[] requestBody);
+        byte[] requestBody
+    );
 
     byte[] handleCall(
         EzyActiveProperties requestProperties,
         byte[] requestBody,
-        EzyActiveProperties.Builder replyPropertiesBuilder);
+        EzyActiveProperties.Builder replyPropertiesBuilder
+    );
 }

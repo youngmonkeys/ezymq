@@ -14,7 +14,8 @@ import javax.jms.Session;
 import java.util.concurrent.ThreadFactory;
 
 public abstract class EzyActiveRpcEndpoint
-    extends EzyActiveEndpoint implements EzyCloseable {
+    extends EzyActiveEndpoint
+    implements EzyCloseable {
 
     protected final int threadPoolSize;
     protected final Destination requestQueue;
