@@ -1,33 +1,23 @@
 package com.tvd12.ezymq.activemq.test;
 
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.ExceptionListener;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import javax.jms.*;
 
 public class ActiveMQTest extends ActiveMQBaseTest {
 
-	public static void main(String[] args) throws Exception {
-		thread(new HelloWorldProducer(), false);
-		Thread.sleep(200);
-		thread(new HelloWorldProducer(), false);
-		Thread.sleep(300);
-		
-	}
-	
-	public static void thread(Runnable runnable, boolean daemon) {
+    public static void main(String[] args) throws Exception {
+        thread(new HelloWorldProducer(), false);
+        Thread.sleep(200);
+        thread(new HelloWorldProducer(), false);
+        Thread.sleep(300);
+    }
+
+    public static void thread(Runnable runnable, boolean daemon) {
         Thread brokerThread = new Thread(runnable);
         brokerThread.setDaemon(daemon);
         brokerThread.start();
     }
-	
-	public static class HelloWorldProducer implements Runnable {
+
+    public static class HelloWorldProducer implements Runnable {
         public void run() {
             try {
                 Connection connection = connectionFactory.createConnection();
@@ -48,21 +38,20 @@ public class ActiveMQTest extends ActiveMQBaseTest {
                 TextMessage message = session.createTextMessage(text);
 
                 // Tell the producer to send the message
-                System.out.println("Sent message: "+ message.hashCode() + " : " + Thread.currentThread().getName());
+                System.out.println("Sent message: " + message.hashCode() + " : " + Thread.currentThread().getName());
                 producer.send(message);
 
                 // Clean up
                 session.close();
                 connection.close();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 System.out.println("Caught: " + e);
                 e.printStackTrace();
             }
         }
     }
-	
-	public static class HelloWorldConsumer implements Runnable, ExceptionListener {
+
+    public static class HelloWorldConsumer implements Runnable, ExceptionListener {
         public void run() {
             try {
                 // Create a Connection
@@ -101,8 +90,7 @@ public class ActiveMQTest extends ActiveMQBaseTest {
         }
 
         public synchronized void onException(JMSException ex) {
-            System.out.println("JMS Exception occured.  Shutting down client.");
+            System.out.println("JMS Exception occurred.  Shutting down client.");
         }
     }
-	
 }

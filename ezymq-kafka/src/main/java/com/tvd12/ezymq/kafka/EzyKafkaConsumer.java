@@ -1,10 +1,5 @@
 package com.tvd12.ezymq.kafka;
 
-import java.util.Arrays;
-
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.common.header.Header;
-
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyLoggable;
@@ -14,120 +9,122 @@ import com.tvd12.ezymq.kafka.endpoint.EzyKafkaServer;
 import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageHandlers;
 import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageInterceptor;
 import com.tvd12.ezymq.kafka.handler.EzyKafkaRecordsHandler;
-
 import lombok.Setter;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.header.Header;
+
+import java.util.Arrays;
 
 @SuppressWarnings("rawtypes")
 public class EzyKafkaConsumer
-		extends EzyLoggable
-		implements EzyKafkaRecordsHandler, EzyStartable, EzyCloseable {
+    extends EzyLoggable
+    implements EzyKafkaRecordsHandler, EzyStartable, EzyCloseable {
 
-	@Setter
-	protected EzyKafkaMessageInterceptor messageInterceptor;
-	
-	protected final EzyKafkaServer server;
-	protected final EzyKafkaDataCodec dataCodec;
-	protected final EzyKafkaMessageHandlers messageHandlers;
-	
-	protected static final byte[] BINARY_TYPE = new byte[] { (byte)'b' };
-	
-	public EzyKafkaConsumer(
-			EzyKafkaServer server,
-			EzyKafkaDataCodec dataCodec,
-			EzyKafkaMessageHandlers messageHandlers) {
-		this.server = server;
-		this.server.setRecordsHandler(this);
-		this.dataCodec = dataCodec;
-		this.messageHandlers = messageHandlers;
-	}
-	
-	@Override
-	public void start() throws Exception {
-		server.start();
-	}
-	
-	@Override
-	public void close() {
-		server.close();
-	}
-	
-	@Override
-	public void handleRecord(ConsumerRecord record) {
-		String cmd = "";
-		String topic = record.topic();
-		Object key = record.key();
-		if(key != null)
-			cmd = new String((byte[])key);
-		Header contentTypeHeader = record.headers().lastHeader("c");
-		
+    protected final EzyKafkaServer server;
+    protected final EzyKafkaDataCodec dataCodec;
+    protected final EzyKafkaMessageHandlers messageHandlers;
+    @Setter
+    protected EzyKafkaMessageInterceptor messageInterceptor;
+
+    protected static final byte[] BINARY_TYPE = new byte[]{(byte) 'b'};
+
+    public EzyKafkaConsumer(
+        EzyKafkaServer server,
+        EzyKafkaDataCodec dataCodec,
+        EzyKafkaMessageHandlers messageHandlers
+    ) {
+        this.server = server;
+        this.server.setRecordsHandler(this);
+        this.dataCodec = dataCodec;
+        this.messageHandlers = messageHandlers;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    @Override
+    public void start() {
+        server.start();
+    }
+
+    @Override
+    public void close() {
+        server.close();
+    }
+
+    @Override
+    public void handleRecord(ConsumerRecord record) {
+        String cmd = "";
+        String topic = record.topic();
+        Object key = record.key();
+        if (key != null) {
+            cmd = new String((byte[]) key);
+        }
+        Header contentTypeHeader = record.headers().lastHeader("c");
+
         Object message = null;
-        Object result = null;
+        Object result;
         try {
-        	byte[] requestBody = (byte[])record.value();
-        	if(contentTypeHeader == null) {
-        		message = dataCodec.deserialize(topic, cmd, requestBody);
-        	}
-        	else {
-        		byte[] contentTypeBytes = contentTypeHeader.value();
-        		if(Arrays.equals(contentTypeBytes, BINARY_TYPE)) {
-        			message = dataCodec.deserialize(topic, cmd, requestBody);
-        		}
-        		else {
-        			message = dataCodec.deserializeText(topic, cmd, requestBody);
-        		}
-        	}
-            if (messageInterceptor != null)
+            byte[] requestBody = (byte[]) record.value();
+            if (contentTypeHeader == null) {
+                message = dataCodec.deserialize(topic, cmd, requestBody);
+            } else {
+                byte[] contentTypeBytes = contentTypeHeader.value();
+                if (Arrays.equals(contentTypeBytes, BINARY_TYPE)) {
+                    message = dataCodec.deserialize(topic, cmd, requestBody);
+                } else {
+                    message = dataCodec.deserializeText(topic, cmd, requestBody);
+                }
+            }
+            if (messageInterceptor != null) {
                 messageInterceptor.preHandle(topic, cmd, message);
+            }
             result = messageHandlers.handle(cmd, message);
-            if (messageInterceptor != null)
+            if (messageInterceptor != null) {
                 messageInterceptor.postHandle(topic, cmd, message, result);
-        }
-        catch (Throwable e) {
-        	if (messageInterceptor != null)
+            }
+        } catch (Throwable e) {
+            if (messageInterceptor != null) {
                 messageInterceptor.postHandle(topic, cmd, message, e);
-        	else
-        		logger.warn("handle command: {}, message: {} error", cmd, message, e);
+            } else {
+                logger.warn("handle command: {}, message: {} error", cmd, message, e);
+            }
         }
-	}
-	
-	public static Builder builder() {
-		return new Builder();
-	}
-	
-	public static class Builder implements EzyBuilder<EzyKafkaConsumer> {
-		
-		protected EzyKafkaServer server;
-		protected EzyKafkaDataCodec dataCodec;
-		protected EzyKafkaMessageHandlers messageHandlers;
-		protected EzyKafkaMessageInterceptor messageInterceptor;
-		
-		public Builder server(EzyKafkaServer server) {
-			this.server = server;
-			return this;
-		}
-		
-		public Builder dataCodec(EzyKafkaDataCodec dataCodec) {
-			this.dataCodec = dataCodec;
-			return this;
-		}
-		
-		public Builder messageHandlers(EzyKafkaMessageHandlers messageHandlers) {
-			this.messageHandlers = messageHandlers;
-			return this;
-		}
-		
-		public Builder messageInterceptor(EzyKafkaMessageInterceptor messageInterceptor) {
-			this.messageInterceptor = messageInterceptor;
-			return this;
-		}
-		
-		@Override
-		public EzyKafkaConsumer build() {
-			EzyKafkaConsumer handler = new EzyKafkaConsumer(server, dataCodec, messageHandlers);
-			handler.setMessageInterceptor(messageInterceptor);
-			return handler;
-		}
-		
-	}
-	
+    }
+
+    public static class Builder implements EzyBuilder<EzyKafkaConsumer> {
+
+        protected EzyKafkaServer server;
+        protected EzyKafkaDataCodec dataCodec;
+        protected EzyKafkaMessageHandlers messageHandlers;
+        protected EzyKafkaMessageInterceptor messageInterceptor;
+
+        public Builder server(EzyKafkaServer server) {
+            this.server = server;
+            return this;
+        }
+
+        public Builder dataCodec(EzyKafkaDataCodec dataCodec) {
+            this.dataCodec = dataCodec;
+            return this;
+        }
+
+        public Builder messageHandlers(EzyKafkaMessageHandlers messageHandlers) {
+            this.messageHandlers = messageHandlers;
+            return this;
+        }
+
+        public Builder messageInterceptor(EzyKafkaMessageInterceptor messageInterceptor) {
+            this.messageInterceptor = messageInterceptor;
+            return this;
+        }
+
+        @Override
+        public EzyKafkaConsumer build() {
+            EzyKafkaConsumer handler = new EzyKafkaConsumer(server, dataCodec, messageHandlers);
+            handler.setMessageInterceptor(messageInterceptor);
+            return handler;
+        }
+    }
 }

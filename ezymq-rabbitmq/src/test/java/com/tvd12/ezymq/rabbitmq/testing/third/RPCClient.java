@@ -29,10 +29,10 @@ public class RPCClient {
         String corrId = UUID.randomUUID().toString();
 
         AMQP.BasicProperties props = new AMQP.BasicProperties
-                .Builder()
-                .correlationId(corrId)
-                .replyTo(replyQueueName)
-                .build();
+            .Builder()
+            .correlationId(corrId)
+            .replyTo(replyQueueName)
+            .build();
 
         channel.basicPublish("", requestQueueName, props, message.getBytes("UTF-8"));
 

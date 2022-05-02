@@ -5,6 +5,5 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 @SuppressWarnings({"rawtypes"})
 public interface EzyKafkaRecordsHandler {
 
-	void handleRecord(ConsumerRecord record);
-	
+    void handleRecord(ConsumerRecord record);
 }

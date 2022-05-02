@@ -1,91 +1,89 @@
 package com.tvd12.ezymq.kafka.testing;
 
-import java.time.Duration;
-import java.util.Collections;
-
+import com.tvd12.ezyfox.binding.EzyBindingContext;
+import com.tvd12.ezyfox.binding.EzyMarshaller;
+import com.tvd12.ezyfox.entity.EzyObject;
+import com.tvd12.ezymq.kafka.testing.entity.KafkaChatMessage;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 
-import com.tvd12.ezyfox.binding.EzyBindingContext;
-import com.tvd12.ezyfox.binding.EzyMarshaller;
-import com.tvd12.ezyfox.entity.EzyObject;
-import com.tvd12.ezymq.kafka.testing.entity.KafkaChatMessage;
+import java.time.Duration;
+import java.util.Collections;
 
 public class KafkaExample1 {
 
-	private final static String TOPIC = "my-example-topic";
+    private final static String TOPIC = "my-example-topic";
 
-	public static void main(String... args) throws Exception {
+    public static void main(String... args) throws Exception {
 //		runProducer(5);
-		runConsumer();
-	}
-	
-	private static EzyBindingContext newBindingContext() {
-		return EzyBindingContext.builder()
-				.scan("com.tvd12.ezymq.kafka.testing.entity")
-				.build();
-	}
+        runConsumer();
+    }
 
-	@SuppressWarnings("unchecked")
-	private static Producer<Long, EzyObject> createProducer() {
-		Producer<Long, EzyObject> producer = TestUtil.newProducer();
-		return producer;
-	}
+    private static EzyBindingContext newBindingContext() {
+        return EzyBindingContext.builder()
+            .scan("com.tvd12.ezymq.kafka.testing.entity")
+            .build();
+    }
 
-	@SuppressWarnings("unchecked")
-	private static Consumer<Long, EzyObject> createConsumer() {
-		Consumer<Long, EzyObject> consumer = TestUtil.newConsumer();
-		consumer.subscribe(Collections.singletonList(TOPIC));
-		return consumer;
-	}
+    @SuppressWarnings("unchecked")
+    private static Producer<Long, EzyObject> createProducer() {
+        Producer<Long, EzyObject> producer = TestUtil.newProducer();
+        return producer;
+    }
 
-	static void runProducer(final int sendMessageCount) throws Exception {
-		final Producer<Long, EzyObject> producer = createProducer();
-		long time = System.currentTimeMillis();
+    @SuppressWarnings("unchecked")
+    private static Consumer<Long, EzyObject> createConsumer() {
+        Consumer<Long, EzyObject> consumer = TestUtil.newConsumer();
+        consumer.subscribe(Collections.singletonList(TOPIC));
+        return consumer;
+    }
 
-		EzyBindingContext bindingContext = newBindingContext();
-		EzyMarshaller marshaller = bindingContext.newMarshaller();
-		
-		try {
-			for (long index = time; index < time + sendMessageCount; index++) {
-				KafkaChatMessage message = new KafkaChatMessage(index, "message#" + index);
-				EzyObject value = marshaller.marshal(message);
-				final ProducerRecord<Long, EzyObject> record = new ProducerRecord<>(TOPIC, index, value);
+    static void runProducer(final int sendMessageCount) throws Exception {
+        final Producer<Long, EzyObject> producer = createProducer();
+        long time = System.currentTimeMillis();
 
-				RecordMetadata metadata = producer.send(record).get();
+        EzyBindingContext bindingContext = newBindingContext();
+        EzyMarshaller marshaller = bindingContext.newMarshaller();
 
-				long elapsedTime = System.currentTimeMillis() - time;
-				System.out.printf("sent record(key=%s value=%s) " + "meta(partition=%d, offset=%d) time=%d\n",
-						record.key(), record.value(), metadata.partition(), metadata.offset(), elapsedTime);
+        try {
+            for (long index = time; index < time + sendMessageCount; index++) {
+                KafkaChatMessage message = new KafkaChatMessage(index, "message#" + index);
+                EzyObject value = marshaller.marshal(message);
+                final ProducerRecord<Long, EzyObject> record = new ProducerRecord<>(TOPIC, index, value);
 
-			}
-		} finally {
-			producer.flush();
-			producer.close();
-		}
-	}
+                RecordMetadata metadata = producer.send(record).get();
 
-	static void runConsumer() throws InterruptedException {
-		Consumer<Long, EzyObject> consumer = createConsumer();
+                long elapsedTime = System.currentTimeMillis() - time;
+                System.out.printf("sent record(key=%s value=%s) " + "meta(partition=%d, offset=%d) time=%d\n",
+                    record.key(), record.value(), metadata.partition(), metadata.offset(), elapsedTime);
 
-		while (true) {
-			final ConsumerRecords<Long, EzyObject> consumerRecords = consumer.poll(Duration.ofMillis(100));
+            }
+        } finally {
+            producer.flush();
+            producer.close();
+        }
+    }
 
-			if (consumerRecords.count() == -1) {
-				break;
-			}
+    static void runConsumer() {
+        Consumer<Long, EzyObject> consumer = createConsumer();
 
-			consumerRecords.forEach(record -> {
-				System.out.println(
-						"Got Record: (" + record.key() + ", " + record.value() + ") at offset " + record.offset());
-			});
-			consumer.commitAsync();
-		}
-		consumer.close();
-		System.out.println("DONE");
-	}
+        while (true) {
+            final ConsumerRecords<Long, EzyObject> consumerRecords = consumer.poll(Duration.ofMillis(100));
 
+            if (consumerRecords.count() == -1) {
+                break;
+            }
+
+            consumerRecords.forEach(record -> {
+                System.out.println(
+                    "Got Record: (" + record.key() + ", " + record.value() + ") at offset " + record.offset());
+            });
+            consumer.commitAsync();
+        }
+        consumer.close();
+        System.out.println("DONE");
+    }
 }

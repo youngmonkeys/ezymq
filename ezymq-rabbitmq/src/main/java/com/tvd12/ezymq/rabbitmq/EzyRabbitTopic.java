@@ -14,128 +14,137 @@ import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitMessageHandler;
 
 public class EzyRabbitTopic<T> {
 
-	protected final EzyRabbitTopicClient client;
-	protected final EzyRabbitTopicServer server;
-	protected final EzyRabbitDataCodec dataCodec;
-	protected volatile boolean consuming;
-	protected EzyRabbitMessageConsumers consumers;
-	
-	public EzyRabbitTopic(
-			EzyRabbitTopicServer server,
-			EzyRabbitDataCodec dataCodec) {
-		this(null, server, dataCodec);
-	}
-	
-	public EzyRabbitTopic(
-			EzyRabbitTopicClient client,
-			EzyRabbitDataCodec dataCodec) {
-		this(client, null, dataCodec);
-	}
+    protected final EzyRabbitTopicClient client;
+    protected final EzyRabbitTopicServer server;
+    protected final EzyRabbitDataCodec dataCodec;
+    protected volatile boolean consuming;
+    protected EzyRabbitMessageConsumers consumers;
 
-	public EzyRabbitTopic(
-			EzyRabbitTopicClient client,
-			EzyRabbitTopicServer server,
-			EzyRabbitDataCodec dataCodec) {
-		this.client = client;
-		this.server = server;
-		this.dataCodec = dataCodec;
-	}
-
-	public void publish(Object data) {
-		String cmd = "";
-		if (data instanceof EzyMessageTypeFetcher)
-			cmd = ((EzyMessageTypeFetcher)data).getMessageType();
-        publish(cmd, data);
-	}
-	
-	public void publish(String cmd, Object data) {
-		if(client == null)
-			throw new IllegalStateException("this topic is consuming only, set the client to publish");
-		BasicProperties requestProperties = new BasicProperties.Builder()
-        		.type(cmd)
-        		.build();
-        byte[] requestMessage = dataCodec.serialize(data);
-        rawPublish(requestProperties, requestMessage);
-	}
-	
-	protected void rawPublish(
-    		BasicProperties requestProperties, byte[] requestMessage) {
-    	try {
-			client.publish(requestProperties, requestMessage);
-		} 
-    	catch (Exception e) {
-    		throw new InternalServerErrorException(e.getMessage(), e);
-		}
+    public EzyRabbitTopic(
+        EzyRabbitTopicServer server,
+        EzyRabbitDataCodec dataCodec
+    ) {
+        this(null, server, dataCodec);
     }
 
-	public void addConsumer(EzyRabbitMessageConsumer<T> consumer) {
-		addConsumer("", consumer);
-	}
-	
-	public void addConsumer(String cmd, EzyRabbitMessageConsumer<T> consumer) {
-		if(server == null)
-			throw new IllegalStateException("this topic is publishing only, set the server to consume");
-		synchronized (this) {
-			if(!consuming) {
-				this.consuming = true;
-				this.consumers = new EzyRabbitMessageConsumers();
-				this.startConsuming();
-			}
-			consumers.addConsumer(cmd, consumer);
-		}
-	}
+    public EzyRabbitTopic(
+        EzyRabbitTopicClient client,
+        EzyRabbitDataCodec dataCodec
+    ) {
+        this(client, null, dataCodec);
+    }
 
-	@SuppressWarnings("unchecked")
-	protected void startConsuming() {
-		EzyRabbitMessageHandler messageHandler = new EzyRabbitMessageHandler() {
-			@Override
-			public void handle(BasicProperties requestProperties, byte[] requestBody) {
-				String cmd = requestProperties.getType();
-				if(EzyStrings.isNoContent(cmd))
-					cmd = "";
-				T message = (T)dataCodec.deserialize(cmd, requestBody);
-				consumers.consume(cmd, message);
-			}
-		};
-		server.setMessageHandler(messageHandler);
-		try {
-			server.start();
-		}
-		catch (Exception e) {
-			throw new IllegalStateException("can't start topic server", e);
-		}
-	}
-	
-	public static Builder builder() {
-		return new Builder();
-	}
+    public EzyRabbitTopic(
+        EzyRabbitTopicClient client,
+        EzyRabbitTopicServer server,
+        EzyRabbitDataCodec dataCodec
+    ) {
+        this.client = client;
+        this.server = server;
+        this.dataCodec = dataCodec;
+    }
 
-	@SuppressWarnings("rawtypes")
-	public static class Builder implements EzyBuilder<EzyRabbitTopic> {
-	
-		protected EzyRabbitTopicClient client;
-		protected EzyRabbitTopicServer server;
-		protected EzyRabbitDataCodec dataCodec;
-	
-		public Builder client(EzyRabbitTopicClient client) {
-			this.client = client;
-			return this;
-		}
-		
-		public Builder server(EzyRabbitTopicServer server) {
-			this.server = server;
-			return this;
-		}
-	
-		public Builder dataCodec(EzyRabbitDataCodec dataCodec) {
-			this.dataCodec = dataCodec;
-			return this;
-		}
-	
-		public EzyRabbitTopic build() {
-			return new EzyRabbitTopic(client, server, dataCodec);
-		}
-	
-	}
-	
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public void publish(Object data) {
+        String cmd = "";
+        if (data instanceof EzyMessageTypeFetcher) {
+            cmd = ((EzyMessageTypeFetcher) data).getMessageType();
+        }
+        publish(cmd, data);
+    }
+
+    public void publish(String cmd, Object data) {
+        if (client == null) {
+            throw new IllegalStateException(
+                "this topic is consuming only, set the client to publish"
+            );
+        }
+        BasicProperties requestProperties = new BasicProperties.Builder()
+            .type(cmd)
+            .build();
+        byte[] requestMessage = dataCodec.serialize(data);
+        rawPublish(requestProperties, requestMessage);
+    }
+
+    protected void rawPublish(
+        BasicProperties requestProperties,
+        byte[] requestMessage
+    ) {
+        try {
+            client.publish(requestProperties, requestMessage);
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage(), e);
+        }
+    }
+
+    public void addConsumer(EzyRabbitMessageConsumer<T> consumer) {
+        addConsumer("", consumer);
+    }
+
+    public void addConsumer(String cmd, EzyRabbitMessageConsumer<T> consumer) {
+        if (server == null) {
+            throw new IllegalStateException(
+                "this topic is publishing only, set the server to consume"
+            );
+        }
+        synchronized (this) {
+            if (!consuming) {
+                this.consuming = true;
+                this.consumers = new EzyRabbitMessageConsumers();
+                this.startConsuming();
+            }
+            consumers.addConsumer(cmd, consumer);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void startConsuming() {
+        EzyRabbitMessageHandler messageHandler = new EzyRabbitMessageHandler() {
+            @Override
+            public void handle(BasicProperties requestProperties, byte[] requestBody) {
+                String cmd = requestProperties.getType();
+                if (EzyStrings.isNoContent(cmd)) {
+                    cmd = "";
+                }
+                T message = (T) dataCodec.deserialize(cmd, requestBody);
+                consumers.consume(cmd, message);
+            }
+        };
+        server.setMessageHandler(messageHandler);
+        try {
+            server.start();
+        } catch (Exception e) {
+            throw new IllegalStateException("can't start topic server", e);
+        }
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static class Builder implements EzyBuilder<EzyRabbitTopic> {
+
+        protected EzyRabbitTopicClient client;
+        protected EzyRabbitTopicServer server;
+        protected EzyRabbitDataCodec dataCodec;
+
+        public Builder client(EzyRabbitTopicClient client) {
+            this.client = client;
+            return this;
+        }
+
+        public Builder server(EzyRabbitTopicServer server) {
+            this.server = server;
+            return this;
+        }
+
+        public Builder dataCodec(EzyRabbitDataCodec dataCodec) {
+            this.dataCodec = dataCodec;
+            return this;
+        }
+
+        public EzyRabbitTopic build() {
+            return new EzyRabbitTopic(client, server, dataCodec);
+        }
+    }
 }
