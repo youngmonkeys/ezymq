@@ -6,16 +6,16 @@ import java.io.Serializable;
 
 /**
  * The producer endpoint that writes to the queue.
- * @author syntx
  *
+ * @author syntx
  */
-public class Producer extends EndPoint{
-	
-	public Producer(String endPointName) throws Exception{
-		super(endPointName);
-	}
+public class Producer extends EndPoint {
 
-	public void sendMessage(Serializable object) throws IOException {
-	    channel.basicPublish("",endPointName, null, object.toString().getBytes());
-	}	
+    public Producer(String endPointName) throws Exception {
+        super(endPointName);
+    }
+
+    public void sendMessage(Serializable object) throws IOException {
+        channel.basicPublish("", endPointName, null, object.toString().getBytes());
+    }
 }

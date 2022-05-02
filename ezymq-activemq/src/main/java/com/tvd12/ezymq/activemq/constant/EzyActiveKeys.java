@@ -5,6 +5,5 @@ public final class EzyActiveKeys {
     public static final String MESSAGE = "msg";
     public static final String ERROR_CODE = "ec";
 
-    private EzyActiveKeys() {
-    }
+    private EzyActiveKeys() {}
 }

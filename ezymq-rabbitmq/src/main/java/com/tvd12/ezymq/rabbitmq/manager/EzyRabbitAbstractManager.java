@@ -8,19 +8,18 @@ import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitEndpointSetting;
 
 public class EzyRabbitAbstractManager extends EzyLoggable {
 
-	protected final ConnectionFactory connectionFactory;
-	
-	public EzyRabbitAbstractManager(ConnectionFactory connectionFactory) {
-		this.connectionFactory = connectionFactory;
-	}
-	
-	public Channel getChannel(EzyRabbitEndpointSetting setting) throws Exception {
-		Channel channel = setting.getChannel();
-		if(channel == null) {
-			Connection connection = connectionFactory.newConnection();
-			channel = connection.createChannel();
-		}
-		return channel;
-	}
-	
+    protected final ConnectionFactory connectionFactory;
+
+    public EzyRabbitAbstractManager(ConnectionFactory connectionFactory) {
+        this.connectionFactory = connectionFactory;
+    }
+
+    public Channel getChannel(EzyRabbitEndpointSetting setting) throws Exception {
+        Channel channel = setting.getChannel();
+        if (channel == null) {
+            Connection connection = connectionFactory.newConnection();
+            channel = connection.createChannel();
+        }
+        return channel;
+    }
 }

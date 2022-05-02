@@ -5,9 +5,9 @@ import com.tvd12.ezymq.rabbitmq.EzyRabbitTopic;
 
 public class CreateBuilderTest {
 
-	public static void main(String[] args) throws Exception {
-		EzyBuilderCreator creator = new EzyBuilderCreator();
-		System.out.println(creator.create(EzyRabbitTopic.class));
-	}
-	
+    public static void main(String[] args) throws Exception {
+        EzyBuilderCreator creator = new EzyBuilderCreator();
+        System.out.println(creator.create(EzyRabbitTopic.class));
+    }
+
 }

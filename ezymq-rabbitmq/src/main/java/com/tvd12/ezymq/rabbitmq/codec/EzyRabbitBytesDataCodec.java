@@ -1,77 +1,76 @@
 package com.tvd12.ezymq.rabbitmq.codec;
 
-import java.util.Map;
-
 import com.tvd12.ezyfox.binding.EzyMarshaller;
 import com.tvd12.ezyfox.binding.EzyUnmarshaller;
 import com.tvd12.ezyfox.codec.EzyMessageDeserializer;
 import com.tvd12.ezyfox.codec.EzyMessageSerializer;
-
 import lombok.Setter;
+
+import java.util.Map;
 
 @Setter
 @SuppressWarnings("rawtypes")
-public class EzyRabbitBytesDataCodec extends EzyRabbitAbstractDataCodec  {
+public class EzyRabbitBytesDataCodec extends EzyRabbitAbstractDataCodec {
 
-	protected EzyMessageSerializer messageSerializer;
-	protected EzyMessageDeserializer messageDeserializer;
-	
-	public EzyRabbitBytesDataCodec() {}
-	
-	public EzyRabbitBytesDataCodec(
-			EzyMessageSerializer messageSerializer,
-			EzyMessageDeserializer messageDeserializer) {
-		this.messageSerializer = messageSerializer;
-		this.messageDeserializer = messageDeserializer;
-	}
-	
-	public EzyRabbitBytesDataCodec(
-			EzyMarshaller marshaller, 
-			EzyUnmarshaller unmarshaller,
-			EzyMessageSerializer messageSerializer,
-			EzyMessageDeserializer messageDeserializer,
-	        Map<String, Class> requestTypeMap, 
-	        Map<String, Class> responseTypeMap) {
-		super(marshaller, unmarshaller, requestTypeMap, responseTypeMap);
-		this.messageSerializer = messageSerializer;
-		this.messageDeserializer = messageDeserializer;
-	}
-	
-	@Override
-	public Object deserialize(String cmd, byte[] request) {
-		Object data = messageDeserializer.deserialize(request);
-		Object entity = unmarshallData(cmd, data);
-		return entity;
-	}
+    protected EzyMessageSerializer messageSerializer;
+    protected EzyMessageDeserializer messageDeserializer;
 
-	@Override
-	public byte[] serialize(Object response) {
-		Object data = marshallEntity(response);
-		byte[] bytes = messageSerializer.serialize(data);
-		return bytes;
-	}
-	
-	public static Builder builder() {
-		return new Builder();
-	}
-	
-	public static class Builder extends EzyRabbitAbstractDataCodecBuilder<Builder> {
-		protected EzyMessageSerializer messageSerializer;
-		protected EzyMessageDeserializer messageDeserializer;
-		
-		public Builder messageSerializer(EzyMessageSerializer messageSerializer) {
-			this.messageSerializer = messageSerializer;
-			return this;
-		}
-		public Builder messageDeserializer(EzyMessageDeserializer messageDeserializer) {
-			this.messageDeserializer = messageDeserializer;
-			return this;
-		}
-		
-		@Override
-		protected EzyRabbitAbstractDataCodec newProduct() {
-			return new EzyRabbitBytesDataCodec(messageSerializer, messageDeserializer);
-		}
-	}
+    public EzyRabbitBytesDataCodec() {}
 
+    public EzyRabbitBytesDataCodec(
+        EzyMessageSerializer messageSerializer,
+        EzyMessageDeserializer messageDeserializer
+    ) {
+        this.messageSerializer = messageSerializer;
+        this.messageDeserializer = messageDeserializer;
+    }
+
+    public EzyRabbitBytesDataCodec(
+        EzyMarshaller marshaller,
+        EzyUnmarshaller unmarshaller,
+        EzyMessageSerializer messageSerializer,
+        EzyMessageDeserializer messageDeserializer,
+        Map<String, Class> requestTypeMap
+    ) {
+        super(marshaller, unmarshaller, requestTypeMap);
+        this.messageSerializer = messageSerializer;
+        this.messageDeserializer = messageDeserializer;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    @Override
+    public Object deserialize(String cmd, byte[] request) {
+        Object data = messageDeserializer.deserialize(request);
+        Object entity = unmarshallData(cmd, data);
+        return entity;
+    }
+
+    @Override
+    public byte[] serialize(Object response) {
+        Object data = marshallEntity(response);
+        return messageSerializer.serialize(data);
+    }
+
+    public static class Builder extends EzyRabbitAbstractDataCodecBuilder<Builder> {
+        protected EzyMessageSerializer messageSerializer;
+        protected EzyMessageDeserializer messageDeserializer;
+
+        public Builder messageSerializer(EzyMessageSerializer messageSerializer) {
+            this.messageSerializer = messageSerializer;
+            return this;
+        }
+
+        public Builder messageDeserializer(EzyMessageDeserializer messageDeserializer) {
+            this.messageDeserializer = messageDeserializer;
+            return this;
+        }
+
+        @Override
+        protected EzyRabbitAbstractDataCodec newProduct() {
+            return new EzyRabbitBytesDataCodec(messageSerializer, messageDeserializer);
+        }
+    }
 }
