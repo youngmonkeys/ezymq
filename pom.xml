@@ -8,7 +8,7 @@
 		<version>1.0.3</version>
 	</parent>
 	<artifactId>ezymq</artifactId>
-	<version>1.1.6</version>
+	<version>1.1.7</version>
 	<packaging>pom</packaging>
 
 	<name>ezymq</name>
@@ -62,7 +62,7 @@
 		</developer>
 	</developers>
 	<properties>
-		<ezy.version>1.2.2</ezy.version>
+		<ezy.version>1.2.3</ezy.version>
 	</properties>
 	<dependencies>
 		<dependency>
