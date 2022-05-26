@@ -34,7 +34,6 @@ public class EzyActiveMQProxy implements EzyCloseable {
         this.topicManager = newTopicManager();
         this.rpcProducerManager = newRpcCallerManager();
         this.rpcConsumerManager = newActiveRpcHandlerManager();
-
     }
 
     public static EzyActiveMQProxyBuilder builder() {
@@ -75,7 +74,7 @@ public class EzyActiveMQProxy implements EzyCloseable {
         return new EzyActiveRpcProducerManager(
             entityCodec,
             connectionFactory,
-            settings.getRpcCallerSettings()
+            settings.getRpcProducerSettings()
         );
     }
 
@@ -83,7 +82,7 @@ public class EzyActiveMQProxy implements EzyCloseable {
         return new EzyActiveRpcConsumerManager(
             dataCodec,
             connectionFactory,
-            settings.getRpcHandlerSettings()
+            settings.getRpcConsumerSettings()
         );
     }
 }

@@ -27,25 +27,6 @@ public class EzyActiveRpcClient extends EzyActiveRpcEndpoint {
         int capacity,
         int threadPoolSize,
         int defaultTimeout,
-        EzyActiveResponseConsumer unconsumedResponseConsumer
-    ) throws Exception {
-        this(session,
-            requestQueue,
-            replyQueue,
-            capacity,
-            threadPoolSize,
-            defaultTimeout,
-            new EzyActiveSimpleCorrelationIdFactory(),
-            unconsumedResponseConsumer);
-    }
-
-    public EzyActiveRpcClient(
-        Session session,
-        Destination requestQueue,
-        Destination replyQueue,
-        int capacity,
-        int threadPoolSize,
-        int defaultTimeout,
         EzyActiveCorrelationIdFactory correlationIdFactory,
         EzyActiveResponseConsumer unconsumedResponseConsumer
     ) throws Exception {
@@ -142,7 +123,6 @@ public class EzyActiveRpcClient extends EzyActiveRpcEndpoint {
             futureMap.removeFuture(replyId);
             throw ex;
         }
-
     }
 
     @Override

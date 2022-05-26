@@ -33,15 +33,6 @@ public class EzyActiveRpcConsumer
     public EzyActiveRpcConsumer(
         EzyActiveRpcServer server,
         EzyActiveDataCodec dataCodec,
-        EzyActiveRequestHandlers requestHandlers
-    ) {
-        this(0, server, dataCodec, requestHandlers);
-    }
-
-    public EzyActiveRpcConsumer(
-        int threadPoolSize,
-        EzyActiveRpcServer server,
-        EzyActiveDataCodec dataCodec,
         EzyActiveRequestHandlers requestHandlers) {
         this.server = server;
         this.server.setCallHandler(this);
@@ -68,7 +59,7 @@ public class EzyActiveRpcConsumer
     public void handleFire(EzyActiveProperties requestProperties, byte[] requestBody) {
         String cmd = requestProperties.getType();
         Object requestEntity = null;
-        Object responseEntity = null;
+        Object responseEntity;
         try {
             requestEntity = dataCodec.deserialize(cmd, requestBody);
             if (actionInterceptor != null) {
@@ -107,7 +98,7 @@ public class EzyActiveRpcConsumer
             }
         } catch (Exception e) {
             responseBytes = new byte[0];
-            Map<String, Object> responseHeaders = new HashMap<String, Object>();
+            Map<String, Object> responseHeaders = new HashMap<>();
             if (e instanceof NotFoundException) {
                 responseHeaders.put(EzyActiveKeys.STATUS, EzyActiveStatusCodes.NOT_FOUND);
             } else if (e instanceof BadRequestException) {
@@ -136,12 +127,6 @@ public class EzyActiveRpcConsumer
             }
         }
         return responseBytes;
-    }
-
-    protected EzyActiveProperties newReplyProps(EzyActiveProperties rev) {
-        return new EzyActiveProperties.Builder()
-            .correlationId(rev.getCorrelationId())
-            .build();
     }
 
     public static class Builder implements EzyBuilder<EzyActiveRpcConsumer> {
@@ -179,7 +164,6 @@ public class EzyActiveRpcConsumer
         @Override
         public EzyActiveRpcConsumer build() {
             EzyActiveRpcConsumer product = new EzyActiveRpcConsumer(
-                threadPoolSize,
                 server,
                 dataCodec,
                 requestHandlers);

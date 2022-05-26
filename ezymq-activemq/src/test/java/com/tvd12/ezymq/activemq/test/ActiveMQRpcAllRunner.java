@@ -33,7 +33,7 @@ public class ActiveMQRpcAllRunner extends ActiveMQBaseTest {
         try {
             System.out.println("thread-" + Thread.currentThread().getName() + ": start server");
             EzyActiveRpcServer server = newServer();
-            EzyActiveRpcConsumer handler = new EzyActiveRpcConsumer(3, server, dataCodec, requestHandlers);
+            EzyActiveRpcConsumer handler = new EzyActiveRpcConsumer(server, dataCodec, requestHandlers);
             handler.start();
         } catch (Exception e) {
             e.printStackTrace();

@@ -73,7 +73,7 @@ public class EzyKafkaConsumerManager
             .build();
         return EzyKafkaConsumer.builder()
             .dataCodec(dataCodec)
-            .messageInterceptor(setting.getMessageInterceptor())
+            .messageInterceptors(setting.getMessageInterceptors())
             .messageHandlers(setting.getMessageHandlers())
             .server(server)
             .build();

@@ -2,42 +2,51 @@ package com.tvd12.ezymq.activemq.setting;
 
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezymq.activemq.EzyActiveMQProxyBuilder;
+import com.tvd12.ezymq.activemq.handler.EzyActiveRequestInterceptor;
 import lombok.Getter;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Getter
+@SuppressWarnings("rawtypes")
 public class EzyActiveSettings {
 
+    protected final Map<String, Class> requestTypes;
     protected final Map<String, EzyActiveTopicSetting> topicSettings;
-    protected final Map<String, EzyActiveRpcProducerSetting> rpcCallerSettings;
-    protected final Map<String, EzyActiveRpcConsumerSetting> rpcHandlerSettings;
+    protected final Map<String, EzyActiveRpcProducerSetting> rpcProducerSettings;
+    protected final Map<String, EzyActiveRpcConsumerSetting> rpcConsumerSettings;
 
     public EzyActiveSettings(
+        Map<String, Class> requestTypes,
         Map<String, EzyActiveTopicSetting> topicSettings,
-        Map<String, EzyActiveRpcProducerSetting> rpcCallerSettings,
-        Map<String, EzyActiveRpcConsumerSetting> rpcHandlerSettings
+        Map<String, EzyActiveRpcProducerSetting> rpcProducerSettings,
+        Map<String, EzyActiveRpcConsumerSetting> rpcConsumerSettings
     ) {
+        this.requestTypes = Collections.unmodifiableMap(requestTypes);
         this.topicSettings = Collections.unmodifiableMap(topicSettings);
-        this.rpcCallerSettings = Collections.unmodifiableMap(rpcCallerSettings);
-        this.rpcHandlerSettings = Collections.unmodifiableMap(rpcHandlerSettings);
+        this.rpcProducerSettings = Collections.unmodifiableMap(rpcProducerSettings);
+        this.rpcConsumerSettings = Collections.unmodifiableMap(rpcConsumerSettings);
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
+    public List<Class> getMessageTypeList() {
+        return new ArrayList<>(requestTypes.values());
+    }
+
     public static class Builder implements EzyBuilder<EzyActiveSettings> {
 
         protected EzyActiveMQProxyBuilder parent;
+        protected Map<String, Class> requestTypes;
         protected Map<String, EzyActiveTopicSetting> topicSettings;
-        protected Map<String, EzyActiveRpcProducerSetting> rpcCallerSettings;
-        protected Map<String, EzyActiveRpcConsumerSetting> rpcHandlerSettings;
+        protected Map<String, EzyActiveRpcProducerSetting> rpcProducerSettings;
+        protected Map<String, EzyActiveRpcConsumerSetting> rpcConsumerSettings;
         protected Map<String, EzyActiveTopicSetting.Builder> topicSettingBuilders;
-        protected Map<String, EzyActiveRpcProducerSetting.Builder> rpcCallerSettingBuilders;
-        protected Map<String, EzyActiveRpcConsumerSetting.Builder> rpcHandlerSettingBuilders;
+        protected List<EzyActiveRequestInterceptor> requestInterceptors;
+        protected Map<String, EzyActiveRpcProducerSetting.Builder> rpcProducerSettingBuilders;
+        protected Map<String, EzyActiveRpcConsumerSetting.Builder> rpcConsumerSettingBuilders;
 
         public Builder() {
             this(null);
@@ -45,27 +54,32 @@ public class EzyActiveSettings {
 
         public Builder(EzyActiveMQProxyBuilder parent) {
             this.parent = parent;
+            this.requestTypes = new HashMap<>();
             this.topicSettings = new HashMap<>();
-            this.rpcCallerSettings = new HashMap<>();
-            this.rpcHandlerSettings = new HashMap<>();
+            this.rpcProducerSettings = new HashMap<>();
+            this.rpcConsumerSettings = new HashMap<>();
+            this.requestInterceptors = new ArrayList<>();
             this.topicSettingBuilders = new HashMap<>();
-            this.rpcCallerSettingBuilders = new HashMap<>();
-            this.rpcHandlerSettingBuilders = new HashMap<>();
+            this.rpcProducerSettingBuilders = new HashMap<>();
+            this.rpcConsumerSettingBuilders = new HashMap<>();
         }
 
         public EzyActiveTopicSetting.Builder topicSettingBuilder(String name) {
-            return topicSettingBuilders.computeIfAbsent(
-                name, k -> new EzyActiveTopicSetting.Builder(this));
+            return topicSettingBuilders.computeIfAbsent(name,
+                k -> new EzyActiveTopicSetting.Builder(this)
+            );
         }
 
         public EzyActiveRpcProducerSetting.Builder rpcCallerSettingBuilder(String name) {
-            return rpcCallerSettingBuilders.computeIfAbsent(
-                name, k -> new EzyActiveRpcProducerSetting.Builder(this));
+            return rpcProducerSettingBuilders.computeIfAbsent(name,
+                k -> new EzyActiveRpcProducerSetting.Builder(this)
+            );
         }
 
         public EzyActiveRpcConsumerSetting.Builder rpcHandlerSettingBuilder(String name) {
-            return rpcHandlerSettingBuilders.computeIfAbsent(
-                name, k -> new EzyActiveRpcConsumerSetting.Builder(this));
+            return rpcConsumerSettingBuilders.computeIfAbsent(name,
+                k -> new EzyActiveRpcConsumerSetting.Builder(this)
+            );
         }
 
         public Builder addTopicSetting(String name, EzyActiveTopicSetting setting) {
@@ -74,15 +88,34 @@ public class EzyActiveSettings {
         }
 
         public Builder addRpcCallerSetting(String name, EzyActiveRpcProducerSetting setting) {
-            this.rpcCallerSettings.put(name, setting);
+            this.rpcProducerSettings.put(name, setting);
             return this;
         }
 
         public Builder addRpcHandlerSetting(String name, EzyActiveRpcConsumerSetting setting) {
-            this.rpcHandlerSettings.put(name, setting);
+            this.rpcConsumerSettings.put(name, setting);
             return this;
         }
 
+        public Builder mapRequestType(String command, Class requestType) {
+            this.requestTypes.put(command, requestType);
+            return this;
+        }
+
+        public Builder mapRequestTypes(Map<String, Class> requestTypes) {
+            this.requestTypes.putAll(requestTypes);
+            return this;
+        }
+
+        public Builder requestInterceptor(EzyActiveRequestInterceptor requestInterceptor) {
+            this.requestInterceptors.add(requestInterceptor);
+            return this;
+        }
+
+        public Builder requestInterceptors(Collection<EzyActiveRequestInterceptor> requestInterceptors) {
+            this.requestInterceptors.addAll(requestInterceptors);
+            return this;
+        }
 
         public EzyActiveMQProxyBuilder parent() {
             return parent;
@@ -94,15 +127,20 @@ public class EzyActiveSettings {
                 EzyActiveTopicSetting.Builder builder = topicSettingBuilders.get(name);
                 topicSettings.put(name, (EzyActiveTopicSetting) builder.build());
             }
-            for (String name : rpcCallerSettingBuilders.keySet()) {
-                EzyActiveRpcProducerSetting.Builder builder = rpcCallerSettingBuilders.get(name);
-                rpcCallerSettings.put(name, builder.build());
+            for (String name : rpcProducerSettingBuilders.keySet()) {
+                EzyActiveRpcProducerSetting.Builder builder = rpcProducerSettingBuilders.get(name);
+                rpcProducerSettings.put(name, builder.build());
             }
-            for (String name : rpcHandlerSettingBuilders.keySet()) {
-                EzyActiveRpcConsumerSetting.Builder builder = rpcHandlerSettingBuilders.get(name);
-                rpcHandlerSettings.put(name, builder.build());
+            for (String name : rpcConsumerSettingBuilders.keySet()) {
+                EzyActiveRpcConsumerSetting.Builder builder = rpcConsumerSettingBuilders.get(name);
+                rpcConsumerSettings.put(name, builder.build());
             }
-            return new EzyActiveSettings(topicSettings, rpcCallerSettings, rpcHandlerSettings);
+            return new EzyActiveSettings(
+                requestTypes,
+                topicSettings,
+                rpcProducerSettings,
+                rpcConsumerSettings
+            );
         }
     }
 }

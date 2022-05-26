@@ -1,5 +1,7 @@
 package com.tvd12.ezymq.activemq;
 
+import com.tvd12.ezyfox.bean.EzyBeanContext;
+import com.tvd12.ezyfox.bean.EzyBeanContextBuilder;
 import com.tvd12.ezyfox.binding.EzyBindingContext;
 import com.tvd12.ezyfox.binding.EzyBindingContextBuilder;
 import com.tvd12.ezyfox.binding.EzyMarshaller;
@@ -7,8 +9,14 @@ import com.tvd12.ezyfox.binding.EzyUnmarshaller;
 import com.tvd12.ezyfox.binding.impl.EzySimpleBindingContext;
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.codec.*;
+import com.tvd12.ezyfox.entity.EzyData;
+import com.tvd12.ezyfox.message.annotation.EzyMessage;
 import com.tvd12.ezyfox.reflect.EzyReflection;
 import com.tvd12.ezyfox.reflect.EzyReflectionProxy;
+import com.tvd12.ezyfox.reflect.EzyTypes;
+import com.tvd12.ezyfox.util.EzyLoggable;
+import com.tvd12.ezymq.activemq.annotation.EzyActiveHandler;
+import com.tvd12.ezymq.activemq.annotation.EzyActiveInterceptor;
 import com.tvd12.ezymq.activemq.codec.EzyActiveBytesDataCodec;
 import com.tvd12.ezymq.activemq.codec.EzyActiveBytesEntityCodec;
 import com.tvd12.ezymq.activemq.codec.EzyActiveDataCodec;
@@ -19,8 +27,11 @@ import javax.jms.ConnectionFactory;
 import java.util.*;
 
 @SuppressWarnings("rawtypes")
-public class EzyActiveMQProxyBuilder implements EzyBuilder<EzyActiveMQProxy> {
+public class EzyActiveMQProxyBuilder
+    extends EzyLoggable
+    implements EzyBuilder<EzyActiveMQProxy> {
 
+    protected boolean scanAndAddAllBeans;
     protected EzyActiveSettings settings;
     protected Set<String> packagesToScan;
     protected EzyMarshaller marshaller;
@@ -28,12 +39,14 @@ public class EzyActiveMQProxyBuilder implements EzyBuilder<EzyActiveMQProxy> {
     protected EzyEntityCodec entityCodec;
     protected EzyActiveDataCodec dataCodec;
     protected Map<String, Class> requestTypes;
+    protected EzyBeanContext beanContext;
     protected EzyBindingContext bindingContext;
     protected ConnectionFactory connectionFactory;
     protected EzyMessageSerializer messageSerializer;
     protected EzyMessageDeserializer messageDeserializer;
     protected List<EzyReflection> reflectionsToScan;
     protected EzyActiveSettings.Builder settingsBuilder;
+    protected EzyBeanContextBuilder beanContextBuilder;
 
     public EzyActiveMQProxyBuilder() {
         this.requestTypes = new HashMap<>();
@@ -94,8 +107,40 @@ public class EzyActiveMQProxyBuilder implements EzyBuilder<EzyActiveMQProxy> {
         return this;
     }
 
+    public EzyActiveMQProxyBuilder addSingleton(Object singleton) {
+        this.beanContextBuilder.addSingleton(singleton);
+        return this;
+    }
+
+    public EzyActiveMQProxyBuilder addSingleton(String name, Object singleton) {
+        this.beanContextBuilder.addSingleton(name, singleton);
+        return this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public EzyActiveMQProxyBuilder addSingletons(List singletons) {
+        singletons.forEach(beanContextBuilder::addSingleton);
+        return this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public EzyActiveMQProxyBuilder addSingletons(Map singletons) {
+        beanContextBuilder.addSingletons(singletons);
+        return this;
+    }
+
+    public EzyActiveMQProxyBuilder beanContext(EzyBeanContext beanContext) {
+        this.beanContextBuilder.addSingletonsByKey(beanContext.getSingletonMapByKey());
+        return this;
+    }
+
     public EzyActiveMQProxyBuilder bindingContext(EzyBindingContext bindingContext) {
         this.bindingContext = bindingContext;
+        return this;
+    }
+
+    public EzyActiveMQProxyBuilder scanAndAddAllBeans(boolean scanAndAddAllBeans) {
+        this.scanAndAddAllBeans = scanAndAddAllBeans;
         return this;
     }
 
@@ -126,31 +171,25 @@ public class EzyActiveMQProxyBuilder implements EzyBuilder<EzyActiveMQProxy> {
 
     @Override
     public EzyActiveMQProxy build() {
-        if (settingsBuilder != null) {
-            settings = settingsBuilder.build();
-        }
+        beanContext = newBeanContext();
+
         if (settings == null) {
-            throw new NullPointerException("settings can not be null");
+            if (settingsBuilder == null) {
+                settingsBuilder = EzyActiveSettings.builder();
+            }
+            settingsBuilder.mapRequestTypes(requestTypes);
+            List interceptors = beanContext.getSingletons(EzyActiveInterceptor.class);
+            List dataHandlers = beanContext.getSingletons(EzyActiveHandler.class);
+            settings = settingsBuilder
+                .requestInterceptors(interceptors)
+                .build();
         }
         if (bindingContext == null) {
             bindingContext = newBindingContext();
         }
-        if (bindingContext != null) {
-            marshaller = bindingContext.newMarshaller();
-            unmarshaller = bindingContext.newUnmarshaller();
-        }
-        if (marshaller == null) {
-            throw new IllegalStateException(
-                "marshaller is null, set its or " +
-                    "set bindingContext or add package to scan"
-            );
-        }
-        if (unmarshaller == null) {
-            throw new IllegalStateException(
-                "unmarshaller is null, set its or " +
-                    "set bindingContext or add package to scan"
-            );
-        }
+        marshaller = bindingContext.newMarshaller();
+        unmarshaller = bindingContext.newUnmarshaller();
+
         if (messageSerializer == null) {
             messageSerializer = newMessageSerializer();
         }
@@ -196,15 +235,39 @@ public class EzyActiveMQProxyBuilder implements EzyBuilder<EzyActiveMQProxy> {
         return new MsgPackSimpleDeserializer();
     }
 
-    private EzyBindingContext newBindingContext() {
+    @SuppressWarnings("unchecked")
+    private EzyBeanContext newBeanContext() {
         if (packagesToScan.size() > 0) {
-            reflectionsToScan.add(new EzyReflectionProxy(packagesToScan));
+            EzyReflection reflection = new EzyReflectionProxy(packagesToScan);
+            beanContextBuilder.addSingletonClasses((Set) reflection.getAnnotatedClasses(EzyActiveHandler.class));
+            beanContextBuilder.addSingletonClasses((Set) reflection.getAnnotatedClasses(EzyActiveInterceptor.class));
+
+            if (scanAndAddAllBeans) {
+                beanContextBuilder.scan(packagesToScan);
+            }
         }
-        if (reflectionsToScan.isEmpty()) {
-            return null;
-        }
+        return beanContextBuilder.build();
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private EzyBindingContext newBindingContext() {
         EzyBindingContextBuilder builder = EzySimpleBindingContext.builder();
-        for (EzyReflection reflection : reflectionsToScan) {
+        for (Class messageType : settings.getMessageTypeList()) {
+            if (EzyTypes.ALL_TYPES.contains(messageType)
+                || EzyData.class.isAssignableFrom(messageType)
+            ) {
+                builder.addClasses(messageType);
+            }
+        }
+        try {
+            builder.build();
+        } catch (Throwable e) {
+            builder = EzySimpleBindingContext.builder();
+            logger.debug("can not create biding context, try again", e);
+        }
+        if (packagesToScan.size() > 0) {
+            EzyReflection reflection = new EzyReflectionProxy(packagesToScan);
+            builder.addClasses((Set) reflection.getAnnotatedClasses(EzyMessage.class));
             builder.addAllClasses(reflection);
         }
         return builder.build();

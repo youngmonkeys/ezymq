@@ -14,6 +14,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;
 
 import java.util.Arrays;
+import java.util.List;
 
 @SuppressWarnings("rawtypes")
 public class EzyKafkaConsumer
@@ -24,7 +25,7 @@ public class EzyKafkaConsumer
     protected final EzyKafkaDataCodec dataCodec;
     protected final EzyKafkaMessageHandlers messageHandlers;
     @Setter
-    protected EzyKafkaMessageInterceptor messageInterceptor;
+    protected List<EzyKafkaMessageInterceptor> messageInterceptors;
 
     protected static final byte[] BINARY_TYPE = new byte[]{(byte) 'b'};
 
@@ -77,18 +78,16 @@ public class EzyKafkaConsumer
                     message = dataCodec.deserializeText(topic, cmd, requestBody);
                 }
             }
-            if (messageInterceptor != null) {
+            for (EzyKafkaMessageInterceptor messageInterceptor : messageInterceptors) {
                 messageInterceptor.preHandle(topic, cmd, message);
             }
             result = messageHandlers.handle(cmd, message);
-            if (messageInterceptor != null) {
+            for (EzyKafkaMessageInterceptor messageInterceptor : messageInterceptors) {
                 messageInterceptor.postHandle(topic, cmd, message, result);
             }
         } catch (Throwable e) {
-            if (messageInterceptor != null) {
+            for (EzyKafkaMessageInterceptor messageInterceptor : messageInterceptors) {
                 messageInterceptor.postHandle(topic, cmd, message, e);
-            } else {
-                logger.warn("handle command: {}, message: {} error", cmd, message, e);
             }
         }
     }
@@ -98,7 +97,7 @@ public class EzyKafkaConsumer
         protected EzyKafkaServer server;
         protected EzyKafkaDataCodec dataCodec;
         protected EzyKafkaMessageHandlers messageHandlers;
-        protected EzyKafkaMessageInterceptor messageInterceptor;
+        protected List<EzyKafkaMessageInterceptor> messageInterceptors;
 
         public Builder server(EzyKafkaServer server) {
             this.server = server;
@@ -115,15 +114,15 @@ public class EzyKafkaConsumer
             return this;
         }
 
-        public Builder messageInterceptor(EzyKafkaMessageInterceptor messageInterceptor) {
-            this.messageInterceptor = messageInterceptor;
+        public Builder messageInterceptors(List<EzyKafkaMessageInterceptor> messageInterceptors) {
+            this.messageInterceptors = messageInterceptors;
             return this;
         }
 
         @Override
         public EzyKafkaConsumer build() {
             EzyKafkaConsumer handler = new EzyKafkaConsumer(server, dataCodec, messageHandlers);
-            handler.setMessageInterceptor(messageInterceptor);
+            handler.setMessageInterceptors(messageInterceptors);
             return handler;
         }
     }

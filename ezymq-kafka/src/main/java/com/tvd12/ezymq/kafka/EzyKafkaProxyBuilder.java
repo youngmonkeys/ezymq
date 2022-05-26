@@ -21,7 +21,6 @@ import com.tvd12.ezymq.kafka.annotation.EzyKafkaInterceptor;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaBytesDataCodec;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaBytesEntityCodec;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaDataCodec;
-import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageInterceptor;
 import com.tvd12.ezymq.kafka.setting.EzyKafkaSettings;
 
 import java.util.*;
@@ -31,6 +30,7 @@ public class EzyKafkaProxyBuilder
     extends EzyPropertiesKeeper<EzyKafkaProxyBuilder>
     implements EzyBuilder<EzyKafkaProxy> {
 
+    protected boolean scanAndAddAllBeans;
     protected EzyKafkaSettings settings;
     protected Set<String> packagesToScan;
     protected EzyMarshaller marshaller;
@@ -39,7 +39,6 @@ public class EzyKafkaProxyBuilder
     protected EzyKafkaDataCodec dataCodec;
     protected EzyBeanContext beanContext;
     protected EzyBindingContext bindingContext;
-    protected boolean scanAndAddAllBeans;
     protected EzyMessageSerializer messageSerializer;
     protected EzyMessageDeserializer messageDeserializer;
     protected EzyMessageDeserializer textMessageDeserializer;
@@ -121,6 +120,12 @@ public class EzyKafkaProxyBuilder
         return this;
     }
 
+    @SuppressWarnings("unchecked")
+    public EzyKafkaProxyBuilder addSingletons(Map singletons) {
+        beanContextBuilder.addSingletons(singletons);
+        return this;
+    }
+
     public EzyKafkaProxyBuilder beanContext(EzyBeanContext beanContext) {
         this.beanContextBuilder.addSingletonsByKey(beanContext.getSingletonMapByKey());
         return this;
@@ -185,11 +190,8 @@ public class EzyKafkaProxyBuilder
             settingsBuilder.mapMessageTypes(messageTypesByTopic);
             List interceptors = beanContext.getSingletons(EzyKafkaInterceptor.class);
             List dataHandlers = beanContext.getSingletons(EzyKafkaHandler.class);
-            EzyKafkaMessageInterceptor interceptor = interceptors.isEmpty()
-                ? null
-                : (EzyKafkaMessageInterceptor) interceptors.get(0);
             settings = settingsBuilder
-                .consumerInterceptor(interceptor)
+                .consumerInterceptors(interceptors)
                 .consumerMessageHandlers(dataHandlers)
                 .build();
         }

@@ -6,6 +6,9 @@ import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageInterceptor;
 import lombok.Getter;
 import org.apache.kafka.clients.consumer.Consumer;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -16,23 +19,23 @@ public class EzyKafkaConsumerSetting extends EzyKafkaEndpointSetting {
     protected final Consumer consumer;
     protected final int threadPoolSize;
     protected final EzyKafkaMessageHandlers messageHandlers;
-    protected final EzyKafkaMessageInterceptor messageInterceptor;
+    protected final List<EzyKafkaMessageInterceptor> messageInterceptors;
 
     public EzyKafkaConsumerSetting(
         String topic,
         Consumer consumer,
         long poolTimeOut,
         int threadPoolSize,
+        Map<String, Object> properties,
         EzyKafkaMessageHandlers requestHandlers,
-        EzyKafkaMessageInterceptor actionInterceptor,
-        Map<String, Object> properties
+        List<EzyKafkaMessageInterceptor> messageInterceptors
     ) {
         super(topic, properties);
         this.consumer = consumer;
         this.pollTimeOut = poolTimeOut;
         this.threadPoolSize = threadPoolSize;
         this.messageHandlers = requestHandlers;
-        this.messageInterceptor = actionInterceptor;
+        this.messageInterceptors = messageInterceptors;
     }
 
     public static Builder builder() {
@@ -44,12 +47,13 @@ public class EzyKafkaConsumerSetting extends EzyKafkaEndpointSetting {
         protected Consumer consumer;
         protected int threadPoolSize = 3;
         protected long pollTimeOut = 100;
-        protected EzyKafkaMessageHandlers messageHandlers;
-        protected EzyKafkaMessageInterceptor messageInterceptor;
         protected EzyKafkaSettings.Builder parent;
+        protected EzyKafkaMessageHandlers messageHandlers;
+        protected List<EzyKafkaMessageInterceptor> messageInterceptors;
 
         public Builder() {
             this(null);
+            this.messageInterceptors = new ArrayList<>();
             this.messageHandlers = new EzyKafkaMessageHandlers();
         }
 
@@ -79,9 +83,12 @@ public class EzyKafkaConsumerSetting extends EzyKafkaEndpointSetting {
         }
 
         public Builder messageInterceptor(EzyKafkaMessageInterceptor messageInterceptor) {
-            if (this.messageInterceptor == null) {
-                this.messageInterceptor = messageInterceptor;
-            }
+            this.messageInterceptors.add(messageInterceptor);
+            return this;
+        }
+
+        public Builder messageInterceptors(Collection<EzyKafkaMessageInterceptor> messageInterceptors) {
+            this.messageInterceptors.addAll(messageInterceptors);
             return this;
         }
 
@@ -114,9 +121,10 @@ public class EzyKafkaConsumerSetting extends EzyKafkaEndpointSetting {
                 consumer,
                 pollTimeOut,
                 threadPoolSize,
+                properties,
                 messageHandlers,
-                messageInterceptor,
-                properties);
+                messageInterceptors
+            );
         }
     }
 }
