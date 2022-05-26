@@ -25,7 +25,8 @@ public class EzyKafkaConsumerSetting extends EzyKafkaEndpointSetting {
         int threadPoolSize,
         EzyKafkaMessageHandlers requestHandlers,
         EzyKafkaMessageInterceptor actionInterceptor,
-        Map<String, Object> properties) {
+        Map<String, Object> properties
+    ) {
         super(topic, properties);
         this.consumer = consumer;
         this.pollTimeOut = poolTimeOut;

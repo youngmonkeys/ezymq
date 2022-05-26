@@ -13,7 +13,9 @@ public class EzyKafkaProducerSetting extends EzyKafkaEndpointSetting {
 
     public EzyKafkaProducerSetting(
         String topic,
-        Producer producer, Map<String, Object> properties) {
+        Producer producer,
+        Map<String, Object> properties
+    ) {
         super(topic, properties);
         this.producer = producer;
     }

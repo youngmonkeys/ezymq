@@ -70,7 +70,7 @@ public class KafkaExample {
         }
     }
 
-    static void runConsumer() throws InterruptedException {
+    static void runConsumer() {
         Consumer<Long, String> consumer = createConsumer();
 
         while (true) {

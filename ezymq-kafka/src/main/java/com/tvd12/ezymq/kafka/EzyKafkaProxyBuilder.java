@@ -39,7 +39,7 @@ public class EzyKafkaProxyBuilder
     protected EzyKafkaDataCodec dataCodec;
     protected EzyBeanContext beanContext;
     protected EzyBindingContext bindingContext;
-    protected boolean ignoreUnknownComponents;
+    protected boolean scanAndAddAllBeans;
     protected EzyMessageSerializer messageSerializer;
     protected EzyMessageDeserializer messageDeserializer;
     protected EzyMessageDeserializer textMessageDeserializer;
@@ -115,6 +115,12 @@ public class EzyKafkaProxyBuilder
         return this;
     }
 
+    @SuppressWarnings("unchecked")
+    public EzyKafkaProxyBuilder addSingletons(List singletons) {
+        singletons.forEach(beanContextBuilder::addSingleton);
+        return this;
+    }
+
     public EzyKafkaProxyBuilder beanContext(EzyBeanContext beanContext) {
         this.beanContextBuilder.addSingletonsByKey(beanContext.getSingletonMapByKey());
         return this;
@@ -125,8 +131,8 @@ public class EzyKafkaProxyBuilder
         return this;
     }
 
-    public EzyKafkaProxyBuilder ignoreUnknownComponents(boolean ignoreUnknownComponents) {
-        this.ignoreUnknownComponents = ignoreUnknownComponents;
+    public EzyKafkaProxyBuilder scanAndAddAllBeans(boolean scanAndAddAllBeans) {
+        this.scanAndAddAllBeans = scanAndAddAllBeans;
         return this;
     }
 
@@ -254,7 +260,7 @@ public class EzyKafkaProxyBuilder
             beanContextBuilder.addSingletonClasses((Set) reflection.getAnnotatedClasses(EzyKafkaInterceptor.class));
             beanContextBuilder.addSingletonClasses((Set) reflection.getAnnotatedClasses(EzyKafkaHandler.class));
 
-            if (ignoreUnknownComponents) {
+            if (scanAndAddAllBeans) {
                 beanContextBuilder.scan(packagesToScan);
             }
         }

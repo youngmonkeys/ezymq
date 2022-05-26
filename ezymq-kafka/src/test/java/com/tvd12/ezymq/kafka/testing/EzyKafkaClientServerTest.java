@@ -116,7 +116,7 @@ public class EzyKafkaClientServerTest extends BaseTest {
         server.start();
     }
 
-    private void runClient(EzyKafkaProducer client, int sendMessageCount) throws Exception {
+    private void runClient(EzyKafkaProducer client, int sendMessageCount) {
         long time = System.currentTimeMillis();
         for (long index = time; index < time + sendMessageCount; index++) {
             KafkaChatMessage message = new KafkaChatMessage(index, "Meessage#" + index);

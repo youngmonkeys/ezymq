@@ -20,7 +20,8 @@ public class EzyKafkaConsumerManager
 
     public EzyKafkaConsumerManager(
         EzyKafkaDataCodec dataCodec,
-        Map<String, EzyKafkaConsumerSetting> consumerSettings) {
+        Map<String, EzyKafkaConsumerSetting> consumerSettings
+    ) {
         this.dataCodec = dataCodec;
         this.consumerSettings = consumerSettings;
         this.consumers = createRpcConsumers();
@@ -51,7 +52,8 @@ public class EzyKafkaConsumerManager
 
     protected EzyKafkaConsumer createConsumer(
         String name,
-        EzyKafkaConsumerSetting setting) {
+        EzyKafkaConsumerSetting setting
+    ) {
         try {
             return createConsumer(setting);
         } catch (Exception e) {

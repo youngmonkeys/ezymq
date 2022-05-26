@@ -17,7 +17,7 @@ public class KafkaExample1 {
 
     private final static String TOPIC = "my-example-topic";
 
-    public static void main(String... args) throws Exception {
+    public static void main(String... args) {
 //		runProducer(5);
         runConsumer();
     }
