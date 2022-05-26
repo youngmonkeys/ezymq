@@ -15,8 +15,6 @@ public class EzyRabbitBytesDataCodec extends EzyRabbitAbstractDataCodec {
     protected EzyMessageSerializer messageSerializer;
     protected EzyMessageDeserializer messageDeserializer;
 
-    public EzyRabbitBytesDataCodec() {}
-
     public EzyRabbitBytesDataCodec(
         EzyMessageSerializer messageSerializer,
         EzyMessageDeserializer messageDeserializer
@@ -44,8 +42,7 @@ public class EzyRabbitBytesDataCodec extends EzyRabbitAbstractDataCodec {
     @Override
     public Object deserialize(String cmd, byte[] request) {
         Object data = messageDeserializer.deserialize(request);
-        Object entity = unmarshallData(cmd, data);
-        return entity;
+        return unmarshallData(cmd, data);
     }
 
     @Override

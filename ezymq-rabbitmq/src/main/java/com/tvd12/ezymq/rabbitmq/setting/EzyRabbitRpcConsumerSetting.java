@@ -9,7 +9,7 @@ import lombok.Getter;
 import java.util.Map;
 
 @Getter
-public class EzyRabbitRpcHandlerSetting extends EzyRabbitEndpointSetting {
+public class EzyRabbitRpcConsumerSetting extends EzyRabbitEndpointSetting {
 
     protected final int threadPoolSize;
     protected final String replyRoutingKey;
@@ -17,7 +17,7 @@ public class EzyRabbitRpcHandlerSetting extends EzyRabbitEndpointSetting {
     protected final EzyRabbitRequestHandlers requestHandlers;
     protected final EzyRabbitActionInterceptor actionInterceptor;
 
-    public EzyRabbitRpcHandlerSetting(
+    public EzyRabbitRpcConsumerSetting(
         Channel channel,
         String exchange,
         int prefetchCount,
@@ -104,11 +104,11 @@ public class EzyRabbitRpcHandlerSetting extends EzyRabbitEndpointSetting {
         }
 
         @Override
-        public EzyRabbitRpcHandlerSetting build() {
+        public EzyRabbitRpcConsumerSetting build() {
             if (requestHandlers == null) {
                 throw new NullPointerException("requestHandlers can not be null");
             }
-            return new EzyRabbitRpcHandlerSetting(
+            return new EzyRabbitRpcConsumerSetting(
                 channel,
                 exchange,
                 prefetchCount,

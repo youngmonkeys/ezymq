@@ -11,8 +11,8 @@ import com.tvd12.ezyfox.builder.EzyArrayBuilder;
 import com.tvd12.ezyfox.codec.*;
 import com.tvd12.ezyfox.factory.EzyEntityFactory;
 import com.tvd12.ezyfox.util.EzyLoggable;
-import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcCaller;
-import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcHandler;
+import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
+import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcConsumer;
 import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitBytesDataCodec;
 import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitBytesEntityCodec;
 import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitDataCodec;
@@ -73,7 +73,7 @@ public class RabbitFireAndForgetRunner extends EzyLoggable {
             try {
                 System.out.println("thread-" + Thread.currentThread().getName() + ": start server");
                 EzyRabbitRpcServer server = newServer();
-                EzyRabbitRpcHandler handler = EzyRabbitRpcHandler.builder()
+                EzyRabbitRpcConsumer handler = EzyRabbitRpcConsumer.builder()
                     .server(server)
                     .dataCodec(dataCodec)
                     .requestHandlers(requestHandlers)
@@ -108,7 +108,7 @@ public class RabbitFireAndForgetRunner extends EzyLoggable {
 
     protected void fire() throws Exception {
         EzyRabbitRpcClient client = newClient();
-        EzyRabbitRpcCaller caller = EzyRabbitRpcCaller.builder()
+        EzyRabbitRpcProducer caller = EzyRabbitRpcProducer.builder()
             .client(client)
             .entityCodec(entityCodec)
             .build();

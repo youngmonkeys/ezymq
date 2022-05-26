@@ -13,14 +13,14 @@ public class EzyRabbitSettings {
 
     protected final Map<String, Map<String, Object>> queueArguments;
     protected final Map<String, EzyRabbitTopicSetting> topicSettings;
-    protected final Map<String, EzyRabbitRpcCallerSetting> rpcCallerSettings;
-    protected final Map<String, EzyRabbitRpcHandlerSetting> rpcHandlerSettings;
+    protected final Map<String, EzyRabbitRpcProducerSetting> rpcCallerSettings;
+    protected final Map<String, EzyRabbitRpcConsumerSetting> rpcHandlerSettings;
 
     public EzyRabbitSettings(
         Map<String, Map<String, Object>> queueArguments,
         Map<String, EzyRabbitTopicSetting> topicSettings,
-        Map<String, EzyRabbitRpcCallerSetting> rpcCallerSettings,
-        Map<String, EzyRabbitRpcHandlerSetting> rpcHandlerSettings
+        Map<String, EzyRabbitRpcProducerSetting> rpcCallerSettings,
+        Map<String, EzyRabbitRpcConsumerSetting> rpcHandlerSettings
     ) {
         this.queueArguments = Collections.unmodifiableMap(queueArguments);
         this.topicSettings = Collections.unmodifiableMap(topicSettings);
@@ -37,11 +37,11 @@ public class EzyRabbitSettings {
         protected EzyRabbitMQProxyBuilder parent;
         protected Map<String, Map<String, Object>> queueArguments;
         protected Map<String, EzyRabbitTopicSetting> topicSettings;
-        protected Map<String, EzyRabbitRpcCallerSetting> rpcCallerSettings;
-        protected Map<String, EzyRabbitRpcHandlerSetting> rpcHandlerSettings;
+        protected Map<String, EzyRabbitRpcProducerSetting> rpcCallerSettings;
+        protected Map<String, EzyRabbitRpcConsumerSetting> rpcHandlerSettings;
         protected Map<String, EzyRabbitTopicSetting.Builder> topicSettingBuilders;
-        protected Map<String, EzyRabbitRpcCallerSetting.Builder> rpcCallerSettingBuilders;
-        protected Map<String, EzyRabbitRpcHandlerSetting.Builder> rpcHandlerSettingBuilders;
+        protected Map<String, EzyRabbitRpcProducerSetting.Builder> rpcCallerSettingBuilders;
+        protected Map<String, EzyRabbitRpcConsumerSetting.Builder> rpcHandlerSettingBuilders;
 
         public Builder() {
             this(null);
@@ -77,17 +77,17 @@ public class EzyRabbitSettings {
             );
         }
 
-        public EzyRabbitRpcCallerSetting.Builder rpcCallerSettingBuilder(String name) {
+        public EzyRabbitRpcProducerSetting.Builder rpcCallerSettingBuilder(String name) {
             return this.rpcCallerSettingBuilders.computeIfAbsent(
                 name,
-                k -> new EzyRabbitRpcCallerSetting.Builder(this)
+                k -> new EzyRabbitRpcProducerSetting.Builder(this)
             );
         }
 
-        public EzyRabbitRpcHandlerSetting.Builder rpcHandlerSettingBuilder(String name) {
+        public EzyRabbitRpcConsumerSetting.Builder rpcHandlerSettingBuilder(String name) {
             return this.rpcHandlerSettingBuilders.computeIfAbsent(
                 name,
-                k -> new EzyRabbitRpcHandlerSetting.Builder(this)
+                k -> new EzyRabbitRpcConsumerSetting.Builder(this)
             );
         }
 
@@ -96,12 +96,12 @@ public class EzyRabbitSettings {
             return this;
         }
 
-        public Builder addRpcCallerSetting(String name, EzyRabbitRpcCallerSetting setting) {
+        public Builder addRpcCallerSetting(String name, EzyRabbitRpcProducerSetting setting) {
             this.rpcCallerSettings.put(name, setting);
             return this;
         }
 
-        public Builder addRpcHandlerSetting(String name, EzyRabbitRpcHandlerSetting setting) {
+        public Builder addRpcHandlerSetting(String name, EzyRabbitRpcConsumerSetting setting) {
             this.rpcHandlerSettings.put(name, setting);
             return this;
         }
@@ -119,12 +119,12 @@ public class EzyRabbitSettings {
                 topicSettings.put(name, builder.build());
             }
             for (String name : rpcCallerSettingBuilders.keySet()) {
-                EzyRabbitRpcCallerSetting.Builder builder =
+                EzyRabbitRpcProducerSetting.Builder builder =
                     rpcCallerSettingBuilders.get(name);
                 rpcCallerSettings.put(name, builder.build());
             }
             for (String name : rpcHandlerSettingBuilders.keySet()) {
-                EzyRabbitRpcHandlerSetting.Builder builder =
+                EzyRabbitRpcConsumerSetting.Builder builder =
                     rpcHandlerSettingBuilders.get(name);
                 rpcHandlerSettings.put(name, builder.build());
             }

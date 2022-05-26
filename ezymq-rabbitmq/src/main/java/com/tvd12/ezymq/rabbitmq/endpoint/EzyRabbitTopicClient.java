@@ -41,5 +41,4 @@ public class EzyRabbitTopicClient extends EzyRabbitEndpoint {
                 routingKey);
         }
     }
-
 }

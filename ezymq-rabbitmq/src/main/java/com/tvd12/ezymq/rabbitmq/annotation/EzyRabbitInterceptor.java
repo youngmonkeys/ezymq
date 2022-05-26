@@ -2,15 +2,10 @@ package com.tvd12.ezymq.rabbitmq.annotation;
 
 import java.lang.annotation.*;
 
-/**
- * Indicates that a class handle a server event.
- *
- * @author tavandung12
- */
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-public @interface EzyRabbitRequestHandle {
+public @interface EzyRabbitInterceptor {
 
     /**
      * command name.
@@ -24,5 +19,5 @@ public @interface EzyRabbitRequestHandle {
      *
      * @return server event name
      */
-    String cmd() default "";
+    String command() default "";
 }

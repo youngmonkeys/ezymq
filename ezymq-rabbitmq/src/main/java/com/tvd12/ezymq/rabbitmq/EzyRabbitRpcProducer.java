@@ -18,14 +18,17 @@ import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcClient;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
-public class EzyRabbitRpcCaller
-    extends EzyLoggable implements EzyCloseable {
+public class EzyRabbitRpcProducer
+    extends EzyLoggable
+    implements EzyCloseable {
 
     protected final EzyRabbitRpcClient client;
     protected final EzyEntityCodec entityCodec;
 
-    public EzyRabbitRpcCaller(
-        EzyRabbitRpcClient client, EzyEntityCodec entityCodec) {
+    public EzyRabbitRpcProducer(
+        EzyRabbitRpcClient client,
+        EzyEntityCodec entityCodec
+    ) {
         this.client = client;
         this.entityCodec = entityCodec;
     }
@@ -98,7 +101,9 @@ public class EzyRabbitRpcCaller
     }
 
     protected void rawFire(
-        BasicProperties requestProperties, byte[] requestMessage) {
+        BasicProperties requestProperties,
+        byte[] requestMessage
+    ) {
         try {
             client.doFire(requestProperties, requestMessage);
         } catch (Exception e) {
@@ -107,7 +112,9 @@ public class EzyRabbitRpcCaller
     }
 
     protected Response rawCall(
-        BasicProperties requestProperties, byte[] requestMessage) {
+        BasicProperties requestProperties,
+        byte[] requestMessage
+    ) {
         try {
             return client.doCall(requestProperties, requestMessage);
         } catch (TimeoutException e) {
@@ -117,7 +124,7 @@ public class EzyRabbitRpcCaller
         }
     }
 
-    public static class Builder implements EzyBuilder<EzyRabbitRpcCaller> {
+    public static class Builder implements EzyBuilder<EzyRabbitRpcProducer> {
 
         protected EzyRabbitRpcClient client;
         protected EzyEntityCodec entityCodec;
@@ -133,8 +140,8 @@ public class EzyRabbitRpcCaller
         }
 
         @Override
-        public EzyRabbitRpcCaller build() {
-            return new EzyRabbitRpcCaller(client, entityCodec);
+        public EzyRabbitRpcProducer build() {
+            return new EzyRabbitRpcProducer(client, entityCodec);
         }
     }
 }

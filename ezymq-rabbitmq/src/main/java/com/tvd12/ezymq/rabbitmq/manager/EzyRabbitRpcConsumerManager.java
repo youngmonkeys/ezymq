@@ -2,51 +2,51 @@ package com.tvd12.ezymq.rabbitmq.manager;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
-import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcHandler;
+import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcConsumer;
 import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitDataCodec;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcServer;
-import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitRpcHandlerSetting;
+import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitRpcConsumerSetting;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class EzyRabbitRpcHandlerManager extends EzyRabbitAbstractManager {
+public class EzyRabbitRpcConsumerManager extends EzyRabbitAbstractManager {
 
     protected final EzyRabbitDataCodec dataCodec;
-    protected final Map<String, EzyRabbitRpcHandler> rpcHandlers;
-    protected final Map<String, EzyRabbitRpcHandlerSetting> rpcHandlerSettings;
+    protected final Map<String, EzyRabbitRpcConsumer> rpcConsumers;
+    protected final Map<String, EzyRabbitRpcConsumerSetting> rpcConsumerSettings;
 
-    public EzyRabbitRpcHandlerManager(
+    public EzyRabbitRpcConsumerManager(
         EzyRabbitDataCodec dataCodec,
         ConnectionFactory connectionFactory,
-        Map<String, EzyRabbitRpcHandlerSetting> rpcHandlerSettings
+        Map<String, EzyRabbitRpcConsumerSetting> rpcConsumerSettings
     ) {
         super(connectionFactory);
         this.dataCodec = dataCodec;
-        this.rpcHandlerSettings = rpcHandlerSettings;
-        this.rpcHandlers = createRpcCallers();
+        this.rpcConsumerSettings = rpcConsumerSettings;
+        this.rpcConsumers = createRpcCallers();
     }
 
-    public EzyRabbitRpcHandler getRpcHandler(String name) {
-        EzyRabbitRpcHandler handler = rpcHandlers.get(name);
+    public EzyRabbitRpcConsumer getRpcHandler(String name) {
+        EzyRabbitRpcConsumer handler = rpcConsumers.get(name);
         if (handler == null) {
             throw new IllegalArgumentException("has no rpc handler with name: " + name);
         }
         return handler;
     }
 
-    protected Map<String, EzyRabbitRpcHandler> createRpcCallers() {
-        Map<String, EzyRabbitRpcHandler> map = new HashMap<>();
-        for (String name : rpcHandlerSettings.keySet()) {
-            EzyRabbitRpcHandlerSetting setting = rpcHandlerSettings.get(name);
+    protected Map<String, EzyRabbitRpcConsumer> createRpcCallers() {
+        Map<String, EzyRabbitRpcConsumer> map = new HashMap<>();
+        for (String name : rpcConsumerSettings.keySet()) {
+            EzyRabbitRpcConsumerSetting setting = rpcConsumerSettings.get(name);
             map.put(name, createRpcHandler(name, setting));
         }
         return map;
     }
 
-    protected EzyRabbitRpcHandler createRpcHandler(
+    protected EzyRabbitRpcConsumer createRpcHandler(
         String name,
-        EzyRabbitRpcHandlerSetting setting
+        EzyRabbitRpcConsumerSetting setting
     ) {
         try {
             return createRpcHandler(setting);
@@ -55,8 +55,8 @@ public class EzyRabbitRpcHandlerManager extends EzyRabbitAbstractManager {
         }
     }
 
-    protected EzyRabbitRpcHandler createRpcHandler(
-        EzyRabbitRpcHandlerSetting setting
+    protected EzyRabbitRpcConsumer createRpcHandler(
+        EzyRabbitRpcConsumerSetting setting
     ) throws Exception {
         Channel channel = getChannel(setting);
         channel.basicQos(setting.getPrefetchCount());
@@ -66,7 +66,7 @@ public class EzyRabbitRpcHandlerManager extends EzyRabbitAbstractManager {
             .replyRoutingKey(setting.getReplyRoutingKey())
             .queueName(setting.getRequestQueueName())
             .build();
-        EzyRabbitRpcHandler handler = EzyRabbitRpcHandler.builder()
+        EzyRabbitRpcConsumer handler = EzyRabbitRpcConsumer.builder()
             .dataCodec(dataCodec)
             .actionInterceptor(setting.getActionInterceptor())
             .requestHandlers(setting.getRequestHandlers())
@@ -77,7 +77,7 @@ public class EzyRabbitRpcHandlerManager extends EzyRabbitAbstractManager {
     }
 
     public void close() {
-        for (EzyRabbitRpcHandler handler : rpcHandlers.values()) {
+        for (EzyRabbitRpcConsumer handler : rpcConsumers.values()) {
             handler.close();
         }
     }

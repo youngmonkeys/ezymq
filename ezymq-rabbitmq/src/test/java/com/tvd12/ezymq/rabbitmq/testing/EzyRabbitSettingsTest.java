@@ -6,8 +6,8 @@ import com.tvd12.ezyfox.io.EzyMaps;
 import com.tvd12.ezymq.rabbitmq.factory.EzyRabbitSimpleCorrelationIdFactory;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandlers;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitResponseConsumer;
-import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitRpcCallerSetting;
-import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitRpcHandlerSetting;
+import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitRpcProducerSetting;
+import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitRpcConsumerSetting;
 import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitSettings;
 import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitTopicSetting;
 import com.tvd12.ezymq.rabbitmq.testing.mockup.ChannelMockup;
@@ -24,7 +24,7 @@ public class EzyRabbitSettingsTest {
             .addTopicSetting("topic", EzyRabbitTopicSetting.builder()
                 .channel(channel)
                 .build())
-            .addRpcCallerSetting("rpccaller", EzyRabbitRpcCallerSetting.builder()
+            .addRpcCallerSetting("rpccaller", EzyRabbitRpcProducerSetting.builder()
                 .channel(channel)
                 .capacity(100)
                 .correlationIdFactory(new EzyRabbitSimpleCorrelationIdFactory())
@@ -35,7 +35,7 @@ public class EzyRabbitSettingsTest {
                     }
                 })
                 .build())
-            .addRpcHandlerSetting("rpchandler", EzyRabbitRpcHandlerSetting.builder()
+            .addRpcHandlerSetting("rpchandler", EzyRabbitRpcConsumerSetting.builder()
                 .channel(channel)
                 .threadPoolSize(8)
                 .prefetchCount(100)

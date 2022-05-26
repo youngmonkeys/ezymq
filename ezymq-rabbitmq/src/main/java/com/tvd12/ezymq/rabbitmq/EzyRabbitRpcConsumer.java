@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadFactory;
 
-public class EzyRabbitRpcHandler
+public class EzyRabbitRpcConsumer
     extends EzyLoggable
     implements EzyRabbitRpcCallHandler, EzyStartable, EzyCloseable {
 
@@ -35,14 +35,14 @@ public class EzyRabbitRpcHandler
     @Setter
     protected EzyRabbitActionInterceptor actionInterceptor;
 
-    public EzyRabbitRpcHandler(
+    public EzyRabbitRpcConsumer(
         EzyRabbitRpcServer server,
         EzyRabbitDataCodec dataCodec,
         EzyRabbitRequestHandlers requestHandlers) {
         this(0, server, dataCodec, requestHandlers);
     }
 
-    public EzyRabbitRpcHandler(
+    public EzyRabbitRpcConsumer(
         int threadPoolSize,
         EzyRabbitRpcServer server,
         EzyRabbitDataCodec dataCodec,
@@ -166,7 +166,7 @@ public class EzyRabbitRpcHandler
         return responseBytes;
     }
 
-    public static class Builder implements EzyBuilder<EzyRabbitRpcHandler> {
+    public static class Builder implements EzyBuilder<EzyRabbitRpcConsumer> {
         protected int threadPoolSize;
         protected EzyRabbitRpcServer server;
         protected EzyRabbitDataCodec dataCodec;
@@ -199,8 +199,8 @@ public class EzyRabbitRpcHandler
         }
 
         @Override
-        public EzyRabbitRpcHandler build() {
-            EzyRabbitRpcHandler product = new EzyRabbitRpcHandler(
+        public EzyRabbitRpcConsumer build() {
+            EzyRabbitRpcConsumer product = new EzyRabbitRpcConsumer(
                 threadPoolSize,
                 server,
                 dataCodec,

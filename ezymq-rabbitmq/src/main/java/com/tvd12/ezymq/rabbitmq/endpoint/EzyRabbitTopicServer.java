@@ -49,7 +49,8 @@ public class EzyRabbitTopicServer
                 String consumerTag,
                 Envelope envelope,
                 BasicProperties properties,
-                byte[] body) throws IOException {
+                byte[] body
+            ) {
                 Delivery delivery = new Delivery(envelope, properties, body);
                 messageHandler.handle(delivery);
             }
@@ -77,5 +78,4 @@ public class EzyRabbitTopicServer
             }
         }
     }
-
 }

@@ -6,7 +6,7 @@ import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitResponseConsumer;
 import lombok.Getter;
 
 @Getter
-public class EzyRabbitRpcCallerSetting extends EzyRabbitEndpointSetting {
+public class EzyRabbitRpcProducerSetting extends EzyRabbitEndpointSetting {
 
     protected final int capacity;
     protected final int defaultTimeout;
@@ -17,7 +17,7 @@ public class EzyRabbitRpcCallerSetting extends EzyRabbitEndpointSetting {
     protected final EzyRabbitCorrelationIdFactory correlationIdFactory;
     protected final EzyRabbitResponseConsumer unconsumedResponseConsumer;
 
-    public EzyRabbitRpcCallerSetting(
+    public EzyRabbitRpcProducerSetting(
         Channel channel,
         String exchange,
         int prefetchCount,
@@ -111,8 +111,8 @@ public class EzyRabbitRpcCallerSetting extends EzyRabbitEndpointSetting {
         }
 
         @Override
-        public EzyRabbitRpcCallerSetting build() {
-            return new EzyRabbitRpcCallerSetting(
+        public EzyRabbitRpcProducerSetting build() {
+            return new EzyRabbitRpcProducerSetting(
                 channel,
                 exchange,
                 prefetchCount,

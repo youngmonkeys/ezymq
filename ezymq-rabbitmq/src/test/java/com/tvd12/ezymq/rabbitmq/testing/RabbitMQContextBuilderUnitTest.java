@@ -8,7 +8,7 @@ import com.tvd12.ezyfox.exception.NotFoundException;
 import com.tvd12.ezyfox.reflect.EzyReflectionProxy;
 import com.tvd12.ezyfox.util.EzyMapBuilder;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitMQProxy;
-import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcCaller;
+import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitTopic;
 import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitBytesDataCodec;
 import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitBytesEntityCodec;
@@ -111,7 +111,7 @@ public class RabbitMQContextBuilderUnitTest {
             }
         });
         topic.publish("hello topic");
-        EzyRabbitRpcCaller caller = context.getRpcCaller("fibonacci");
+        EzyRabbitRpcProducer caller = context.getRpcCaller("fibonacci");
         long start = System.currentTimeMillis();
         for (int i = 0; i < 1; ++i) {
             System.out.println("rabbit rpc start call: " + i);

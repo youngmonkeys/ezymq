@@ -1,7 +1,7 @@
 package com.tvd12.ezymq.rabbitmq.testing;
 
 import com.tvd12.ezymq.rabbitmq.EzyRabbitMQProxy;
-import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcCaller;
+import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitTopic;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitActionInterceptor;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitMessageConsumer;
@@ -83,7 +83,7 @@ public class RabbitMQContextBuilderTest extends RabbitBaseTest {
         long elapsedTopicTime = System.currentTimeMillis() - startTopicTime;
         System.out.println("elapsedTopicTime: " + elapsedTopicTime);
 
-        EzyRabbitRpcCaller caller = context.getRpcCaller("fibonacci");
+        EzyRabbitRpcProducer caller = context.getRpcCaller("fibonacci");
         long start = System.currentTimeMillis();
         for (int i = 0; i < 1000; ++i) {
 //			System.out.println("rabbit rpc start call: " + i);

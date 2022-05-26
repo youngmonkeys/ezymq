@@ -4,8 +4,8 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.tvd12.ezyfox.builder.EzyArrayBuilder;
 import com.tvd12.ezyfox.factory.EzyEntityFactory;
-import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcCaller;
-import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcHandler;
+import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
+import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcConsumer;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcClient;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcServer;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandlers;
@@ -36,7 +36,7 @@ public class RabbitRpcAllRunner2 extends RabbitBaseTest {
             try {
                 System.out.println("thread-" + Thread.currentThread().getName() + ": start server");
                 EzyRabbitRpcServer server = newServer();
-                EzyRabbitRpcHandler handler = new EzyRabbitRpcHandler(server, dataCodec, requestHandlers);
+                EzyRabbitRpcConsumer handler = new EzyRabbitRpcConsumer(server, dataCodec, requestHandlers);
                 handler.start();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -67,7 +67,7 @@ public class RabbitRpcAllRunner2 extends RabbitBaseTest {
     @SuppressWarnings("resource")
     protected void rpc() throws Exception {
         EzyRabbitRpcClient client = newClient();
-        EzyRabbitRpcCaller caller = new EzyRabbitRpcCaller(client, entityCodec);
+        EzyRabbitRpcProducer caller = new EzyRabbitRpcProducer(client, entityCodec);
         System.out.println("thread-" + Thread.currentThread().getName() + ": start rpc");
         long start = System.currentTimeMillis();
         for (int i = 0; i < 1000; ++i) {

@@ -75,7 +75,7 @@ public class EzyRabbitRpcServer
                 logger.info("rpc server by request queue: {} has cancelled", requestQueueName, e);
             } else if (e instanceof ShutdownSignalException) {
                 this.active = false;
-                logger.info("rpc server by request queue: {} has shutted down", requestQueueName, e);
+                logger.info("rpc server by request queue: {} has shutdown", requestQueueName, e);
             } else {
                 logger.warn("process request: {} of queue: {} error", request, requestQueueName, e);
             }

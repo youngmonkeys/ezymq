@@ -4,55 +4,56 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
 import com.tvd12.ezyfox.util.EzyCloseable;
-import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcCaller;
+import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
 import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitExchangeTypes;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcClient;
-import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitRpcCallerSetting;
+import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitRpcProducerSetting;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class EzyRabbitRpcCallerManager
-    extends EzyRabbitAbstractManager implements EzyCloseable {
+public class EzyRabbitRpcProducerManager
+    extends EzyRabbitAbstractManager
+    implements EzyCloseable {
 
     protected final EzyEntityCodec entityCodec;
-    protected final Map<String, EzyRabbitRpcCaller> rpcCallers;
+    protected final Map<String, EzyRabbitRpcProducer> rpProducers;
     protected final Map<String, Map<String, Object>> queueArguments;
-    protected final Map<String, EzyRabbitRpcCallerSetting> rpcCallerSettings;
+    protected final Map<String, EzyRabbitRpcProducerSetting> rpcProducerSettings;
 
-    public EzyRabbitRpcCallerManager(
+    public EzyRabbitRpcProducerManager(
         EzyEntityCodec entityCodec,
         ConnectionFactory connectionFactory,
         Map<String, Map<String, Object>> queueArguments,
-        Map<String, EzyRabbitRpcCallerSetting> rpcCallerSettings
+        Map<String, EzyRabbitRpcProducerSetting> rpcProducerSettings
     ) {
         super(connectionFactory);
         this.entityCodec = entityCodec;
         this.queueArguments = queueArguments;
-        this.rpcCallerSettings = rpcCallerSettings;
-        this.rpcCallers = createRpcCallers();
+        this.rpcProducerSettings = rpcProducerSettings;
+        this.rpProducers = createRpcCallers();
     }
 
-    public EzyRabbitRpcCaller getRpcCaller(String name) {
-        EzyRabbitRpcCaller caller = rpcCallers.get(name);
+    public EzyRabbitRpcProducer getRpcCaller(String name) {
+        EzyRabbitRpcProducer caller = rpProducers.get(name);
         if (caller == null) {
             throw new IllegalArgumentException("has no rpc caller with name: " + name);
         }
         return caller;
     }
 
-    protected Map<String, EzyRabbitRpcCaller> createRpcCallers() {
-        Map<String, EzyRabbitRpcCaller> map = new HashMap<>();
-        for (String name : rpcCallerSettings.keySet()) {
-            EzyRabbitRpcCallerSetting setting = rpcCallerSettings.get(name);
+    protected Map<String, EzyRabbitRpcProducer> createRpcCallers() {
+        Map<String, EzyRabbitRpcProducer> map = new HashMap<>();
+        for (String name : rpcProducerSettings.keySet()) {
+            EzyRabbitRpcProducerSetting setting = rpcProducerSettings.get(name);
             map.put(name, createRpcCaller(name, setting));
         }
         return map;
     }
 
-    protected EzyRabbitRpcCaller createRpcCaller(
+    protected EzyRabbitRpcProducer createRpcCaller(
         String name,
-        EzyRabbitRpcCallerSetting setting
+        EzyRabbitRpcProducerSetting setting
     ) {
         try {
             return createRpcCaller(setting);
@@ -61,8 +62,8 @@ public class EzyRabbitRpcCallerManager
         }
     }
 
-    protected EzyRabbitRpcCaller createRpcCaller(
-        EzyRabbitRpcCallerSetting setting
+    protected EzyRabbitRpcProducer createRpcCaller(
+        EzyRabbitRpcProducerSetting setting
     ) throws Exception {
         Channel channel = getChannel(setting);
         declareComponents(channel, setting);
@@ -77,14 +78,14 @@ public class EzyRabbitRpcCallerManager
             .correlationIdFactory(setting.getCorrelationIdFactory())
             .unconsumedResponseConsumer(setting.getUnconsumedResponseConsumer())
             .build();
-        return EzyRabbitRpcCaller.builder()
+        return EzyRabbitRpcProducer.builder()
             .entityCodec(entityCodec)
             .client(client).build();
     }
 
     protected void declareComponents(
         Channel channel,
-        EzyRabbitRpcCallerSetting setting
+        EzyRabbitRpcProducerSetting setting
     ) throws Exception {
         channel.basicQos(setting.getPrefetchCount());
         channel.exchangeDeclare(
@@ -120,7 +121,7 @@ public class EzyRabbitRpcCallerManager
     }
 
     public void close() {
-        for (EzyRabbitRpcCaller caller : rpcCallers.values()) {
+        for (EzyRabbitRpcProducer caller : rpProducers.values()) {
             caller.close();
         }
     }
