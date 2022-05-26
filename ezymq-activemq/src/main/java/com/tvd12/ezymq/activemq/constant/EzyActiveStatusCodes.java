@@ -1,6 +1,7 @@
 package com.tvd12.ezymq.activemq.constant;
 
 public final class EzyActiveStatusCodes {
+
     public static final int SUCCESS = 200;
     public static final int BAD_REQUEST = 400;
     public static final int NOT_FOUND = 404;

@@ -12,13 +12,13 @@ import java.util.Map;
 public class EzyActiveSettings {
 
     protected final Map<String, EzyActiveTopicSetting> topicSettings;
-    protected final Map<String, EzyActiveRpcCallerSetting> rpcCallerSettings;
-    protected final Map<String, EzyActiveRpcHandlerSetting> rpcHandlerSettings;
+    protected final Map<String, EzyActiveRpcProducerSetting> rpcCallerSettings;
+    protected final Map<String, EzyActiveRpcConsumerSetting> rpcHandlerSettings;
 
     public EzyActiveSettings(
         Map<String, EzyActiveTopicSetting> topicSettings,
-        Map<String, EzyActiveRpcCallerSetting> rpcCallerSettings,
-        Map<String, EzyActiveRpcHandlerSetting> rpcHandlerSettings
+        Map<String, EzyActiveRpcProducerSetting> rpcCallerSettings,
+        Map<String, EzyActiveRpcConsumerSetting> rpcHandlerSettings
     ) {
         this.topicSettings = Collections.unmodifiableMap(topicSettings);
         this.rpcCallerSettings = Collections.unmodifiableMap(rpcCallerSettings);
@@ -33,11 +33,11 @@ public class EzyActiveSettings {
 
         protected EzyActiveMQProxyBuilder parent;
         protected Map<String, EzyActiveTopicSetting> topicSettings;
-        protected Map<String, EzyActiveRpcCallerSetting> rpcCallerSettings;
-        protected Map<String, EzyActiveRpcHandlerSetting> rpcHandlerSettings;
+        protected Map<String, EzyActiveRpcProducerSetting> rpcCallerSettings;
+        protected Map<String, EzyActiveRpcConsumerSetting> rpcHandlerSettings;
         protected Map<String, EzyActiveTopicSetting.Builder> topicSettingBuilders;
-        protected Map<String, EzyActiveRpcCallerSetting.Builder> rpcCallerSettingBuilders;
-        protected Map<String, EzyActiveRpcHandlerSetting.Builder> rpcHandlerSettingBuilders;
+        protected Map<String, EzyActiveRpcProducerSetting.Builder> rpcCallerSettingBuilders;
+        protected Map<String, EzyActiveRpcConsumerSetting.Builder> rpcHandlerSettingBuilders;
 
         public Builder() {
             this(null);
@@ -58,14 +58,14 @@ public class EzyActiveSettings {
                 name, k -> new EzyActiveTopicSetting.Builder(this));
         }
 
-        public EzyActiveRpcCallerSetting.Builder rpcCallerSettingBuilder(String name) {
+        public EzyActiveRpcProducerSetting.Builder rpcCallerSettingBuilder(String name) {
             return rpcCallerSettingBuilders.computeIfAbsent(
-                name, k -> new EzyActiveRpcCallerSetting.Builder(this));
+                name, k -> new EzyActiveRpcProducerSetting.Builder(this));
         }
 
-        public EzyActiveRpcHandlerSetting.Builder rpcHandlerSettingBuilder(String name) {
+        public EzyActiveRpcConsumerSetting.Builder rpcHandlerSettingBuilder(String name) {
             return rpcHandlerSettingBuilders.computeIfAbsent(
-                name, k -> new EzyActiveRpcHandlerSetting.Builder(this));
+                name, k -> new EzyActiveRpcConsumerSetting.Builder(this));
         }
 
         public Builder addTopicSetting(String name, EzyActiveTopicSetting setting) {
@@ -73,12 +73,12 @@ public class EzyActiveSettings {
             return this;
         }
 
-        public Builder addRpcCallerSetting(String name, EzyActiveRpcCallerSetting setting) {
+        public Builder addRpcCallerSetting(String name, EzyActiveRpcProducerSetting setting) {
             this.rpcCallerSettings.put(name, setting);
             return this;
         }
 
-        public Builder addRpcHandlerSetting(String name, EzyActiveRpcHandlerSetting setting) {
+        public Builder addRpcHandlerSetting(String name, EzyActiveRpcConsumerSetting setting) {
             this.rpcHandlerSettings.put(name, setting);
             return this;
         }
@@ -95,11 +95,11 @@ public class EzyActiveSettings {
                 topicSettings.put(name, (EzyActiveTopicSetting) builder.build());
             }
             for (String name : rpcCallerSettingBuilders.keySet()) {
-                EzyActiveRpcCallerSetting.Builder builder = rpcCallerSettingBuilders.get(name);
+                EzyActiveRpcProducerSetting.Builder builder = rpcCallerSettingBuilders.get(name);
                 rpcCallerSettings.put(name, builder.build());
             }
             for (String name : rpcHandlerSettingBuilders.keySet()) {
-                EzyActiveRpcHandlerSetting.Builder builder = rpcHandlerSettingBuilders.get(name);
+                EzyActiveRpcConsumerSetting.Builder builder = rpcHandlerSettingBuilders.get(name);
                 rpcHandlerSettings.put(name, builder.build());
             }
             return new EzyActiveSettings(topicSettings, rpcCallerSettings, rpcHandlerSettings);

@@ -17,7 +17,8 @@ public class EzyActiveRpcServer
         Session session,
         Destination requestQueue,
         Destination replyQueue,
-        int threadPoolSize) throws Exception {
+        int threadPoolSize
+    ) throws Exception {
         super(session, requestQueue, replyQueue, threadPoolSize);
     }
 
@@ -70,7 +71,9 @@ public class EzyActiveRpcServer
     }
 
     protected void handleFire(
-        EzyActiveProperties requestProperties, byte[] requestBody) {
+        EzyActiveProperties requestProperties,
+        byte[] requestBody
+    ) {
         callHandler.handleFire(requestProperties, requestBody);
     }
 
@@ -108,7 +111,11 @@ public class EzyActiveRpcServer
         @Override
         protected EzyActiveRpcEndpoint newProduct() throws Exception {
             return new EzyActiveRpcServer(
-                session, requestQueue, replyQueue, threadPoolSize);
+                session,
+                requestQueue,
+                replyQueue,
+                threadPoolSize
+            );
         }
     }
 }

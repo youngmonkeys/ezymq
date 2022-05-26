@@ -10,12 +10,12 @@ import javax.jms.Session;
 import java.util.Map;
 
 @Getter
-public class EzyActiveRpcHandlerSetting extends EzyActiveRpcEndpointSetting {
+public class EzyActiveRpcConsumerSetting extends EzyActiveRpcEndpointSetting {
 
     protected final EzyActiveRequestHandlers requestHandlers;
     protected final EzyActiveActionInterceptor actionInterceptor;
 
-    public EzyActiveRpcHandlerSetting(
+    public EzyActiveRpcConsumerSetting(
         Session session,
         String requestQueueName,
         Destination requestQueue,
@@ -88,11 +88,11 @@ public class EzyActiveRpcHandlerSetting extends EzyActiveRpcEndpointSetting {
         }
 
         @Override
-        public EzyActiveRpcHandlerSetting build() {
+        public EzyActiveRpcConsumerSetting build() {
             if (requestHandlers == null) {
                 throw new NullPointerException("requestHandlers can not be null");
             }
-            return new EzyActiveRpcHandlerSetting(
+            return new EzyActiveRpcConsumerSetting(
                 session,
                 requestQueueName,
                 requestQueue,

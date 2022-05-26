@@ -1,7 +1,7 @@
 package com.tvd12.ezymq.activemq.test;
 
 import com.tvd12.ezymq.activemq.EzyActiveMQProxy;
-import com.tvd12.ezymq.activemq.EzyActiveRpcCaller;
+import com.tvd12.ezymq.activemq.EzyActiveRpcProducer;
 import com.tvd12.ezymq.activemq.EzyActiveTopic;
 import com.tvd12.ezymq.activemq.handler.EzyActiveActionInterceptor;
 import org.slf4j.Logger;
@@ -62,7 +62,7 @@ public class ActiveMQContextBuilderTest extends ActiveMQBaseTest {
         }
         long elapsedTopicTime = System.currentTimeMillis() - startTopicTime;
         System.out.println("elapsedTopicTime: " + elapsedTopicTime);
-        EzyActiveRpcCaller caller = context.getRpcCaller("fibonacci");
+        EzyActiveRpcProducer caller = context.getRpcCaller("fibonacci");
         long start = System.currentTimeMillis();
         for (int i = 0; i < 1000; ++i) {
 //			System.out.println("rabbit rpc start call: " + i);

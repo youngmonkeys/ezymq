@@ -2,15 +2,10 @@ package com.tvd12.ezymq.activemq.annotation;
 
 import java.lang.annotation.*;
 
-/**
- * Indicates that a class handle a server event.
- *
- * @author tavandung12
- */
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-public @interface EzyActiveMessageConsume {
+public @interface EzyActiveInterceptor {
 
     /**
      * command name.
@@ -24,5 +19,5 @@ public @interface EzyActiveMessageConsume {
      *
      * @return server event name
      */
-    String cmd() default "";
+    String command() default "";
 }

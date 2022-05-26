@@ -1,54 +1,55 @@
 package com.tvd12.ezymq.activemq.manager;
 
 import com.tvd12.ezyfox.util.EzyCloseable;
-import com.tvd12.ezymq.activemq.EzyActiveRpcHandler;
+import com.tvd12.ezymq.activemq.EzyActiveRpcConsumer;
 import com.tvd12.ezymq.activemq.codec.EzyActiveDataCodec;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveRpcServer;
-import com.tvd12.ezymq.activemq.setting.EzyActiveRpcHandlerSetting;
+import com.tvd12.ezymq.activemq.setting.EzyActiveRpcConsumerSetting;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Session;
 import java.util.HashMap;
 import java.util.Map;
 
-public class EzyActiveRpcHandlerManager
-    extends EzyActiveAbstractManager implements EzyCloseable {
+public class EzyActiveRpcConsumerManager
+    extends EzyActiveAbstractManager
+    implements EzyCloseable {
 
     protected final EzyActiveDataCodec dataCodec;
-    protected final Map<String, EzyActiveRpcHandler> rpcHandlers;
-    protected final Map<String, EzyActiveRpcHandlerSetting> rpcHandlerSettings;
+    protected final Map<String, EzyActiveRpcConsumer> rpcConsumers;
+    protected final Map<String, EzyActiveRpcConsumerSetting> rpcConsumerSettings;
 
-    public EzyActiveRpcHandlerManager(
+    public EzyActiveRpcConsumerManager(
         EzyActiveDataCodec dataCodec,
         ConnectionFactory connectionFactory,
-        Map<String, EzyActiveRpcHandlerSetting> rpcHandlerSettings
+        Map<String, EzyActiveRpcConsumerSetting> rpcConsumerSettings
     ) {
         super(connectionFactory);
         this.dataCodec = dataCodec;
-        this.rpcHandlerSettings = rpcHandlerSettings;
-        this.rpcHandlers = createRpcCallers();
+        this.rpcConsumerSettings = rpcConsumerSettings;
+        this.rpcConsumers = createRpcCallers();
     }
 
-    public EzyActiveRpcHandler getRpcHandler(String name) {
-        EzyActiveRpcHandler handler = rpcHandlers.get(name);
+    public EzyActiveRpcConsumer getRpcHandler(String name) {
+        EzyActiveRpcConsumer handler = rpcConsumers.get(name);
         if (handler == null) {
             throw new IllegalArgumentException("has no rpc handler with name: " + name);
         }
         return handler;
     }
 
-    protected Map<String, EzyActiveRpcHandler> createRpcCallers() {
-        Map<String, EzyActiveRpcHandler> map = new HashMap<>();
-        for (String name : rpcHandlerSettings.keySet()) {
-            EzyActiveRpcHandlerSetting setting = rpcHandlerSettings.get(name);
+    protected Map<String, EzyActiveRpcConsumer> createRpcCallers() {
+        Map<String, EzyActiveRpcConsumer> map = new HashMap<>();
+        for (String name : rpcConsumerSettings.keySet()) {
+            EzyActiveRpcConsumerSetting setting = rpcConsumerSettings.get(name);
             map.put(name, createRpcHandler(name, setting));
         }
         return map;
     }
 
-    protected EzyActiveRpcHandler createRpcHandler(
+    protected EzyActiveRpcConsumer createRpcHandler(
         String name,
-        EzyActiveRpcHandlerSetting setting
+        EzyActiveRpcConsumerSetting setting
     ) {
         try {
             return createRpcHandler(setting);
@@ -57,8 +58,8 @@ public class EzyActiveRpcHandlerManager
         }
     }
 
-    protected EzyActiveRpcHandler createRpcHandler(
-        EzyActiveRpcHandlerSetting setting
+    protected EzyActiveRpcConsumer createRpcHandler(
+        EzyActiveRpcConsumerSetting setting
     ) throws Exception {
         Session session = getSession(setting);
         EzyActiveRpcServer client = EzyActiveRpcServer.builder()
@@ -69,7 +70,7 @@ public class EzyActiveRpcHandlerManager
             .replyQueueName(setting.getReplyQueueName())
             .replyQueue(setting.getReplyQueue())
             .build();
-        EzyActiveRpcHandler handler = EzyActiveRpcHandler.builder()
+        EzyActiveRpcConsumer handler = EzyActiveRpcConsumer.builder()
             .dataCodec(dataCodec)
             .actionInterceptor(setting.getActionInterceptor())
             .requestHandlers(setting.getRequestHandlers())
@@ -79,7 +80,7 @@ public class EzyActiveRpcHandlerManager
     }
 
     public void close() {
-        for (EzyActiveRpcHandler handler : rpcHandlers.values()) {
+        for (EzyActiveRpcConsumer handler : rpcConsumers.values()) {
             handler.close();
         }
     }

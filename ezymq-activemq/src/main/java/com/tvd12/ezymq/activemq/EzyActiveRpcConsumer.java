@@ -20,7 +20,7 @@ import lombok.Setter;
 import java.util.HashMap;
 import java.util.Map;
 
-public class EzyActiveRpcHandler
+public class EzyActiveRpcConsumer
     extends EzyLoggable
     implements EzyActiveRpcCallHandler, EzyStartable, EzyCloseable {
 
@@ -30,7 +30,7 @@ public class EzyActiveRpcHandler
     @Setter
     protected EzyActiveActionInterceptor actionInterceptor;
 
-    public EzyActiveRpcHandler(
+    public EzyActiveRpcConsumer(
         EzyActiveRpcServer server,
         EzyActiveDataCodec dataCodec,
         EzyActiveRequestHandlers requestHandlers
@@ -38,7 +38,7 @@ public class EzyActiveRpcHandler
         this(0, server, dataCodec, requestHandlers);
     }
 
-    public EzyActiveRpcHandler(
+    public EzyActiveRpcConsumer(
         int threadPoolSize,
         EzyActiveRpcServer server,
         EzyActiveDataCodec dataCodec,
@@ -144,7 +144,7 @@ public class EzyActiveRpcHandler
             .build();
     }
 
-    public static class Builder implements EzyBuilder<EzyActiveRpcHandler> {
+    public static class Builder implements EzyBuilder<EzyActiveRpcConsumer> {
         protected int threadPoolSize;
         protected EzyActiveRpcServer server;
         protected EzyActiveDataCodec dataCodec;
@@ -177,8 +177,8 @@ public class EzyActiveRpcHandler
         }
 
         @Override
-        public EzyActiveRpcHandler build() {
-            EzyActiveRpcHandler product = new EzyActiveRpcHandler(
+        public EzyActiveRpcConsumer build() {
+            EzyActiveRpcConsumer product = new EzyActiveRpcConsumer(
                 threadPoolSize,
                 server,
                 dataCodec,

@@ -107,16 +107,20 @@ public class EzyActiveRpcClient extends EzyActiveRpcEndpoint {
         }
     }
 
-    public void doFire(EzyActiveProperties props, byte[] message)
-        throws Exception {
+    public void doFire(
+        EzyActiveProperties props,
+        byte[] message
+    ) throws Exception {
         EzyActiveProperties newProperties = props != null
             ? props
             : EzyActiveProperties.builder().build();
         publish(newProperties, message);
     }
 
-    public EzyActiveMessage doCall(EzyActiveProperties props, byte[] message)
-        throws Exception {
+    public EzyActiveMessage doCall(
+        EzyActiveProperties props,
+        byte[] message
+    ) throws Exception {
         return doCall(props, message, defaultTimeout);
     }
 

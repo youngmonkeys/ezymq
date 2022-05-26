@@ -18,7 +18,9 @@ public class EzyActiveEndpoint extends EzyLoggable {
     }
 
     protected void setMessageProperties(
-        Message message, EzyActiveProperties props) throws Exception {
+        Message message,
+        EzyActiveProperties props
+    ) throws Exception {
         EzyActiveMessages.setMessageProperties(message, props);
     }
 
@@ -27,12 +29,16 @@ public class EzyActiveEndpoint extends EzyLoggable {
     }
 
     protected EzyActiveProperties getMessageProperties(
-        Message message) throws Exception {
+        Message message
+    ) throws Exception {
         return EzyActiveMessages.getMessageProperties(message);
     }
 
-    public void publish(MessageProducer producer,
-                        EzyActiveProperties props, byte[] message) throws Exception {
+    public void publish(
+        MessageProducer producer,
+        EzyActiveProperties props,
+        byte[] message
+    ) throws Exception {
         BytesMessage data = session.createBytesMessage();
         setMessageProperties(data, props);
         data.writeBytes(message);

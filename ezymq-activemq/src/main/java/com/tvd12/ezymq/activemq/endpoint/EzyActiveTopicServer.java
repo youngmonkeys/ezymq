@@ -25,7 +25,8 @@ public class EzyActiveTopicServer
     public EzyActiveTopicServer(
         Session session,
         Destination topic,
-        int threadPoolSize) throws Exception {
+        int threadPoolSize
+    ) throws Exception {
         super(session, topic);
         this.threadPoolSize = threadPoolSize;
         this.consumer = session.createConsumer(topic);

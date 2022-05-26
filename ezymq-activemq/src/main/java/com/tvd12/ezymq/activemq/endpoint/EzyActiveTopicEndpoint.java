@@ -17,7 +17,8 @@ public abstract class EzyActiveTopicEndpoint
     }
 
     @SuppressWarnings("unchecked")
-    public abstract static class Builder<B extends Builder<B>> extends EzyActiveEndpoint.Builder<B> {
+    public abstract static class Builder<B extends Builder<B>>
+        extends EzyActiveEndpoint.Builder<B> {
 
         protected String topicName;
         protected Destination topic;

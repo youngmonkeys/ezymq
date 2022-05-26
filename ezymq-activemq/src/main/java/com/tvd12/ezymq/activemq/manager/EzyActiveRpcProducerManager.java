@@ -1,52 +1,52 @@
 package com.tvd12.ezymq.activemq.manager;
 
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
-import com.tvd12.ezymq.activemq.EzyActiveRpcCaller;
+import com.tvd12.ezymq.activemq.EzyActiveRpcProducer;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveRpcClient;
-import com.tvd12.ezymq.activemq.setting.EzyActiveRpcCallerSetting;
+import com.tvd12.ezymq.activemq.setting.EzyActiveRpcProducerSetting;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Session;
 import java.util.HashMap;
 import java.util.Map;
 
-public class EzyActiveRpcCallerManager extends EzyActiveAbstractManager {
+public class EzyActiveRpcProducerManager extends EzyActiveAbstractManager {
 
     protected final EzyEntityCodec entityCodec;
-    protected final Map<String, EzyActiveRpcCaller> rpcCallers;
-    protected final Map<String, EzyActiveRpcCallerSetting> rpcCallerSettings;
+    protected final Map<String, EzyActiveRpcProducer> rpcProducers;
+    protected final Map<String, EzyActiveRpcProducerSetting> rpcProducerSettings;
 
-    public EzyActiveRpcCallerManager(
+    public EzyActiveRpcProducerManager(
         EzyEntityCodec entityCodec,
         ConnectionFactory connectionFactory,
-        Map<String, EzyActiveRpcCallerSetting> rpcCallerSettings
+        Map<String, EzyActiveRpcProducerSetting> rpcCallerSettings
     ) {
         super(connectionFactory);
         this.entityCodec = entityCodec;
-        this.rpcCallerSettings = rpcCallerSettings;
-        this.rpcCallers = createRpcCallers();
+        this.rpcProducerSettings = rpcCallerSettings;
+        this.rpcProducers = createRpcCallers();
     }
 
-    public EzyActiveRpcCaller getRpcCaller(String name) {
-        EzyActiveRpcCaller caller = rpcCallers.get(name);
+    public EzyActiveRpcProducer getRpcCaller(String name) {
+        EzyActiveRpcProducer caller = rpcProducers.get(name);
         if (caller == null) {
             throw new IllegalArgumentException("has no rpc caller with name: " + name);
         }
         return caller;
     }
 
-    protected Map<String, EzyActiveRpcCaller> createRpcCallers() {
-        Map<String, EzyActiveRpcCaller> map = new HashMap<>();
-        for (String name : rpcCallerSettings.keySet()) {
-            EzyActiveRpcCallerSetting setting = rpcCallerSettings.get(name);
+    protected Map<String, EzyActiveRpcProducer> createRpcCallers() {
+        Map<String, EzyActiveRpcProducer> map = new HashMap<>();
+        for (String name : rpcProducerSettings.keySet()) {
+            EzyActiveRpcProducerSetting setting = rpcProducerSettings.get(name);
             map.put(name, createRpcCaller(name, setting));
         }
         return map;
     }
 
-    protected EzyActiveRpcCaller createRpcCaller(
+    protected EzyActiveRpcProducer createRpcCaller(
         String name,
-        EzyActiveRpcCallerSetting setting
+        EzyActiveRpcProducerSetting setting
     ) {
         try {
             return createRpcCaller(setting);
@@ -55,8 +55,8 @@ public class EzyActiveRpcCallerManager extends EzyActiveAbstractManager {
         }
     }
 
-    protected EzyActiveRpcCaller createRpcCaller(
-        EzyActiveRpcCallerSetting setting
+    protected EzyActiveRpcProducer createRpcCaller(
+        EzyActiveRpcProducerSetting setting
     ) throws Exception {
         Session session = getSession(setting);
         EzyActiveRpcClient client = EzyActiveRpcClient.builder()
@@ -71,13 +71,13 @@ public class EzyActiveRpcCallerManager extends EzyActiveAbstractManager {
             .correlationIdFactory(setting.getCorrelationIdFactory())
             .unconsumedResponseConsumer(setting.getUnconsumedResponseConsumer())
             .build();
-        return EzyActiveRpcCaller.builder()
+        return EzyActiveRpcProducer.builder()
             .entityCodec(entityCodec)
             .client(client).build();
     }
 
     public void close() {
-        for (EzyActiveRpcCaller caller : rpcCallers.values()) {
+        for (EzyActiveRpcProducer caller : rpcProducers.values()) {
             caller.close();
         }
     }

@@ -2,8 +2,8 @@ package com.tvd12.ezymq.activemq.test;
 
 import com.tvd12.ezyfox.builder.EzyArrayBuilder;
 import com.tvd12.ezyfox.factory.EzyEntityFactory;
-import com.tvd12.ezymq.activemq.EzyActiveRpcCaller;
-import com.tvd12.ezymq.activemq.EzyActiveRpcHandler;
+import com.tvd12.ezymq.activemq.EzyActiveRpcProducer;
+import com.tvd12.ezymq.activemq.EzyActiveRpcConsumer;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveRpcClient;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveRpcServer;
 import com.tvd12.ezymq.activemq.handler.EzyActiveRequestHandlers;
@@ -33,7 +33,7 @@ public class ActiveMQRpcAllRunner extends ActiveMQBaseTest {
         try {
             System.out.println("thread-" + Thread.currentThread().getName() + ": start server");
             EzyActiveRpcServer server = newServer();
-            EzyActiveRpcHandler handler = new EzyActiveRpcHandler(3, server, dataCodec, requestHandlers);
+            EzyActiveRpcConsumer handler = new EzyActiveRpcConsumer(3, server, dataCodec, requestHandlers);
             handler.start();
         } catch (Exception e) {
             e.printStackTrace();
@@ -58,7 +58,7 @@ public class ActiveMQRpcAllRunner extends ActiveMQBaseTest {
     @SuppressWarnings("resource")
     protected void rpc() throws Exception {
         EzyActiveRpcClient client = newClient();
-        EzyActiveRpcCaller caller = new EzyActiveRpcCaller(client, entityCodec);
+        EzyActiveRpcProducer caller = new EzyActiveRpcProducer(client, entityCodec);
         System.out.println("thread-" + Thread.currentThread().getName() + ": start rpc");
         long start = System.currentTimeMillis();
         for (int i = 0; i < 1000; ++i) {

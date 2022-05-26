@@ -8,14 +8,14 @@ import javax.jms.Destination;
 import javax.jms.Session;
 
 @Getter
-public class EzyActiveRpcCallerSetting extends EzyActiveRpcEndpointSetting {
+public class EzyActiveRpcProducerSetting extends EzyActiveRpcEndpointSetting {
 
     protected final int capacity;
     protected final int defaultTimeout;
     protected final EzyActiveCorrelationIdFactory correlationIdFactory;
     protected final EzyActiveResponseConsumer unconsumedResponseConsumer;
 
-    public EzyActiveRpcCallerSetting(
+    public EzyActiveRpcProducerSetting(
         Session session,
         String requestQueueName,
         Destination requestQueue,
@@ -86,8 +86,8 @@ public class EzyActiveRpcCallerSetting extends EzyActiveRpcEndpointSetting {
         }
 
         @Override
-        public EzyActiveRpcCallerSetting build() {
-            return new EzyActiveRpcCallerSetting(
+        public EzyActiveRpcProducerSetting build() {
+            return new EzyActiveRpcProducerSetting(
                 session,
                 requestQueueName,
                 requestQueue,

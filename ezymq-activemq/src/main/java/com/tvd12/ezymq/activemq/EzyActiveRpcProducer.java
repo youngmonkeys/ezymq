@@ -18,12 +18,12 @@ import com.tvd12.ezymq.activemq.util.EzyActiveProperties;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
-public class EzyActiveRpcCaller extends EzyLoggable implements EzyCloseable {
+public class EzyActiveRpcProducer extends EzyLoggable implements EzyCloseable {
 
     protected final EzyActiveRpcClient client;
     protected final EzyEntityCodec entityCodec;
 
-    public EzyActiveRpcCaller(
+    public EzyActiveRpcProducer(
         EzyActiveRpcClient client,
         EzyEntityCodec entityCodec
     ) {
@@ -121,7 +121,7 @@ public class EzyActiveRpcCaller extends EzyLoggable implements EzyCloseable {
         }
     }
 
-    public static class Builder implements EzyBuilder<EzyActiveRpcCaller> {
+    public static class Builder implements EzyBuilder<EzyActiveRpcProducer> {
 
         protected EzyActiveRpcClient client;
         protected EzyEntityCodec entityCodec;
@@ -137,8 +137,8 @@ public class EzyActiveRpcCaller extends EzyLoggable implements EzyCloseable {
         }
 
         @Override
-        public EzyActiveRpcCaller build() {
-            return new EzyActiveRpcCaller(client, entityCodec);
+        public EzyActiveRpcProducer build() {
+            return new EzyActiveRpcProducer(client, entityCodec);
         }
     }
 }
