@@ -25,12 +25,12 @@ public class ActiveMQContextBuilderTest extends ActiveMQBaseTest {
             .serverEnable(true)
             .serverThreadPoolSize(3)
             .parent()
-            .rpcCallerSettingBuilder("fibonacci")
+            .rpcProducerSettingBuilder("fibonacci")
             .defaultTimeout(300 * 1000)
             .requestQueueName("rpc-request-test-1")
             .replyQueueName("rpc-response-test-1")
             .parent()
-            .rpcHandlerSettingBuilder("fibonacci")
+            .rpcConsumerSettingBuilder("fibonacci")
             .requestQueueName("rpc-request-test-1")
             .replyQueueName("rpc-response-test-1")
             .addRequestHandler("fibonacci", a -> (int) a + 3)
@@ -62,12 +62,12 @@ public class ActiveMQContextBuilderTest extends ActiveMQBaseTest {
         }
         long elapsedTopicTime = System.currentTimeMillis() - startTopicTime;
         System.out.println("elapsedTopicTime: " + elapsedTopicTime);
-        EzyActiveRpcProducer caller = context.getRpcCaller("fibonacci");
+        EzyActiveRpcProducer consumer = context.getRpcProducer("fibonacci");
         long start = System.currentTimeMillis();
         for (int i = 0; i < 1000; ++i) {
 //			System.out.println("rabbit rpc start call: " + i);
-            caller.call("fibonacci", 100, int.class);
-//			int result = caller.call("fibonacci", 100, int.class);
+            consumer.call("fibonacci", 100, int.class);
+//			int result = consumer.call("fibonacci", 100, int.class);
 //			System.out.println("i = " + i + ", result = " + result);
         }
         System.out.println("elapsed = " + (System.currentTimeMillis() - start));

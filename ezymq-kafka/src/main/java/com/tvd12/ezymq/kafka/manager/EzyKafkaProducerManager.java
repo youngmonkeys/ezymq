@@ -39,12 +39,12 @@ public class EzyKafkaProducerManager
         Map<String, EzyKafkaProducer> map = new HashMap<>();
         for (String name : producerSettings.keySet()) {
             EzyKafkaProducerSetting setting = producerSettings.get(name);
-            map.put(name, createCaller(name, setting));
+            map.put(name, createProducer(name, setting));
         }
         return map;
     }
 
-    protected EzyKafkaProducer createCaller(
+    protected EzyKafkaProducer createProducer(
         String name,
         EzyKafkaProducerSetting setting
     ) {

@@ -24,7 +24,7 @@ public class EzyRabbitSettingsTest {
             .addTopicSetting("topic", EzyRabbitTopicSetting.builder()
                 .channel(channel)
                 .build())
-            .addRpcCallerSetting("rpccaller", EzyRabbitRpcProducerSetting.builder()
+            .addRpcProducerSetting("rpcconsumer", EzyRabbitRpcProducerSetting.builder()
                 .channel(channel)
                 .capacity(100)
                 .correlationIdFactory(new EzyRabbitSimpleCorrelationIdFactory())
@@ -35,7 +35,7 @@ public class EzyRabbitSettingsTest {
                     }
                 })
                 .build())
-            .addRpcHandlerSetting("rpchandler", EzyRabbitRpcConsumerSetting.builder()
+            .addRpcConsumerSetting("rpchandler", EzyRabbitRpcConsumerSetting.builder()
                 .channel(channel)
                 .threadPoolSize(8)
                 .prefetchCount(100)
@@ -45,8 +45,8 @@ public class EzyRabbitSettingsTest {
             .build();
         assert settings.getQueueArguments().get("a").size() == 2;
         assert settings.getTopicSettings().get("topic") != null;
-        assert settings.getRpcCallerSettings().get("rpccaller") != null;
-        assert settings.getRpcHandlerSettings().get("rpchandler") != null;
+        assert settings.getRpcProducerSettings().get("rpcconsumer") != null;
+        assert settings.getRpcConsumerSettings().get("rpchandler") != null;
     }
 
 }

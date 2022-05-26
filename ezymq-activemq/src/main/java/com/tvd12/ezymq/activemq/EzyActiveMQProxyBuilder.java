@@ -205,7 +205,12 @@ public class EzyActiveMQProxyBuilder
         if (connectionFactory == null) {
             connectionFactory = new EzyActiveConnectionFactoryBuilder().build();
         }
-        return new EzyActiveMQProxy(entityCodec, dataCodec, settings, connectionFactory);
+        return new EzyActiveMQProxy(
+            entityCodec,
+            dataCodec,
+            settings,
+            connectionFactory
+        );
     }
 
     protected EzyEntityCodec newEntityCodec() {

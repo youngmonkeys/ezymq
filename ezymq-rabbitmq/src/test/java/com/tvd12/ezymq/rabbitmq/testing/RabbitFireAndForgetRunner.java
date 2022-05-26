@@ -108,14 +108,14 @@ public class RabbitFireAndForgetRunner extends EzyLoggable {
 
     protected void fire() throws Exception {
         EzyRabbitRpcClient client = newClient();
-        EzyRabbitRpcProducer caller = EzyRabbitRpcProducer.builder()
+        EzyRabbitRpcProducer consumer = EzyRabbitRpcProducer.builder()
             .client(client)
             .entityCodec(entityCodec)
             .build();
         System.out.println("thread-" + Thread.currentThread().getName() + ": start rpc");
         long start = System.currentTimeMillis();
         for (int i = 0; i < 1000; ++i) {
-            caller.fire("fibonacci", 100);
+            consumer.fire("fibonacci", 100);
         }
         System.out.println("elapsed = " + (System.currentTimeMillis() - start));
     }

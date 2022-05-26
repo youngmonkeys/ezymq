@@ -13,19 +13,19 @@ public class EzyRabbitSettings {
 
     protected final Map<String, Map<String, Object>> queueArguments;
     protected final Map<String, EzyRabbitTopicSetting> topicSettings;
-    protected final Map<String, EzyRabbitRpcProducerSetting> rpcCallerSettings;
-    protected final Map<String, EzyRabbitRpcConsumerSetting> rpcHandlerSettings;
+    protected final Map<String, EzyRabbitRpcProducerSetting> rpcProducerSettings;
+    protected final Map<String, EzyRabbitRpcConsumerSetting> rpcConsumerSettings;
 
     public EzyRabbitSettings(
         Map<String, Map<String, Object>> queueArguments,
         Map<String, EzyRabbitTopicSetting> topicSettings,
-        Map<String, EzyRabbitRpcProducerSetting> rpcCallerSettings,
-        Map<String, EzyRabbitRpcConsumerSetting> rpcHandlerSettings
+        Map<String, EzyRabbitRpcProducerSetting> rpcProducerSettings,
+        Map<String, EzyRabbitRpcConsumerSetting> rpcConsumerSettings
     ) {
         this.queueArguments = Collections.unmodifiableMap(queueArguments);
         this.topicSettings = Collections.unmodifiableMap(topicSettings);
-        this.rpcCallerSettings = Collections.unmodifiableMap(rpcCallerSettings);
-        this.rpcHandlerSettings = Collections.unmodifiableMap(rpcHandlerSettings);
+        this.rpcProducerSettings = Collections.unmodifiableMap(rpcProducerSettings);
+        this.rpcConsumerSettings = Collections.unmodifiableMap(rpcConsumerSettings);
     }
 
     public static Builder builder() {
@@ -37,11 +37,11 @@ public class EzyRabbitSettings {
         protected EzyRabbitMQProxyBuilder parent;
         protected Map<String, Map<String, Object>> queueArguments;
         protected Map<String, EzyRabbitTopicSetting> topicSettings;
-        protected Map<String, EzyRabbitRpcProducerSetting> rpcCallerSettings;
-        protected Map<String, EzyRabbitRpcConsumerSetting> rpcHandlerSettings;
+        protected Map<String, EzyRabbitRpcProducerSetting> rpcProducerSettings;
+        protected Map<String, EzyRabbitRpcConsumerSetting> rpcConsumerSettings;
         protected Map<String, EzyRabbitTopicSetting.Builder> topicSettingBuilders;
-        protected Map<String, EzyRabbitRpcProducerSetting.Builder> rpcCallerSettingBuilders;
-        protected Map<String, EzyRabbitRpcConsumerSetting.Builder> rpcHandlerSettingBuilders;
+        protected Map<String, EzyRabbitRpcProducerSetting.Builder> rpcProducerSettingBuilders;
+        protected Map<String, EzyRabbitRpcConsumerSetting.Builder> rpcConsumerSettingBuilders;
 
         public Builder() {
             this(null);
@@ -51,11 +51,11 @@ public class EzyRabbitSettings {
             this.parent = parent;
             this.topicSettings = new HashMap<>();
             this.queueArguments = new HashMap<>();
-            this.rpcCallerSettings = new HashMap<>();
-            this.rpcHandlerSettings = new HashMap<>();
+            this.rpcProducerSettings = new HashMap<>();
+            this.rpcConsumerSettings = new HashMap<>();
             this.topicSettingBuilders = new HashMap<>();
-            this.rpcCallerSettingBuilders = new HashMap<>();
-            this.rpcHandlerSettingBuilders = new HashMap<>();
+            this.rpcProducerSettingBuilders = new HashMap<>();
+            this.rpcConsumerSettingBuilders = new HashMap<>();
         }
 
         public Builder queueArgument(String queue, String key, Object value) {
@@ -77,15 +77,15 @@ public class EzyRabbitSettings {
             );
         }
 
-        public EzyRabbitRpcProducerSetting.Builder rpcCallerSettingBuilder(String name) {
-            return this.rpcCallerSettingBuilders.computeIfAbsent(
+        public EzyRabbitRpcProducerSetting.Builder rpcProducerSettingBuilder(String name) {
+            return this.rpcProducerSettingBuilders.computeIfAbsent(
                 name,
                 k -> new EzyRabbitRpcProducerSetting.Builder(this)
             );
         }
 
-        public EzyRabbitRpcConsumerSetting.Builder rpcHandlerSettingBuilder(String name) {
-            return this.rpcHandlerSettingBuilders.computeIfAbsent(
+        public EzyRabbitRpcConsumerSetting.Builder rpcConsumerSettingBuilder(String name) {
+            return this.rpcConsumerSettingBuilders.computeIfAbsent(
                 name,
                 k -> new EzyRabbitRpcConsumerSetting.Builder(this)
             );
@@ -96,13 +96,13 @@ public class EzyRabbitSettings {
             return this;
         }
 
-        public Builder addRpcCallerSetting(String name, EzyRabbitRpcProducerSetting setting) {
-            this.rpcCallerSettings.put(name, setting);
+        public Builder addRpcProducerSetting(String name, EzyRabbitRpcProducerSetting setting) {
+            this.rpcProducerSettings.put(name, setting);
             return this;
         }
 
-        public Builder addRpcHandlerSetting(String name, EzyRabbitRpcConsumerSetting setting) {
-            this.rpcHandlerSettings.put(name, setting);
+        public Builder addRpcConsumerSetting(String name, EzyRabbitRpcConsumerSetting setting) {
+            this.rpcConsumerSettings.put(name, setting);
             return this;
         }
 
@@ -118,21 +118,21 @@ public class EzyRabbitSettings {
                     topicSettingBuilders.get(name);
                 topicSettings.put(name, builder.build());
             }
-            for (String name : rpcCallerSettingBuilders.keySet()) {
+            for (String name : rpcProducerSettingBuilders.keySet()) {
                 EzyRabbitRpcProducerSetting.Builder builder =
-                    rpcCallerSettingBuilders.get(name);
-                rpcCallerSettings.put(name, builder.build());
+                    rpcProducerSettingBuilders.get(name);
+                rpcProducerSettings.put(name, builder.build());
             }
-            for (String name : rpcHandlerSettingBuilders.keySet()) {
+            for (String name : rpcConsumerSettingBuilders.keySet()) {
                 EzyRabbitRpcConsumerSetting.Builder builder =
-                    rpcHandlerSettingBuilders.get(name);
-                rpcHandlerSettings.put(name, builder.build());
+                    rpcConsumerSettingBuilders.get(name);
+                rpcConsumerSettings.put(name, builder.build());
             }
             return new EzyRabbitSettings(
                 queueArguments,
                 topicSettings,
-                rpcCallerSettings,
-                rpcHandlerSettings
+                rpcProducerSettings,
+                rpcConsumerSettings
             );
         }
     }

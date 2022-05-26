@@ -58,8 +58,8 @@ public class KafkaContextBuilderTest extends KafkaBaseTest {
             .parent()
             .parent()
             .build();
-        EzyKafkaProducer caller = kafkaContext.getProducer("clientA");
-        caller.send("hello", "world");
+        EzyKafkaProducer consumer = kafkaContext.getProducer("clientA");
+        consumer.send("hello", "world");
         Thread.sleep(1000);
         kafkaContext.close();
     }

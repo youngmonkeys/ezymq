@@ -67,12 +67,12 @@ public class RabbitRpcAllRunner2 extends RabbitBaseTest {
     @SuppressWarnings("resource")
     protected void rpc() throws Exception {
         EzyRabbitRpcClient client = newClient();
-        EzyRabbitRpcProducer caller = new EzyRabbitRpcProducer(client, entityCodec);
+        EzyRabbitRpcProducer consumer = new EzyRabbitRpcProducer(client, entityCodec);
         System.out.println("thread-" + Thread.currentThread().getName() + ": start rpc");
         long start = System.currentTimeMillis();
         for (int i = 0; i < 1000; ++i) {
             System.out.println("rabbit rpc start call: " + i);
-            int result = caller.call("fibonacci", 100, int.class);
+            int result = consumer.call("fibonacci", 100, int.class);
             System.out.println("i = " + i + ", result = " + result);
         }
         System.out.println("elapsed = " + (System.currentTimeMillis() - start));

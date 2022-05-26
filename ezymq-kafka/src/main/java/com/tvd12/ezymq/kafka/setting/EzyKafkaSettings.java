@@ -30,10 +30,10 @@ public class EzyKafkaSettings {
 
     public EzyKafkaSettings(
         Map<String, Map<String, Class>> messageTypesByTopic,
-        Map<String, EzyKafkaProducerSetting> callerSettings,
+        Map<String, EzyKafkaProducerSetting> consumerSettings,
         Map<String, EzyKafkaConsumerSetting> handlerSettings
     ) {
-        this.producerSettings = Collections.unmodifiableMap(callerSettings);
+        this.producerSettings = Collections.unmodifiableMap(consumerSettings);
         this.consumerSettings = Collections.unmodifiableMap(handlerSettings);
         this.messageTypesByTopic = Collections.unmodifiableMap(messageTypesByTopic);
     }

@@ -31,8 +31,8 @@ public class EzyRabbitMQProxy implements EzyCloseable {
         this.entityCodec = entityCodec;
         this.connectionFactory = connectionFactory;
         this.topicManager = newTopicManager();
-        this.rpcProducerManager = newRpcCallerManager();
-        this.rpcConsumerManager = newRabbitRpcHandlerManager();
+        this.rpcProducerManager = newRpcProducerManager();
+        this.rpcConsumerManager = newRabbitRpcConsumerManager();
 
     }
 
@@ -44,12 +44,12 @@ public class EzyRabbitMQProxy implements EzyCloseable {
         return topicManager.getTopic(name);
     }
 
-    public EzyRabbitRpcProducer getRpcCaller(String name) {
-        return rpcProducerManager.getRpcCaller(name);
+    public EzyRabbitRpcProducer getRpcProducer(String name) {
+        return rpcProducerManager.getRpcProducer(name);
     }
 
-    public EzyRabbitRpcConsumer getRabbitRpcHandler(String name) {
-        return rpcConsumerManager.getRpcHandler(name);
+    public EzyRabbitRpcConsumer getRabbitRpcConsumer(String name) {
+        return rpcConsumerManager.getRpcConsumer(name);
     }
 
     @Override
@@ -70,20 +70,20 @@ public class EzyRabbitMQProxy implements EzyCloseable {
         );
     }
 
-    protected EzyRabbitRpcProducerManager newRpcCallerManager() {
+    protected EzyRabbitRpcProducerManager newRpcProducerManager() {
         return new EzyRabbitRpcProducerManager(
             entityCodec,
             connectionFactory,
             settings.getQueueArguments(),
-            settings.getRpcCallerSettings()
+            settings.getRpcProducerSettings()
         );
     }
 
-    protected EzyRabbitRpcConsumerManager newRabbitRpcHandlerManager() {
+    protected EzyRabbitRpcConsumerManager newRabbitRpcConsumerManager() {
         return new EzyRabbitRpcConsumerManager(
             dataCodec,
             connectionFactory,
-            settings.getRpcHandlerSettings()
+            settings.getRpcConsumerSettings()
         );
     }
 }

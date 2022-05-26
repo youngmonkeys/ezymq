@@ -24,10 +24,10 @@ public class EzyRabbitRpcConsumerManager extends EzyRabbitAbstractManager {
         super(connectionFactory);
         this.dataCodec = dataCodec;
         this.rpcConsumerSettings = rpcConsumerSettings;
-        this.rpcConsumers = createRpcCallers();
+        this.rpcConsumers = createRpcProducers();
     }
 
-    public EzyRabbitRpcConsumer getRpcHandler(String name) {
+    public EzyRabbitRpcConsumer getRpcConsumer(String name) {
         EzyRabbitRpcConsumer handler = rpcConsumers.get(name);
         if (handler == null) {
             throw new IllegalArgumentException("has no rpc handler with name: " + name);
@@ -35,27 +35,27 @@ public class EzyRabbitRpcConsumerManager extends EzyRabbitAbstractManager {
         return handler;
     }
 
-    protected Map<String, EzyRabbitRpcConsumer> createRpcCallers() {
+    protected Map<String, EzyRabbitRpcConsumer> createRpcProducers() {
         Map<String, EzyRabbitRpcConsumer> map = new HashMap<>();
         for (String name : rpcConsumerSettings.keySet()) {
             EzyRabbitRpcConsumerSetting setting = rpcConsumerSettings.get(name);
-            map.put(name, createRpcHandler(name, setting));
+            map.put(name, createRpcConsumer(name, setting));
         }
         return map;
     }
 
-    protected EzyRabbitRpcConsumer createRpcHandler(
+    protected EzyRabbitRpcConsumer createRpcConsumer(
         String name,
         EzyRabbitRpcConsumerSetting setting
     ) {
         try {
-            return createRpcHandler(setting);
+            return createRpcConsumer(setting);
         } catch (Exception e) {
             throw new IllegalStateException("can't create handler: " + name, e);
         }
     }
 
-    protected EzyRabbitRpcConsumer createRpcHandler(
+    protected EzyRabbitRpcConsumer createRpcConsumer(
         EzyRabbitRpcConsumerSetting setting
     ) throws Exception {
         Channel channel = getChannel(setting);

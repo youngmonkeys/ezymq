@@ -58,12 +58,12 @@ public class ActiveMQRpcAllRunner extends ActiveMQBaseTest {
     @SuppressWarnings("resource")
     protected void rpc() throws Exception {
         EzyActiveRpcClient client = newClient();
-        EzyActiveRpcProducer caller = new EzyActiveRpcProducer(client, entityCodec);
+        EzyActiveRpcProducer consumer = new EzyActiveRpcProducer(client, entityCodec);
         System.out.println("thread-" + Thread.currentThread().getName() + ": start rpc");
         long start = System.currentTimeMillis();
         for (int i = 0; i < 1000; ++i) {
             System.out.println("rabbit rpc start call: " + i);
-            int result = caller.call("fibonacci", 100, int.class);
+            int result = consumer.call("fibonacci", 100, int.class);
             System.out.println("i = " + i + ", result = " + result);
         }
         System.out.println("elapsed = " + (System.currentTimeMillis() - start));

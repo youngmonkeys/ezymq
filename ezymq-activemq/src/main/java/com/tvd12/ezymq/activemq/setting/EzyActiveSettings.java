@@ -70,13 +70,13 @@ public class EzyActiveSettings {
             );
         }
 
-        public EzyActiveRpcProducerSetting.Builder rpcCallerSettingBuilder(String name) {
+        public EzyActiveRpcProducerSetting.Builder rpcProducerSettingBuilder(String name) {
             return rpcProducerSettingBuilders.computeIfAbsent(name,
                 k -> new EzyActiveRpcProducerSetting.Builder(this)
             );
         }
 
-        public EzyActiveRpcConsumerSetting.Builder rpcHandlerSettingBuilder(String name) {
+        public EzyActiveRpcConsumerSetting.Builder rpcConsumerSettingBuilder(String name) {
             return rpcConsumerSettingBuilders.computeIfAbsent(name,
                 k -> new EzyActiveRpcConsumerSetting.Builder(this)
             );
@@ -87,12 +87,12 @@ public class EzyActiveSettings {
             return this;
         }
 
-        public Builder addRpcCallerSetting(String name, EzyActiveRpcProducerSetting setting) {
+        public Builder addRpcProducerSetting(String name, EzyActiveRpcProducerSetting setting) {
             this.rpcProducerSettings.put(name, setting);
             return this;
         }
 
-        public Builder addRpcHandlerSetting(String name, EzyActiveRpcConsumerSetting setting) {
+        public Builder addRpcConsumerSetting(String name, EzyActiveRpcConsumerSetting setting) {
             this.rpcConsumerSettings.put(name, setting);
             return this;
         }

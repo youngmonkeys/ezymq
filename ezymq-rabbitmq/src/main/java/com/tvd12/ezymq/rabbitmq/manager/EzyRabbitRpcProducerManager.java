@@ -31,38 +31,38 @@ public class EzyRabbitRpcProducerManager
         this.entityCodec = entityCodec;
         this.queueArguments = queueArguments;
         this.rpcProducerSettings = rpcProducerSettings;
-        this.rpProducers = createRpcCallers();
+        this.rpProducers = createRpcProducers();
     }
 
-    public EzyRabbitRpcProducer getRpcCaller(String name) {
-        EzyRabbitRpcProducer caller = rpProducers.get(name);
-        if (caller == null) {
-            throw new IllegalArgumentException("has no rpc caller with name: " + name);
+    public EzyRabbitRpcProducer getRpcProducer(String name) {
+        EzyRabbitRpcProducer consumer = rpProducers.get(name);
+        if (consumer == null) {
+            throw new IllegalArgumentException("has no rpc consumer with name: " + name);
         }
-        return caller;
+        return consumer;
     }
 
-    protected Map<String, EzyRabbitRpcProducer> createRpcCallers() {
+    protected Map<String, EzyRabbitRpcProducer> createRpcProducers() {
         Map<String, EzyRabbitRpcProducer> map = new HashMap<>();
         for (String name : rpcProducerSettings.keySet()) {
             EzyRabbitRpcProducerSetting setting = rpcProducerSettings.get(name);
-            map.put(name, createRpcCaller(name, setting));
+            map.put(name, createRpcProducer(name, setting));
         }
         return map;
     }
 
-    protected EzyRabbitRpcProducer createRpcCaller(
+    protected EzyRabbitRpcProducer createRpcProducer(
         String name,
         EzyRabbitRpcProducerSetting setting
     ) {
         try {
-            return createRpcCaller(setting);
+            return createRpcProducer(setting);
         } catch (Exception e) {
-            throw new IllegalStateException("create rpc caller: " + name + " error", e);
+            throw new IllegalStateException("create rpc consumer: " + name + " error", e);
         }
     }
 
-    protected EzyRabbitRpcProducer createRpcCaller(
+    protected EzyRabbitRpcProducer createRpcProducer(
         EzyRabbitRpcProducerSetting setting
     ) throws Exception {
         Channel channel = getChannel(setting);
@@ -121,8 +121,8 @@ public class EzyRabbitRpcProducerManager
     }
 
     public void close() {
-        for (EzyRabbitRpcProducer caller : rpProducers.values()) {
-            caller.close();
+        for (EzyRabbitRpcProducer consumer : rpProducers.values()) {
+            consumer.close();
         }
     }
 }

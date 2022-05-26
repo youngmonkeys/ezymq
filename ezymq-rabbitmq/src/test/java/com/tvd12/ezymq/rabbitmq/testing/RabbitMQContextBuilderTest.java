@@ -31,7 +31,7 @@ public class RabbitMQContextBuilderTest extends RabbitBaseTest {
             .serverEnable(true)
             .serverQueueName("mqia-topic")
             .parent()
-            .rpcCallerSettingBuilder("fibonacci")
+            .rpcProducerSettingBuilder("fibonacci")
             .prefetchCount(prefetchCount)
             .defaultTimeout(300 * 1000)
             .exchange("rmqia-rpc-exchange")
@@ -40,7 +40,7 @@ public class RabbitMQContextBuilderTest extends RabbitBaseTest {
             .replyQueueName("rmqia-rpc-client-queue")
             .replyRoutingKey("rmqia-rpc-client-routing-key")
             .parent()
-            .rpcHandlerSettingBuilder("fibonacci")
+            .rpcConsumerSettingBuilder("fibonacci")
             .prefetchCount(prefetchCount)
             .requestQueueName("rmqia-rpc-queue")
             .exchange("rmqia-rpc-exchange")
@@ -83,12 +83,12 @@ public class RabbitMQContextBuilderTest extends RabbitBaseTest {
         long elapsedTopicTime = System.currentTimeMillis() - startTopicTime;
         System.out.println("elapsedTopicTime: " + elapsedTopicTime);
 
-        EzyRabbitRpcProducer caller = context.getRpcCaller("fibonacci");
+        EzyRabbitRpcProducer consumer = context.getRpcProducer("fibonacci");
         long start = System.currentTimeMillis();
         for (int i = 0; i < 1000; ++i) {
 //			System.out.println("rabbit rpc start call: " + i);
-            caller.call("fibonacci", 100, int.class);
-//			int result = caller.call("fibonacci", 100, int.class);
+            consumer.call("fibonacci", 100, int.class);
+//			int result = consumer.call("fibonacci", 100, int.class);
 //			System.out.println("i = " + i + ", result = " + result);
         }
         System.out.println("elapsed = " + (System.currentTimeMillis() - start));

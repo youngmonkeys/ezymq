@@ -19,43 +19,43 @@ public class EzyActiveRpcProducerManager extends EzyActiveAbstractManager {
     public EzyActiveRpcProducerManager(
         EzyEntityCodec entityCodec,
         ConnectionFactory connectionFactory,
-        Map<String, EzyActiveRpcProducerSetting> rpcCallerSettings
+        Map<String, EzyActiveRpcProducerSetting> rpcProducerSettings
     ) {
         super(connectionFactory);
         this.entityCodec = entityCodec;
-        this.rpcProducerSettings = rpcCallerSettings;
-        this.rpcProducers = createRpcCallers();
+        this.rpcProducerSettings = rpcProducerSettings;
+        this.rpcProducers = createRpcProducers();
     }
 
-    public EzyActiveRpcProducer getRpcCaller(String name) {
-        EzyActiveRpcProducer caller = rpcProducers.get(name);
-        if (caller == null) {
-            throw new IllegalArgumentException("has no rpc caller with name: " + name);
+    public EzyActiveRpcProducer getRpcProducer(String name) {
+        EzyActiveRpcProducer consumer = rpcProducers.get(name);
+        if (consumer == null) {
+            throw new IllegalArgumentException("has no rpc consumer with name: " + name);
         }
-        return caller;
+        return consumer;
     }
 
-    protected Map<String, EzyActiveRpcProducer> createRpcCallers() {
+    protected Map<String, EzyActiveRpcProducer> createRpcProducers() {
         Map<String, EzyActiveRpcProducer> map = new HashMap<>();
         for (String name : rpcProducerSettings.keySet()) {
             EzyActiveRpcProducerSetting setting = rpcProducerSettings.get(name);
-            map.put(name, createRpcCaller(name, setting));
+            map.put(name, createRpcProducer(name, setting));
         }
         return map;
     }
 
-    protected EzyActiveRpcProducer createRpcCaller(
+    protected EzyActiveRpcProducer createRpcProducer(
         String name,
         EzyActiveRpcProducerSetting setting
     ) {
         try {
-            return createRpcCaller(setting);
+            return createRpcProducer(setting);
         } catch (Exception e) {
-            throw new IllegalStateException("create rpc caller: " + name + " error", e);
+            throw new IllegalStateException("create rpc consumer: " + name + " error", e);
         }
     }
 
-    protected EzyActiveRpcProducer createRpcCaller(
+    protected EzyActiveRpcProducer createRpcProducer(
         EzyActiveRpcProducerSetting setting
     ) throws Exception {
         Session session = getSession(setting);
@@ -77,8 +77,8 @@ public class EzyActiveRpcProducerManager extends EzyActiveAbstractManager {
     }
 
     public void close() {
-        for (EzyActiveRpcProducer caller : rpcProducers.values()) {
-            caller.close();
+        for (EzyActiveRpcProducer consumer : rpcProducers.values()) {
+            consumer.close();
         }
     }
 }

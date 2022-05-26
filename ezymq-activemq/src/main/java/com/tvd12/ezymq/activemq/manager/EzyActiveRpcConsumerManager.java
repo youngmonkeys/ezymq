@@ -27,10 +27,10 @@ public class EzyActiveRpcConsumerManager
         super(connectionFactory);
         this.dataCodec = dataCodec;
         this.rpcConsumerSettings = rpcConsumerSettings;
-        this.rpcConsumers = createRpcCallers();
+        this.rpcConsumers = createRpcProducers();
     }
 
-    public EzyActiveRpcConsumer getRpcHandler(String name) {
+    public EzyActiveRpcConsumer getRpcConsumer(String name) {
         EzyActiveRpcConsumer handler = rpcConsumers.get(name);
         if (handler == null) {
             throw new IllegalArgumentException("has no rpc handler with name: " + name);
@@ -38,27 +38,27 @@ public class EzyActiveRpcConsumerManager
         return handler;
     }
 
-    protected Map<String, EzyActiveRpcConsumer> createRpcCallers() {
+    protected Map<String, EzyActiveRpcConsumer> createRpcProducers() {
         Map<String, EzyActiveRpcConsumer> map = new HashMap<>();
         for (String name : rpcConsumerSettings.keySet()) {
             EzyActiveRpcConsumerSetting setting = rpcConsumerSettings.get(name);
-            map.put(name, createRpcHandler(name, setting));
+            map.put(name, createRpcConsumer(name, setting));
         }
         return map;
     }
 
-    protected EzyActiveRpcConsumer createRpcHandler(
+    protected EzyActiveRpcConsumer createRpcConsumer(
         String name,
         EzyActiveRpcConsumerSetting setting
     ) {
         try {
-            return createRpcHandler(setting);
+            return createRpcConsumer(setting);
         } catch (Exception e) {
             throw new IllegalStateException("can't create handler: " + name, e);
         }
     }
 
-    protected EzyActiveRpcConsumer createRpcHandler(
+    protected EzyActiveRpcConsumer createRpcConsumer(
         EzyActiveRpcConsumerSetting setting
     ) throws Exception {
         Session session = getSession(setting);
