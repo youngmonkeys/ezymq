@@ -3,12 +3,11 @@ package com.tvd12.ezymq.kafka.setting;
 import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageHandler;
 import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageHandlers;
 import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageInterceptor;
+import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageInterceptors;
 import lombok.Getter;
 import org.apache.kafka.clients.consumer.Consumer;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -19,7 +18,7 @@ public class EzyKafkaConsumerSetting extends EzyKafkaEndpointSetting {
     protected final Consumer consumer;
     protected final int threadPoolSize;
     protected final EzyKafkaMessageHandlers messageHandlers;
-    protected final List<EzyKafkaMessageInterceptor> messageInterceptors;
+    protected final EzyKafkaMessageInterceptors messageInterceptors;
 
     public EzyKafkaConsumerSetting(
         String topic,
@@ -28,7 +27,7 @@ public class EzyKafkaConsumerSetting extends EzyKafkaEndpointSetting {
         int threadPoolSize,
         Map<String, Object> properties,
         EzyKafkaMessageHandlers requestHandlers,
-        List<EzyKafkaMessageInterceptor> messageInterceptors
+        EzyKafkaMessageInterceptors messageInterceptors
     ) {
         super(topic, properties);
         this.consumer = consumer;
@@ -49,12 +48,12 @@ public class EzyKafkaConsumerSetting extends EzyKafkaEndpointSetting {
         protected long pollTimeOut = 100;
         protected EzyKafkaSettings.Builder parent;
         protected EzyKafkaMessageHandlers messageHandlers;
-        protected List<EzyKafkaMessageInterceptor> messageInterceptors;
+        protected EzyKafkaMessageInterceptors messageInterceptors;
 
         public Builder() {
             this(null);
-            this.messageInterceptors = new ArrayList<>();
             this.messageHandlers = new EzyKafkaMessageHandlers();
+            this.messageInterceptors = new EzyKafkaMessageInterceptors();
         }
 
         public Builder(EzyKafkaSettings.Builder parent) {
@@ -83,12 +82,12 @@ public class EzyKafkaConsumerSetting extends EzyKafkaEndpointSetting {
         }
 
         public Builder messageInterceptor(EzyKafkaMessageInterceptor messageInterceptor) {
-            this.messageInterceptors.add(messageInterceptor);
+            this.messageInterceptors.addInterceptor(messageInterceptor);
             return this;
         }
 
         public Builder messageInterceptors(Collection<EzyKafkaMessageInterceptor> messageInterceptors) {
-            this.messageInterceptors.addAll(messageInterceptors);
+            this.messageInterceptors.addInterceptors(messageInterceptors);
             return this;
         }
 

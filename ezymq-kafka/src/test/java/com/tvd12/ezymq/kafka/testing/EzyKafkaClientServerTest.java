@@ -16,6 +16,7 @@ import com.tvd12.ezymq.kafka.endpoint.EzyKafkaClient;
 import com.tvd12.ezymq.kafka.endpoint.EzyKafkaServer;
 import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageHandler;
 import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageHandlers;
+import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageInterceptors;
 import com.tvd12.ezymq.kafka.testing.entity.KafkaChatMessage;
 import com.tvd12.test.base.BaseTest;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -66,7 +67,12 @@ public class EzyKafkaClientServerTest extends BaseTest {
                 System.out.println("GREAT! We have just received message: " + message);
             }
         });
-        return new EzyKafkaConsumer(server, dataCodec, requestHandlers);
+        return new EzyKafkaConsumer(
+            server,
+            dataCodec,
+            requestHandlers,
+            new EzyKafkaMessageInterceptors()
+        );
     }
 
     private EzyKafkaProducer newClient() {
