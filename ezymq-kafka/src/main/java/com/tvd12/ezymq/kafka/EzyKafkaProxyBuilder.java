@@ -191,8 +191,8 @@ public class EzyKafkaProxyBuilder
             List interceptors = beanContext.getSingletons(EzyKafkaInterceptor.class);
             List dataHandlers = beanContext.getSingletons(EzyKafkaHandler.class);
             settings = settingsBuilder
-                .consumerInterceptors(interceptors)
-                .consumerMessageHandlers(dataHandlers)
+                .addConsumerInterceptors(interceptors)
+                .addConsumerMessageHandlers(dataHandlers)
                 .build();
         }
         if (bindingContext == null) {

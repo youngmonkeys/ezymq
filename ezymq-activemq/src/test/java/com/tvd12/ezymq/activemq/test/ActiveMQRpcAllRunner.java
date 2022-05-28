@@ -2,11 +2,13 @@ package com.tvd12.ezymq.activemq.test;
 
 import com.tvd12.ezyfox.builder.EzyArrayBuilder;
 import com.tvd12.ezyfox.factory.EzyEntityFactory;
-import com.tvd12.ezymq.activemq.EzyActiveRpcProducer;
 import com.tvd12.ezymq.activemq.EzyActiveRpcConsumer;
+import com.tvd12.ezymq.activemq.EzyActiveRpcProducer;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveRpcClient;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveRpcServer;
+import com.tvd12.ezymq.activemq.handler.EzyActiveRequestHandler;
 import com.tvd12.ezymq.activemq.handler.EzyActiveRequestHandlers;
+import com.tvd12.ezymq.activemq.handler.EzyActiveRequestInterceptors;
 
 import javax.jms.Connection;
 import javax.jms.Session;
@@ -17,7 +19,14 @@ public class ActiveMQRpcAllRunner extends ActiveMQBaseTest {
 
     public ActiveMQRpcAllRunner() {
         this.requestHandlers = new EzyActiveRequestHandlers();
-        this.requestHandlers.addHandler("fibonacci", a -> (int) a + 3);
+        this.requestHandlers.addHandler(
+            "fibonacci",
+            new EzyActiveRequestHandler<Integer>() {
+                @Override
+                public Object handle(Integer request) {
+                    return request + 3;
+                }
+            });
     }
 
     public static void main(String[] args) throws Exception {
@@ -33,8 +42,13 @@ public class ActiveMQRpcAllRunner extends ActiveMQBaseTest {
         try {
             System.out.println("thread-" + Thread.currentThread().getName() + ": start server");
             EzyActiveRpcServer server = newServer();
-            EzyActiveRpcConsumer handler = new EzyActiveRpcConsumer(server, dataCodec, requestHandlers);
-            handler.start();
+            EzyActiveRpcConsumer consumer = new EzyActiveRpcConsumer(
+                server,
+                dataCodec,
+                requestHandlers,
+                new EzyActiveRequestInterceptors()
+            );
+            consumer.start();
         } catch (Exception e) {
             e.printStackTrace();
         }

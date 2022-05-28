@@ -5,11 +5,12 @@ import com.rabbitmq.client.Channel;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcClient;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitResponseConsumer;
 import com.tvd12.ezymq.rabbitmq.testing.mockup.ChannelMockup;
+import com.tvd12.test.base.BaseTest;
 import org.testng.annotations.Test;
 
 import java.util.concurrent.TimeoutException;
 
-public class EzyRabbitRpcClientTest {
+public class EzyRabbitRpcClientTest extends BaseTest {
 
     @Test
     public void test() throws Exception {

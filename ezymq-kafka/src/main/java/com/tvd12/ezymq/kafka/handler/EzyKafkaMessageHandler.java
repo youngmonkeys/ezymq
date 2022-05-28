@@ -14,7 +14,11 @@ public interface EzyKafkaMessageHandler<T> {
     default Class<?> getMessageType() {
         try {
             Class<?> handlerClass = getClass();
-            Class<?>[] args = EzyGenerics.getGenericInterfacesArguments(handlerClass, EzyKafkaMessageHandler.class, 1);
+            Class<?>[] args = EzyGenerics.getGenericInterfacesArguments(
+                handlerClass,
+                EzyKafkaMessageHandler.class,
+                1
+            );
             return args[0];
         } catch (Exception e) {
             throw new IllegalStateException(

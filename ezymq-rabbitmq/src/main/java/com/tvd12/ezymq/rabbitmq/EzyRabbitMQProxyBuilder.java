@@ -129,28 +129,12 @@ public class EzyRabbitMQProxyBuilder implements EzyBuilder<EzyRabbitMQProxy> {
         if (settingsBuilder != null) {
             settings = settingsBuilder.build();
         }
-        if (settings == null) {
-            throw new NullPointerException("settings can not be null");
-        }
         if (bindingContext == null) {
             bindingContext = newBindingContext();
         }
-        if (bindingContext != null) {
-            marshaller = bindingContext.newMarshaller();
-            unmarshaller = bindingContext.newUnmarshaller();
-        }
-        if (marshaller == null) {
-            throw new IllegalStateException(
-                "marshaller is null, set its or set " +
-                    "bindingContext or add package to scan"
-            );
-        }
-        if (unmarshaller == null) {
-            throw new IllegalStateException(
-                "unmarshaller is null, set its or " +
-                    "set bindingContext or add package to scan"
-            );
-        }
+        marshaller = bindingContext.newMarshaller();
+        unmarshaller = bindingContext.newUnmarshaller();
+
         if (messageSerializer == null) {
             messageSerializer = newMessageSerializer();
         }
@@ -199,9 +183,6 @@ public class EzyRabbitMQProxyBuilder implements EzyBuilder<EzyRabbitMQProxy> {
     private EzyBindingContext newBindingContext() {
         if (packagesToScan.size() > 0) {
             reflectionsToScan.add(new EzyReflectionProxy(packagesToScan));
-        }
-        if (reflectionsToScan.isEmpty()) {
-            return null;
         }
         EzyBindingContextBuilder builder = EzySimpleBindingContext.builder();
         for (EzyReflection reflection : reflectionsToScan) {

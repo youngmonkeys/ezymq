@@ -76,17 +76,12 @@ public class EzyKafkaConsumerSetting extends EzyKafkaEndpointSetting {
             return this;
         }
 
-        public Builder messageHandlers(EzyKafkaMessageHandlers messageHandlers) {
-            this.messageHandlers = messageHandlers;
-            return this;
-        }
-
-        public Builder messageInterceptor(EzyKafkaMessageInterceptor messageInterceptor) {
+        public Builder addMessageInterceptor(EzyKafkaMessageInterceptor messageInterceptor) {
             this.messageInterceptors.addInterceptor(messageInterceptor);
             return this;
         }
 
-        public Builder messageInterceptors(Collection<EzyKafkaMessageInterceptor> messageInterceptors) {
+        public Builder addMessageInterceptors(Collection<EzyKafkaMessageInterceptor> messageInterceptors) {
             this.messageInterceptors.addInterceptors(messageInterceptors);
             return this;
         }

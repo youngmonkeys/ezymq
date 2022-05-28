@@ -16,6 +16,10 @@ public class EzyActiveRequestHandlers {
         handlers.put(cmd, handler);
     }
 
+    public void addHandlers(Map<String, EzyActiveRequestHandler> handlers) {
+        this.handlers.putAll(handlers);
+    }
+
     public EzyActiveRequestHandler getHandler(String cmd) {
         EzyActiveRequestHandler handler = handlers.get(cmd);
         if (handler != null) {

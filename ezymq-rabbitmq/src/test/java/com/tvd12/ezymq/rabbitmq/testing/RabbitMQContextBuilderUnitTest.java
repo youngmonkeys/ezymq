@@ -13,14 +13,13 @@ import com.tvd12.ezymq.rabbitmq.EzyRabbitTopic;
 import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitBytesDataCodec;
 import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitBytesEntityCodec;
 import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitDataCodec;
-import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitActionInterceptor;
-import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitMessageConsumer;
 import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitSettings;
 import com.tvd12.ezymq.rabbitmq.testing.entity.FiboRequest2;
 import com.tvd12.ezymq.rabbitmq.testing.mockup.ConnectionFactoryMockup;
+import com.tvd12.test.base.BaseTest;
 import org.testng.annotations.Test;
 
-public class RabbitMQContextBuilderUnitTest {
+public class RabbitMQContextBuilderUnitTest extends BaseTest {
 
     protected static EzyMessageSerializer newMessageSerializer() {
         return new MsgPackSimpleSerializer();
@@ -79,37 +78,12 @@ public class RabbitMQContextBuilderUnitTest {
                 }
                 return value + 3;
             })
-            .addRequestHandler("fibonacci2", a -> {
-                return 1;
-            })
-            .actionInterceptor(new EzyRabbitActionInterceptor() {
-
-                @Override
-                public void intercept(String cmd, Object requestData, Exception e) {
-                    e.printStackTrace();
-                }
-
-                @Override
-                public void intercept(String cmd, Object requestData, Object responseData) {
-
-                }
-
-                @Override
-                public void intercept(String cmd, Object requestData) {
-
-                }
-            })
+            .addRequestHandler("fibonacci2", a -> 1)
             .parent()
             .parent()
             .build();
         EzyRabbitTopic<String> topic = context.getTopic("test");
-        topic.addConsumer(new EzyRabbitMessageConsumer<String>() {
-
-            @Override
-            public void consume(String message) {
-                System.out.println("topic message: " + message);
-            }
-        });
+        topic.addConsumer(message -> System.out.println("topic message: " + message));
         topic.publish("hello topic");
         EzyRabbitRpcProducer consumer = context.getRpcProducer("fibonacci");
         long start = System.currentTimeMillis();
@@ -180,7 +154,7 @@ public class RabbitMQContextBuilderUnitTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testSetComponents() throws Exception {
+    public void testSetComponents() {
         EzyRabbitSettings settings = EzyRabbitSettings.builder()
             .build();
         EzyBindingContext bindingContext = EzyBindingContext.builder()
@@ -202,7 +176,7 @@ public class RabbitMQContextBuilderUnitTest {
             .mapRequestType("fibonacci", int.class)
             .mapRequestType("test", String.class)
             .build();
-        EzyRabbitMQProxy.builder()
+        EzyRabbitMQProxy proxy = EzyRabbitMQProxy.builder()
             .scan("com.tvd12.ezymq.rabbitmq.testing.entity")
             .scan("com.tvd12.ezymq.rabbitmq.testing.entity", "com.tvd12.ezymq.rabbitmq.testing.entity")
             .scan(Sets.newHashSet("com.tvd12.ezymq.rabbitmq.testing.entity"))
@@ -219,6 +193,6 @@ public class RabbitMQContextBuilderUnitTest {
                 .put("a", int.class)
                 .build())
             .build();
+        proxy.close();
     }
-
 }

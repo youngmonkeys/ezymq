@@ -3,9 +3,10 @@ package com.tvd12.ezymq.rabbitmq.testing;
 import com.rabbitmq.client.impl.DefaultExceptionHandler;
 import com.tvd12.ezymq.rabbitmq.concurrent.EzyRabbitThreadFactory;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitConnectionFactoryBuilder;
+import com.tvd12.test.base.BaseTest;
 import org.testng.annotations.Test;
 
-public class EzyRabbitConnectionFactoryBuilderTest {
+public class EzyRabbitConnectionFactoryBuilderTest extends BaseTest {
 
     @Test
     public void test() {

@@ -1,29 +1,26 @@
 package com.tvd12.ezymq.rabbitmq.testing;
 
-import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.tvd12.ezyfox.builder.EzyArrayBuilder;
 import com.tvd12.ezyfox.factory.EzyEntityFactory;
-import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcConsumer;
+import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcClient;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcServer;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandlers;
-import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitResponseConsumer;
+import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestInterceptors;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class RabbitRpcAllRunner3 extends RabbitBaseTest {
 
-    private EzyRabbitRequestHandlers requestHandlers;
+    private final EzyRabbitRequestHandlers requestHandlers;
 
     public RabbitRpcAllRunner3() {
         this.requestHandlers = new EzyRabbitRequestHandlers();
-        this.requestHandlers.addHandler("fibonacci", a -> {
-            return (int) a + 3;
-        });
+        this.requestHandlers.addHandler("fibonacci", a -> (int) a + 3);
     }
 
     public static void main(String[] args) throws Exception {
@@ -36,13 +33,18 @@ public class RabbitRpcAllRunner3 extends RabbitBaseTest {
     }
 
     @SuppressWarnings("resource")
-    protected void startServer() throws Exception {
+    protected void startServer() {
         new Thread(() -> {
             try {
                 System.out.println("thread-" + Thread.currentThread().getName() + ": start server");
                 EzyRabbitRpcServer server = newServer();
-                EzyRabbitRpcConsumer handler = new EzyRabbitRpcConsumer(server, dataCodec, requestHandlers);
-                handler.start();
+                EzyRabbitRpcConsumer consumer = new EzyRabbitRpcConsumer(
+                    server,
+                    dataCodec,
+                    requestHandlers,
+                    new EzyRabbitRequestInterceptors()
+                );
+                consumer.start();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -55,17 +57,13 @@ public class RabbitRpcAllRunner3 extends RabbitBaseTest {
     }
 
     protected void asyncRpc() {
-        new Thread() {
-            public void run() {
-                try {
-                    rpc();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        new Thread(() -> {
+            try {
+                rpc();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-            ;
-        }
+        })
             .start();
     }
 
@@ -109,15 +107,12 @@ public class RabbitRpcAllRunner3 extends RabbitBaseTest {
             .routingKey("rmqia-rpc-routing-key")
             .replyQueueName("rmqia-rpc-client-queue-private")
             .replyRoutingKey("rmqia-rpc-client-routing-key-private")
-            .unconsumedResponseConsumer(new EzyRabbitResponseConsumer() {
-                @Override
-                public void consume(BasicProperties properties, byte[] responseBody) {
-                    try {
-                        int answer = entityCodec.deserialize(responseBody, int.class);
-                        System.out.println("unconsumed fibonacci response: " + answer);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+            .unconsumedResponseConsumer((properties, responseBody) -> {
+                try {
+                    int answer = entityCodec.deserialize(responseBody, int.class);
+                    System.out.println("unconsumed fibonacci response: " + answer);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             })
             .build();

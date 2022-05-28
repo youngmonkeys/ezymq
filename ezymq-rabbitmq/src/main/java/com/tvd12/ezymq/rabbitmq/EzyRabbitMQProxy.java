@@ -33,7 +33,6 @@ public class EzyRabbitMQProxy implements EzyCloseable {
         this.topicManager = newTopicManager();
         this.rpcProducerManager = newRpcProducerManager();
         this.rpcConsumerManager = newRabbitRpcConsumerManager();
-
     }
 
     public static EzyRabbitMQProxyBuilder builder() {

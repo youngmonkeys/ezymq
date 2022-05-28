@@ -3,7 +3,6 @@ package com.tvd12.ezymq.rabbitmq.testing;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitMQProxy;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitTopic;
-import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitActionInterceptor;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitMessageConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,23 +46,6 @@ public class RabbitMQContextBuilderTest extends RabbitBaseTest {
             .replyRoutingKey("rmqia-rpc-client-routing-key")
             .addRequestHandler("fibonacci", a -> {
                 return (int) a + 3;
-            })
-            .actionInterceptor(new EzyRabbitActionInterceptor() {
-
-                @Override
-                public void intercept(String cmd, Object requestData, Exception e) {
-                    e.printStackTrace();
-                }
-
-                @Override
-                public void intercept(String cmd, Object requestData, Object responseData) {
-
-                }
-
-                @Override
-                public void intercept(String cmd, Object requestData) {
-
-                }
             })
             .parent()
             .parent()

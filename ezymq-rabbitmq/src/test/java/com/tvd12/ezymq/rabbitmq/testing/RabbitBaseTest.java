@@ -63,5 +63,4 @@ public class RabbitBaseTest extends BaseTest {
             .scan("com.tvd12.ezymq.rabbitmq.testing.entity")
             .build();
     }
-
 }

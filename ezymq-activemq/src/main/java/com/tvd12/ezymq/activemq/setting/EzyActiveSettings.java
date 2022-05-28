@@ -2,10 +2,13 @@ package com.tvd12.ezymq.activemq.setting;
 
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezymq.activemq.EzyActiveMQProxyBuilder;
+import com.tvd12.ezymq.activemq.handler.EzyActiveRequestHandler;
 import com.tvd12.ezymq.activemq.handler.EzyActiveRequestInterceptor;
 import lombok.Getter;
 
 import java.util.*;
+
+import static com.tvd12.ezymq.activemq.util.EzyActiveHandlerAnnotations.getCommand;
 
 @Getter
 @SuppressWarnings("rawtypes")
@@ -45,6 +48,7 @@ public class EzyActiveSettings {
         protected Map<String, EzyActiveRpcConsumerSetting> rpcConsumerSettings;
         protected Map<String, EzyActiveTopicSetting.Builder> topicSettingBuilders;
         protected List<EzyActiveRequestInterceptor> requestInterceptors;
+        protected Map<String, EzyActiveRequestHandler> requestHandlerByCommand;
         protected Map<String, EzyActiveRpcProducerSetting.Builder> rpcProducerSettingBuilders;
         protected Map<String, EzyActiveRpcConsumerSetting.Builder> rpcConsumerSettingBuilders;
 
@@ -59,6 +63,7 @@ public class EzyActiveSettings {
             this.rpcProducerSettings = new HashMap<>();
             this.rpcConsumerSettings = new HashMap<>();
             this.requestInterceptors = new ArrayList<>();
+            this.requestHandlerByCommand = new HashMap<>();
             this.topicSettingBuilders = new HashMap<>();
             this.rpcProducerSettingBuilders = new HashMap<>();
             this.rpcConsumerSettingBuilders = new HashMap<>();
@@ -70,29 +75,42 @@ public class EzyActiveSettings {
             );
         }
 
-        public EzyActiveRpcProducerSetting.Builder rpcProducerSettingBuilder(String name) {
+        public EzyActiveRpcProducerSetting.Builder rpcProducerSettingBuilder(
+            String name
+        ) {
             return rpcProducerSettingBuilders.computeIfAbsent(name,
                 k -> new EzyActiveRpcProducerSetting.Builder(this)
             );
         }
 
-        public EzyActiveRpcConsumerSetting.Builder rpcConsumerSettingBuilder(String name) {
+        public EzyActiveRpcConsumerSetting.Builder rpcConsumerSettingBuilder(
+            String name
+        ) {
             return rpcConsumerSettingBuilders.computeIfAbsent(name,
                 k -> new EzyActiveRpcConsumerSetting.Builder(this)
             );
         }
 
-        public Builder addTopicSetting(String name, EzyActiveTopicSetting setting) {
+        public Builder addTopicSetting(
+            String name,
+            EzyActiveTopicSetting setting
+        ) {
             this.topicSettings.put(name, setting);
             return this;
         }
 
-        public Builder addRpcProducerSetting(String name, EzyActiveRpcProducerSetting setting) {
+        public Builder addRpcProducerSetting(
+            String name,
+            EzyActiveRpcProducerSetting setting
+        ) {
             this.rpcProducerSettings.put(name, setting);
             return this;
         }
 
-        public Builder addRpcConsumerSetting(String name, EzyActiveRpcConsumerSetting setting) {
+        public Builder addRpcConsumerSetting(
+            String name,
+            EzyActiveRpcConsumerSetting setting
+        ) {
             this.rpcConsumerSettings.put(name, setting);
             return this;
         }
@@ -107,13 +125,28 @@ public class EzyActiveSettings {
             return this;
         }
 
-        public Builder requestInterceptor(EzyActiveRequestInterceptor requestInterceptor) {
+        public Builder addRequestInterceptor(
+            EzyActiveRequestInterceptor requestInterceptor
+        ) {
             this.requestInterceptors.add(requestInterceptor);
             return this;
         }
 
-        public Builder requestInterceptors(Collection<EzyActiveRequestInterceptor> requestInterceptors) {
+        public Builder addRequestInterceptors(
+            Collection<EzyActiveRequestInterceptor> requestInterceptors
+        ) {
             this.requestInterceptors.addAll(requestInterceptors);
+            return this;
+        }
+
+        public Builder addRequestHandlers(
+            List<EzyActiveRequestHandler> requestHandlers
+        ) {
+            for (EzyActiveRequestHandler handler : requestHandlers) {
+                String command = getCommand(handler);
+                this.requestHandlerByCommand.put(command, handler);
+                mapRequestType(command, handler.getRequestType());
+            }
             return this;
         }
 
@@ -124,15 +157,20 @@ public class EzyActiveSettings {
         @Override
         public EzyActiveSettings build() {
             for (String name : topicSettingBuilders.keySet()) {
-                EzyActiveTopicSetting.Builder builder = topicSettingBuilders.get(name);
+                EzyActiveTopicSetting.Builder builder =
+                    topicSettingBuilders.get(name);
                 topicSettings.put(name, (EzyActiveTopicSetting) builder.build());
             }
             for (String name : rpcProducerSettingBuilders.keySet()) {
-                EzyActiveRpcProducerSetting.Builder builder = rpcProducerSettingBuilders.get(name);
+                EzyActiveRpcProducerSetting.Builder builder =
+                    rpcProducerSettingBuilders.get(name);
                 rpcProducerSettings.put(name, builder.build());
             }
             for (String name : rpcConsumerSettingBuilders.keySet()) {
-                EzyActiveRpcConsumerSetting.Builder builder = rpcConsumerSettingBuilders.get(name);
+                EzyActiveRpcConsumerSetting.Builder builder =
+                    rpcConsumerSettingBuilders.get(name)
+                        .addRequestInterceptors(requestInterceptors)
+                        .addRequestHandlers(requestHandlerByCommand);
                 rpcConsumerSettings.put(name, builder.build());
             }
             return new EzyActiveSettings(

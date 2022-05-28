@@ -16,7 +16,7 @@ public final class EzyActiveHandlerAnnotations {
     public static String getCommand(EzyActiveHandler annotation) {
         String cmd = annotation.value();
         if (cmd.isEmpty()) {
-            cmd = annotation.cmd();
+            cmd = annotation.command();
         }
         return cmd;
     }

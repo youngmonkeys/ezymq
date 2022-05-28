@@ -11,35 +11,28 @@ import com.tvd12.ezyfox.builder.EzyArrayBuilder;
 import com.tvd12.ezyfox.codec.*;
 import com.tvd12.ezyfox.factory.EzyEntityFactory;
 import com.tvd12.ezyfox.util.EzyLoggable;
-import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcConsumer;
+import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
 import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitBytesDataCodec;
 import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitBytesEntityCodec;
 import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitDataCodec;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitConnectionFactoryBuilder;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcClient;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcServer;
-import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitActionLogInterceptor;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandlers;
 
 public class RabbitFireAndForgetRunner extends EzyLoggable {
 
-    private EzyMarshaller marshaller;
-    private EzyUnmarshaller unmarshaller;
-    private EzyMessageSerializer messageSerializer;
-    private EzyMessageDeserializer messageDeserializer;
-
-    private EzyBindingContext bindingContext;
-    private EzyEntityCodec entityCodec;
-    private EzyRabbitDataCodec dataCodec;
-    private EzyRabbitRequestHandlers requestHandlers;
+    private final EzyEntityCodec entityCodec;
+    private final EzyRabbitDataCodec dataCodec;
+    private final EzyRabbitRequestHandlers requestHandlers;
 
     public RabbitFireAndForgetRunner() {
-        this.messageSerializer = newMessageSerializer();
-        this.messageDeserializer = newMessageDeserializer();
-        this.bindingContext = newBindingContext();
-        this.marshaller = bindingContext.newMarshaller();
-        this.unmarshaller = bindingContext.newUnmarshaller();
+        EzyMessageSerializer messageSerializer = newMessageSerializer();
+        EzyMessageDeserializer messageDeserializer = newMessageDeserializer();
+        EzyBindingContext bindingContext = newBindingContext();
+        EzyMarshaller marshaller = bindingContext.newMarshaller();
+        EzyUnmarshaller unmarshaller = bindingContext.newUnmarshaller();
         this.entityCodec = EzyRabbitBytesEntityCodec.builder()
             .marshaller(marshaller)
             .unmarshaller(unmarshaller)
@@ -54,9 +47,7 @@ public class RabbitFireAndForgetRunner extends EzyLoggable {
             .mapRequestType("fibonacci", int.class)
             .build();
         this.requestHandlers = new EzyRabbitRequestHandlers();
-        this.requestHandlers.addHandler("fibonacci", a -> {
-            return (int) a + 3;
-        });
+        this.requestHandlers.addHandler("fibonacci", a -> (int) a + 3);
     }
 
     public static void main(String[] args) throws Exception {
@@ -68,18 +59,17 @@ public class RabbitFireAndForgetRunner extends EzyLoggable {
         runner.fire();
     }
 
-    protected void startServer() throws Exception {
+    protected void startServer() {
         new Thread(() -> {
             try {
                 System.out.println("thread-" + Thread.currentThread().getName() + ": start server");
                 EzyRabbitRpcServer server = newServer();
-                EzyRabbitRpcConsumer handler = EzyRabbitRpcConsumer.builder()
+                EzyRabbitRpcConsumer consumer = EzyRabbitRpcConsumer.builder()
                     .server(server)
                     .dataCodec(dataCodec)
                     .requestHandlers(requestHandlers)
-                    .actionInterceptor(new EzyRabbitActionLogInterceptor())
                     .build();
-                handler.start();
+                consumer.start();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -92,17 +82,13 @@ public class RabbitFireAndForgetRunner extends EzyLoggable {
     }
 
     protected void asyncRpc() {
-        new Thread() {
-            public void run() {
-                try {
-                    fire();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        new Thread(() -> {
+            try {
+                fire();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-            ;
-        }
+        })
             .start();
     }
 

@@ -1,11 +1,12 @@
 package com.tvd12.ezymq.rabbitmq.testing;
 
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitConnectionFactory;
+import com.tvd12.test.base.BaseTest;
 import org.testng.annotations.Test;
 
 import java.util.concurrent.Executors;
 
-public class EzyRabbitConnectionFactoryTest {
+public class EzyRabbitConnectionFactoryTest extends BaseTest {
 
     @Test
     public void test() {
@@ -22,5 +23,4 @@ public class EzyRabbitConnectionFactoryTest {
             e.printStackTrace();
         }
     }
-
 }

@@ -37,7 +37,7 @@ public class KafkaContextBuilderTest extends KafkaBaseTest {
                     System.out.println("hello: " + request);
                 }
             })
-            .messageInterceptor(new EzyKafkaMessageInterceptor() {
+            .addMessageInterceptor(new EzyKafkaMessageInterceptor() {
 
                 @Override
                 public void postHandle(String topic, String cmd, Object requestData, Throwable e) {

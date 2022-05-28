@@ -3,7 +3,7 @@ package com.tvd12.ezymq.activemq.test;
 import com.tvd12.ezymq.activemq.EzyActiveMQProxy;
 import com.tvd12.ezymq.activemq.EzyActiveRpcProducer;
 import com.tvd12.ezymq.activemq.EzyActiveTopic;
-import com.tvd12.ezymq.activemq.handler.EzyActiveActionInterceptor;
+import com.tvd12.ezymq.activemq.handler.EzyActiveRequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,22 +33,10 @@ public class ActiveMQContextBuilderTest extends ActiveMQBaseTest {
             .rpcConsumerSettingBuilder("fibonacci")
             .requestQueueName("rpc-request-test-1")
             .replyQueueName("rpc-response-test-1")
-            .addRequestHandler("fibonacci", a -> (int) a + 3)
-            .actionInterceptor(new EzyActiveActionInterceptor() {
-
+            .addRequestHandler("fibonacci", new EzyActiveRequestHandler<Integer>() {
                 @Override
-                public void intercept(String cmd, Object requestData, Exception e) {
-                    e.printStackTrace();
-                }
-
-                @Override
-                public void intercept(String cmd, Object requestData, Object responseData) {
-
-                }
-
-                @Override
-                public void intercept(String cmd, Object requestData) {
-
+                public Object handle(Integer request) throws Exception {
+                    return request + 1;
                 }
             })
             .parent()

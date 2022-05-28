@@ -88,17 +88,17 @@ public class EzyKafkaSettings {
             return this;
         }
 
-        public Builder consumerInterceptor(EzyKafkaMessageInterceptor consumerInterceptor) {
+        public Builder addConsumerInterceptor(EzyKafkaMessageInterceptor consumerInterceptor) {
             this.consumerInterceptors.add(consumerInterceptor);
             return this;
         }
 
-        public Builder consumerInterceptors(Collection<EzyKafkaMessageInterceptor> consumerInterceptors) {
+        public Builder addConsumerInterceptors(Collection<EzyKafkaMessageInterceptor> consumerInterceptors) {
             this.consumerInterceptors.addAll(consumerInterceptors);
             return this;
         }
 
-        public Builder consumerMessageHandlers(List<EzyKafkaMessageHandler> consumerMessageHandlers) {
+        public Builder addConsumerMessageHandlers(List<EzyKafkaMessageHandler> consumerMessageHandlers) {
             for (EzyKafkaMessageHandler handler : consumerMessageHandlers) {
                 EzyKafkaHandler anno = handler.getClass().getAnnotation(EzyKafkaHandler.class);
                 String topic = anno.topic();
@@ -226,7 +226,7 @@ public class EzyKafkaSettings {
                     }
                 }
                 builder.properties((Map) consumerProperties);
-                builder.messageInterceptors(consumerInterceptors);
+                builder.addMessageInterceptors(consumerInterceptors);
                 builder.addMessageHandlers(consumerMessageHandlers.get(topic));
                 consumerSettings.put(name, builder.build());
                 String messageType = consumerProperties.getProperty(MESSAGE_TYPE);

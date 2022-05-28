@@ -2,31 +2,31 @@ package com.tvd12.ezymq.rabbitmq.handler;
 
 import com.tvd12.ezyfox.util.EzyLoggable;
 
-public class EzyRabbitActionLogInterceptor
+public class EzyRabbitRequestLogInterceptor
     extends EzyLoggable
-    implements EzyRabbitActionInterceptor {
+    implements EzyRabbitRequestInterceptor {
 
     @Override
-    public void intercept(String cmd, Object requestData) {
+    public void preHandle(String cmd, Object request) {
         logger.info(
             "request command: {} request data: {}",
             cmd,
-            requestData
+            request
         );
     }
 
     @Override
-    public void intercept(String cmd, Object requestData, Object responseData) {
+    public void postHandle(String cmd, Object request, Object response) {
         logger.info(
             "response command: {} request data: {}, response data: {}",
             cmd,
-            requestData,
-            responseData
+            request,
+            response
         );
     }
 
     @Override
-    public void intercept(String cmd, Object requestData, Exception e) {
+    public void postHandle(String cmd, Object requestData, Throwable e) {
         logger.info(
             "exception command: {} request data: {} exception: ",
             cmd,

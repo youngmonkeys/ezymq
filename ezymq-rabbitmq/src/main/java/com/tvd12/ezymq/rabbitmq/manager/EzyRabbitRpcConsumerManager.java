@@ -10,6 +10,8 @@ import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitRpcConsumerSetting;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.tvd12.ezyfox.util.EzyProcessor.processWithLogException;
+
 public class EzyRabbitRpcConsumerManager extends EzyRabbitAbstractManager {
 
     protected final EzyRabbitDataCodec dataCodec;
@@ -28,11 +30,11 @@ public class EzyRabbitRpcConsumerManager extends EzyRabbitAbstractManager {
     }
 
     public EzyRabbitRpcConsumer getRpcConsumer(String name) {
-        EzyRabbitRpcConsumer handler = rpcConsumers.get(name);
-        if (handler == null) {
+        EzyRabbitRpcConsumer consumer = rpcConsumers.get(name);
+        if (consumer == null) {
             throw new IllegalArgumentException("has no rpc handler with name: " + name);
         }
-        return handler;
+        return consumer;
     }
 
     protected Map<String, EzyRabbitRpcConsumer> createRpcProducers() {
@@ -66,19 +68,19 @@ public class EzyRabbitRpcConsumerManager extends EzyRabbitAbstractManager {
             .replyRoutingKey(setting.getReplyRoutingKey())
             .queueName(setting.getRequestQueueName())
             .build();
-        EzyRabbitRpcConsumer handler = EzyRabbitRpcConsumer.builder()
+        EzyRabbitRpcConsumer consumer = EzyRabbitRpcConsumer.builder()
             .dataCodec(dataCodec)
-            .actionInterceptor(setting.getActionInterceptor())
+            .requestInterceptors(setting.getRequestInterceptors())
             .requestHandlers(setting.getRequestHandlers())
             .threadPoolSize(setting.getThreadPoolSize())
             .server(client).build();
-        handler.start();
-        return handler;
+        consumer.start();
+        return consumer;
     }
 
     public void close() {
-        for (EzyRabbitRpcConsumer handler : rpcConsumers.values()) {
-            handler.close();
+        for (EzyRabbitRpcConsumer consumer : rpcConsumers.values()) {
+            processWithLogException(consumer::close);
         }
     }
 }

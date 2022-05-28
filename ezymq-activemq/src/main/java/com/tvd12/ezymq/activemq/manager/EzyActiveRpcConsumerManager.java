@@ -11,6 +11,8 @@ import javax.jms.Session;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.tvd12.ezyfox.util.EzyProcessor.processWithLogException;
+
 public class EzyActiveRpcConsumerManager
     extends EzyActiveAbstractManager
     implements EzyCloseable {
@@ -31,11 +33,11 @@ public class EzyActiveRpcConsumerManager
     }
 
     public EzyActiveRpcConsumer getRpcConsumer(String name) {
-        EzyActiveRpcConsumer handler = rpcConsumers.get(name);
-        if (handler == null) {
+        EzyActiveRpcConsumer consumer = rpcConsumers.get(name);
+        if (consumer == null) {
             throw new IllegalArgumentException("has no rpc handler with name: " + name);
         }
-        return handler;
+        return consumer;
     }
 
     protected Map<String, EzyActiveRpcConsumer> createRpcProducers() {
@@ -70,18 +72,18 @@ public class EzyActiveRpcConsumerManager
             .replyQueueName(setting.getReplyQueueName())
             .replyQueue(setting.getReplyQueue())
             .build();
-        EzyActiveRpcConsumer handler = EzyActiveRpcConsumer.builder()
+        EzyActiveRpcConsumer consumer = EzyActiveRpcConsumer.builder()
             .dataCodec(dataCodec)
-            .actionInterceptor(setting.getActionInterceptor())
+            .requestInterceptors(setting.getRequestInterceptors())
             .requestHandlers(setting.getRequestHandlers())
             .server(client).build();
-        handler.start();
-        return handler;
+        consumer.start();
+        return consumer;
     }
 
     public void close() {
-        for (EzyActiveRpcConsumer handler : rpcConsumers.values()) {
-            handler.close();
+        for (EzyActiveRpcConsumer consumer : rpcConsumers.values()) {
+            processWithLogException(consumer::close);
         }
     }
 }

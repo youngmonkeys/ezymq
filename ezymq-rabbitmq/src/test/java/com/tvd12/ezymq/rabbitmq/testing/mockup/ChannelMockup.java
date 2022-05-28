@@ -15,7 +15,10 @@ import com.tvd12.ezyfox.util.EzyLoggable;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class ChannelMockup extends EzyLoggable implements Channel {
@@ -188,8 +191,7 @@ public class ChannelMockup extends EzyLoggable implements Channel {
     }
 
     @Override
-    public void basicPublish(String exchange, String routingKey, boolean mandatory, BasicProperties props, byte[] body)
-        {
+    public void basicPublish(String exchange, String routingKey, boolean mandatory, BasicProperties props, byte[] body) {
         // TODO Auto-generated method stub
 
     }
@@ -298,15 +300,13 @@ public class ChannelMockup extends EzyLoggable implements Channel {
     }
 
     @Override
-    public BindOk exchangeBind(String destination, String source, String routingKey, Map<String, Object> arguments)
-        {
+    public BindOk exchangeBind(String destination, String source, String routingKey, Map<String, Object> arguments) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public void exchangeBindNoWait(String destination, String source, String routingKey, Map<String, Object> arguments)
-        {
+    public void exchangeBindNoWait(String destination, String source, String routingKey, Map<String, Object> arguments) {
         // TODO Auto-generated method stub
 
     }
@@ -318,8 +318,7 @@ public class ChannelMockup extends EzyLoggable implements Channel {
     }
 
     @Override
-    public UnbindOk exchangeUnbind(String destination, String source, String routingKey, Map<String, Object> arguments)
-        {
+    public UnbindOk exchangeUnbind(String destination, String source, String routingKey, Map<String, Object> arguments) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -364,8 +363,7 @@ public class ChannelMockup extends EzyLoggable implements Channel {
     }
 
     @Override
-    public com.rabbitmq.client.AMQP.Queue.DeleteOk queueDelete(String queue, boolean ifUnused, boolean ifEmpty)
-        {
+    public com.rabbitmq.client.AMQP.Queue.DeleteOk queueDelete(String queue, boolean ifUnused, boolean ifEmpty) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -377,14 +375,17 @@ public class ChannelMockup extends EzyLoggable implements Channel {
     }
 
     @Override
-    public com.rabbitmq.client.AMQP.Queue.BindOk queueBind(String queue, String exchange, String routingKey)
-        {
+    public com.rabbitmq.client.AMQP.Queue.BindOk queueBind(String queue, String exchange, String routingKey) {
         return queueBind(queue, exchange, routingKey, null);
     }
 
     @Override
-    public com.rabbitmq.client.AMQP.Queue.BindOk queueBind(String queue, String exchange, String routingKey,
-                                                           Map<String, Object> arguments) {
+    public com.rabbitmq.client.AMQP.Queue.BindOk queueBind(
+        String queue,
+        String exchange,
+        String routingKey,
+        Map<String, Object> arguments
+    ) {
         String key = exchange + routingKey;
         queueNames.put(key, queue);
         System.out.println("bind queue: " + queue + ", exchange: " + exchange + ", routingKey: " + routingKey + ", queueSize: " + queueNames.size());
@@ -392,15 +393,13 @@ public class ChannelMockup extends EzyLoggable implements Channel {
     }
 
     @Override
-    public void queueBindNoWait(String queue, String exchange, String routingKey, Map<String, Object> arguments)
-        {
+    public void queueBindNoWait(String queue, String exchange, String routingKey, Map<String, Object> arguments) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public com.rabbitmq.client.AMQP.Queue.UnbindOk queueUnbind(String queue, String exchange, String routingKey)
-        {
+    public com.rabbitmq.client.AMQP.Queue.UnbindOk queueUnbind(String queue, String exchange, String routingKey) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -448,8 +447,7 @@ public class ChannelMockup extends EzyLoggable implements Channel {
     }
 
     @Override
-    public String basicConsume(String queue, DeliverCallback deliverCallback, CancelCallback cancelCallback)
-        {
+    public String basicConsume(String queue, DeliverCallback deliverCallback, CancelCallback cancelCallback) {
         return basicConsume(queue, true, new Consumer() {
 
             @Override
@@ -500,7 +498,7 @@ public class ChannelMockup extends EzyLoggable implements Channel {
         BlockingQueue q = queues.computeIfAbsent(queue, k -> new LinkedBlockingQueue<>());
         Thread thread = new Thread(() -> {
             int i = 0;
-            while ((i ++ ) < 1000) {
+            while ((i++) < 1000) {
                 try {
                     Object[] m = (Object[]) q.take();
                     System.out.println("consume queue: " + queue);
@@ -537,8 +535,7 @@ public class ChannelMockup extends EzyLoggable implements Channel {
     }
 
     @Override
-    public String basicConsume(String queue, boolean autoAck, Map<String, Object> arguments, Consumer callback)
-        {
+    public String basicConsume(String queue, boolean autoAck, Map<String, Object> arguments, Consumer callback) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -566,8 +563,7 @@ public class ChannelMockup extends EzyLoggable implements Channel {
     }
 
     @Override
-    public String basicConsume(String queue, boolean autoAck, String consumerTag, Consumer callback)
-        {
+    public String basicConsume(String queue, boolean autoAck, String consumerTag, Consumer callback) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -602,8 +598,7 @@ public class ChannelMockup extends EzyLoggable implements Channel {
 
     @Override
     public String basicConsume(String queue, boolean autoAck, String consumerTag, boolean noLocal, boolean exclusive,
-                               Map<String, Object> arguments, DeliverCallback deliverCallback, CancelCallback cancelCallback)
-        {
+                               Map<String, Object> arguments, DeliverCallback deliverCallback, CancelCallback cancelCallback) {
         // TODO Auto-generated method stub
         return null;
     }

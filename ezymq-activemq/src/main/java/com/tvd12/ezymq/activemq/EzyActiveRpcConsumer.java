@@ -11,11 +11,10 @@ import com.tvd12.ezymq.activemq.constant.EzyActiveErrorCodes;
 import com.tvd12.ezymq.activemq.constant.EzyActiveKeys;
 import com.tvd12.ezymq.activemq.constant.EzyActiveStatusCodes;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveRpcServer;
-import com.tvd12.ezymq.activemq.handler.EzyActiveActionInterceptor;
 import com.tvd12.ezymq.activemq.handler.EzyActiveRequestHandlers;
+import com.tvd12.ezymq.activemq.handler.EzyActiveRequestInterceptors;
 import com.tvd12.ezymq.activemq.handler.EzyActiveRpcCallHandler;
 import com.tvd12.ezymq.activemq.util.EzyActiveProperties;
-import lombok.Setter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,17 +26,19 @@ public class EzyActiveRpcConsumer
     protected final EzyActiveRpcServer server;
     protected final EzyActiveDataCodec dataCodec;
     protected final EzyActiveRequestHandlers requestHandlers;
-    @Setter
-    protected EzyActiveActionInterceptor actionInterceptor;
+    protected final EzyActiveRequestInterceptors requestInterceptors;
 
     public EzyActiveRpcConsumer(
         EzyActiveRpcServer server,
         EzyActiveDataCodec dataCodec,
-        EzyActiveRequestHandlers requestHandlers) {
+        EzyActiveRequestHandlers requestHandlers,
+        EzyActiveRequestInterceptors requestInterceptors
+    ) {
         this.server = server;
         this.server.setCallHandler(this);
         this.dataCodec = dataCodec;
         this.requestHandlers = requestHandlers;
+        this.requestInterceptors = requestInterceptors;
     }
 
     public static Builder builder() {
@@ -47,7 +48,6 @@ public class EzyActiveRpcConsumer
     @Override
     public void start() throws Exception {
         server.start();
-
     }
 
     @Override
@@ -62,17 +62,11 @@ public class EzyActiveRpcConsumer
         Object responseEntity;
         try {
             requestEntity = dataCodec.deserialize(cmd, requestBody);
-            if (actionInterceptor != null) {
-                actionInterceptor.intercept(cmd, requestEntity);
-            }
+            requestInterceptors.preHandle(cmd, requestEntity);
             responseEntity = requestHandlers.handle(cmd, requestEntity);
-            if (actionInterceptor != null) {
-                actionInterceptor.intercept(cmd, requestEntity, responseEntity);
-            }
+            requestInterceptors.postHandle(cmd, requestEntity, responseEntity);
         } catch (Exception e) {
-            if (actionInterceptor != null) {
-                actionInterceptor.intercept(cmd, requestEntity, e);
-            }
+            requestInterceptors.postHandle(cmd, requestEntity, e);
         }
     }
 
@@ -88,14 +82,10 @@ public class EzyActiveRpcConsumer
         Object responseEntity;
         try {
             requestEntity = dataCodec.deserialize(cmd, requestBody);
-            if (actionInterceptor != null) {
-                actionInterceptor.intercept(cmd, requestEntity);
-            }
+            requestInterceptors.preHandle(cmd, requestEntity);
             responseEntity = requestHandlers.handle(cmd, requestEntity);
             responseBytes = dataCodec.serialize(responseEntity);
-            if (actionInterceptor != null) {
-                actionInterceptor.intercept(cmd, requestEntity, responseEntity);
-            }
+            requestInterceptors.postHandle(cmd, requestEntity, responseEntity);
         } catch (Exception e) {
             responseBytes = new byte[0];
             Map<String, Object> responseHeaders = new HashMap<>();
@@ -122,9 +112,7 @@ public class EzyActiveRpcConsumer
             responseHeaders.put(EzyActiveKeys.MESSAGE, errorMessage);
             replyPropertiesBuilder.addProperties(responseHeaders);
 
-            if (actionInterceptor != null) {
-                actionInterceptor.intercept(cmd, requestEntity, e);
-            }
+            requestInterceptors.postHandle(cmd, requestEntity, e);
         }
         return responseBytes;
     }
@@ -134,7 +122,7 @@ public class EzyActiveRpcConsumer
         protected EzyActiveRpcServer server;
         protected EzyActiveDataCodec dataCodec;
         protected EzyActiveRequestHandlers requestHandlers;
-        protected EzyActiveActionInterceptor actionInterceptor;
+        protected EzyActiveRequestInterceptors requestInterceptors;
 
         public Builder threadPoolSize(int threadPoolSize) {
             this.threadPoolSize = threadPoolSize;
@@ -151,26 +139,31 @@ public class EzyActiveRpcConsumer
             return this;
         }
 
-        public Builder requestHandlers(EzyActiveRequestHandlers requestHandlers) {
+        public Builder requestHandlers(
+            EzyActiveRequestHandlers requestHandlers
+        ) {
             this.requestHandlers = requestHandlers;
             return this;
         }
 
-        public Builder actionInterceptor(EzyActiveActionInterceptor actionInterceptor) {
-            this.actionInterceptor = actionInterceptor;
+        public Builder requestInterceptors(
+            EzyActiveRequestInterceptors requestInterceptors
+        ) {
+            this.requestInterceptors = requestInterceptors;
             return this;
         }
 
         @Override
         public EzyActiveRpcConsumer build() {
-            EzyActiveRpcConsumer product = new EzyActiveRpcConsumer(
+            if (requestInterceptors == null) {
+                requestInterceptors = new EzyActiveRequestInterceptors();
+            }
+            return new EzyActiveRpcConsumer(
                 server,
                 dataCodec,
-                requestHandlers);
-            if (actionInterceptor != null) {
-                product.setActionInterceptor(actionInterceptor);
-            }
-            return product;
+                requestHandlers,
+                requestInterceptors
+            );
         }
     }
 }

@@ -5,9 +5,10 @@ import com.rabbitmq.client.AMQP.BasicProperties.Builder;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcServer;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRpcCallHandler;
 import com.tvd12.ezymq.rabbitmq.testing.mockup.ChannelMockup;
+import com.tvd12.test.base.BaseTest;
 import org.testng.annotations.Test;
 
-public class EzyRabbitRpcServerTest {
+public class EzyRabbitRpcServerTest extends BaseTest {
 
     @Test
     public void test() throws Exception {
@@ -43,6 +44,6 @@ public class EzyRabbitRpcServerTest {
         server.start();
         System.out.println("set up server done");
         Thread.sleep(100);
+        server.close();
     }
-
 }

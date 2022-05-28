@@ -8,6 +8,4 @@ public class FiboRequest implements EzyMessageTypeFetcher {
     public String getMessageType() {
         return "fibonacci";
     }
-
-
 }

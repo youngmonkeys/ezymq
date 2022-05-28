@@ -4,21 +4,20 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.tvd12.ezyfox.builder.EzyArrayBuilder;
 import com.tvd12.ezyfox.factory.EzyEntityFactory;
-import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcConsumer;
+import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcClient;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcServer;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandlers;
+import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestInterceptors;
 
 public class RabbitRpcAllRunner extends RabbitBaseTest {
 
-    private EzyRabbitRequestHandlers requestHandlers;
+    private final EzyRabbitRequestHandlers requestHandlers;
 
     public RabbitRpcAllRunner() {
         this.requestHandlers = new EzyRabbitRequestHandlers();
-        this.requestHandlers.addHandler("fibonacci", a -> {
-            return (int) a + 3;
-        });
+        this.requestHandlers.addHandler("fibonacci", a -> (int) a + 3);
     }
 
     public static void main(String[] args) throws Exception {
@@ -30,12 +29,18 @@ public class RabbitRpcAllRunner extends RabbitBaseTest {
     }
 
     @SuppressWarnings("resource")
-    protected void startServer() throws Exception {
+    protected void startServer() {
         try {
             System.out.println("thread-" + Thread.currentThread().getName() + ": start server");
             EzyRabbitRpcServer server = newServer();
-            EzyRabbitRpcConsumer handler = new EzyRabbitRpcConsumer(3, server, dataCodec, requestHandlers);
-            handler.start();
+            EzyRabbitRpcConsumer consumer = new EzyRabbitRpcConsumer(
+                3,
+                server,
+                dataCodec,
+                requestHandlers,
+                new EzyRabbitRequestInterceptors()
+            );
+            consumer.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -46,17 +51,13 @@ public class RabbitRpcAllRunner extends RabbitBaseTest {
     }
 
     protected void asyncRpc() {
-        new Thread() {
-            public void run() {
-                try {
-                    rpc();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        new Thread(() -> {
+            try {
+                rpc();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-            ;
-        }
+        })
             .start();
     }
 
@@ -108,5 +109,4 @@ public class RabbitRpcAllRunner extends RabbitBaseTest {
             .channel(channel)
             .build();
     }
-
 }

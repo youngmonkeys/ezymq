@@ -19,5 +19,5 @@ public @interface EzyActiveHandler {
      *
      * @return server event name
      */
-    String cmd() default "";
+    String command() default "";
 }

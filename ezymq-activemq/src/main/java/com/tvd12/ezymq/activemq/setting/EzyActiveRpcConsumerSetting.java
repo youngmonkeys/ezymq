@@ -1,19 +1,21 @@
 package com.tvd12.ezymq.activemq.setting;
 
-import com.tvd12.ezymq.activemq.handler.EzyActiveActionInterceptor;
 import com.tvd12.ezymq.activemq.handler.EzyActiveRequestHandler;
 import com.tvd12.ezymq.activemq.handler.EzyActiveRequestHandlers;
+import com.tvd12.ezymq.activemq.handler.EzyActiveRequestInterceptor;
+import com.tvd12.ezymq.activemq.handler.EzyActiveRequestInterceptors;
 import lombok.Getter;
 
 import javax.jms.Destination;
 import javax.jms.Session;
+import java.util.Collection;
 import java.util.Map;
 
 @Getter
 public class EzyActiveRpcConsumerSetting extends EzyActiveRpcEndpointSetting {
 
     protected final EzyActiveRequestHandlers requestHandlers;
-    protected final EzyActiveActionInterceptor actionInterceptor;
+    protected final EzyActiveRequestInterceptors requestInterceptors;
 
     public EzyActiveRpcConsumerSetting(
         Session session,
@@ -23,7 +25,7 @@ public class EzyActiveRpcConsumerSetting extends EzyActiveRpcEndpointSetting {
         Destination replyQueue,
         int threadPoolSize,
         EzyActiveRequestHandlers requestHandlers,
-        EzyActiveActionInterceptor actionInterceptor
+        EzyActiveRequestInterceptors requestInterceptors
     ) {
         super(
             session,
@@ -34,7 +36,7 @@ public class EzyActiveRpcConsumerSetting extends EzyActiveRpcEndpointSetting {
             threadPoolSize
         );
         this.requestHandlers = requestHandlers;
-        this.actionInterceptor = actionInterceptor;
+        this.requestInterceptors = requestInterceptors;
     }
 
     public static Builder builder() {
@@ -43,9 +45,9 @@ public class EzyActiveRpcConsumerSetting extends EzyActiveRpcEndpointSetting {
 
     public static class Builder extends EzyActiveRpcEndpointSetting.Builder<Builder> {
 
-        protected EzyActiveRequestHandlers requestHandlers;
-        protected EzyActiveActionInterceptor actionInterceptor;
         protected EzyActiveSettings.Builder parent;
+        protected EzyActiveRequestHandlers requestHandlers;
+        protected EzyActiveRequestInterceptors requestInterceptors;
 
         public Builder() {
             this(null);
@@ -53,33 +55,38 @@ public class EzyActiveRpcConsumerSetting extends EzyActiveRpcEndpointSetting {
 
         public Builder(EzyActiveSettings.Builder parent) {
             this.parent = parent;
+            this.requestHandlers = new EzyActiveRequestHandlers();
+            this.requestInterceptors = new EzyActiveRequestInterceptors();
         }
 
-        public Builder requestHandlers(EzyActiveRequestHandlers requestHandlers) {
-            this.requestHandlers = requestHandlers;
+        public Builder addRequestInterceptor(
+            EzyActiveRequestInterceptor requestInterceptor
+        ) {
+            this.requestInterceptors.addInterceptor(requestInterceptor);
             return this;
         }
 
-        public Builder actionInterceptor(EzyActiveActionInterceptor actionInterceptor) {
-            this.actionInterceptor = actionInterceptor;
+        public Builder addRequestInterceptors(
+            Collection<EzyActiveRequestInterceptor> requestInterceptors
+        ) {
+            this.requestInterceptors.addInterceptors(requestInterceptors);
             return this;
         }
 
         @SuppressWarnings("rawtypes")
-        public Builder addRequestHandler(String cmd, EzyActiveRequestHandler handler) {
-            if (requestHandlers == null) {
-                requestHandlers = new EzyActiveRequestHandlers();
-            }
+        public Builder addRequestHandler(
+            String cmd,
+            EzyActiveRequestHandler handler
+        ) {
             requestHandlers.addHandler(cmd, handler);
             return this;
         }
 
         @SuppressWarnings("rawtypes")
-        public Builder addRequestHandler(Map<String, EzyActiveRequestHandler> handlers) {
-            for (String cmd : handlers.keySet()) {
-                EzyActiveRequestHandler handler = handlers.get(cmd);
-                addRequestHandler(cmd, handler);
-            }
+        public Builder addRequestHandlers(
+            Map<String, EzyActiveRequestHandler> handlers
+        ) {
+            requestHandlers.addHandlers(handlers);
             return this;
         }
 
@@ -100,7 +107,7 @@ public class EzyActiveRpcConsumerSetting extends EzyActiveRpcEndpointSetting {
                 replyQueue,
                 threadPoolSize,
                 requestHandlers,
-                actionInterceptor
+                requestInterceptors
             );
         }
     }

@@ -169,6 +169,7 @@ public class EzyActiveMQProxyBuilder
         return this;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public EzyActiveMQProxy build() {
         beanContext = newBeanContext();
@@ -179,9 +180,10 @@ public class EzyActiveMQProxyBuilder
             }
             settingsBuilder.mapRequestTypes(requestTypes);
             List interceptors = beanContext.getSingletons(EzyActiveInterceptor.class);
-            List dataHandlers = beanContext.getSingletons(EzyActiveHandler.class);
+            List requestHandlers = beanContext.getSingletons(EzyActiveHandler.class);
             settings = settingsBuilder
-                .requestInterceptors(interceptors)
+                .addRequestInterceptors(interceptors)
+                .addRequestHandlers(requestHandlers)
                 .build();
         }
         if (bindingContext == null) {

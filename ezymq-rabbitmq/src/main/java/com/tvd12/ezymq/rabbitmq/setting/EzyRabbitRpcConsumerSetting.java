@@ -1,11 +1,13 @@
 package com.tvd12.ezymq.rabbitmq.setting;
 
 import com.rabbitmq.client.Channel;
-import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitActionInterceptor;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandler;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandlers;
+import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestInterceptor;
+import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestInterceptors;
 import lombok.Getter;
 
+import java.util.Collection;
 import java.util.Map;
 
 @Getter
@@ -15,7 +17,7 @@ public class EzyRabbitRpcConsumerSetting extends EzyRabbitEndpointSetting {
     protected final String replyRoutingKey;
     protected final String requestQueueName;
     protected final EzyRabbitRequestHandlers requestHandlers;
-    protected final EzyRabbitActionInterceptor actionInterceptor;
+    protected final EzyRabbitRequestInterceptors requestInterceptors;
 
     public EzyRabbitRpcConsumerSetting(
         Channel channel,
@@ -25,14 +27,14 @@ public class EzyRabbitRpcConsumerSetting extends EzyRabbitEndpointSetting {
         String requestQueueName,
         int threadPoolSize,
         EzyRabbitRequestHandlers requestHandlers,
-        EzyRabbitActionInterceptor actionInterceptor
+        EzyRabbitRequestInterceptors requestInterceptors
     ) {
         super(channel, exchange, prefetchCount);
         this.replyRoutingKey = replyRoutingKey;
         this.requestQueueName = requestQueueName;
         this.threadPoolSize = threadPoolSize;
         this.requestHandlers = requestHandlers;
-        this.actionInterceptor = actionInterceptor;
+        this.requestInterceptors = requestInterceptors;
     }
 
     public static Builder builder() {
@@ -44,9 +46,9 @@ public class EzyRabbitRpcConsumerSetting extends EzyRabbitEndpointSetting {
         protected int threadPoolSize = 3;
         protected String replyRoutingKey = "";
         protected String requestQueueName = null;
-        protected EzyRabbitRequestHandlers requestHandlers;
-        protected EzyRabbitActionInterceptor actionInterceptor;
         protected EzyRabbitSettings.Builder parent;
+        protected EzyRabbitRequestHandlers requestHandlers;
+        protected EzyRabbitRequestInterceptors requestInterceptors;
 
         public Builder() {
             this(null);
@@ -54,6 +56,8 @@ public class EzyRabbitRpcConsumerSetting extends EzyRabbitEndpointSetting {
 
         public Builder(EzyRabbitSettings.Builder parent) {
             this.parent = parent;
+            this.requestHandlers = new EzyRabbitRequestHandlers();
+            this.requestInterceptors = new EzyRabbitRequestInterceptors();
         }
 
         public Builder threadPoolSize(int threadPoolSize) {
@@ -71,13 +75,17 @@ public class EzyRabbitRpcConsumerSetting extends EzyRabbitEndpointSetting {
             return this;
         }
 
-        public Builder requestHandlers(EzyRabbitRequestHandlers requestHandlers) {
-            this.requestHandlers = requestHandlers;
+        public Builder addRequestInterceptor(
+            EzyRabbitRequestInterceptor requestInterceptor
+        ) {
+            this.requestInterceptors.addInterceptor(requestInterceptor);
             return this;
         }
 
-        public Builder actionInterceptor(EzyRabbitActionInterceptor actionInterceptor) {
-            this.actionInterceptor = actionInterceptor;
+        public Builder addRequestInterceptors(
+            Collection<EzyRabbitRequestInterceptor> requestInterceptors
+        ) {
+            this.requestInterceptors.addInterceptors(requestInterceptors);
             return this;
         }
 
@@ -91,7 +99,9 @@ public class EzyRabbitRpcConsumerSetting extends EzyRabbitEndpointSetting {
         }
 
         @SuppressWarnings("rawtypes")
-        public Builder addRequestHandler(Map<String, EzyRabbitRequestHandler> handlers) {
+        public Builder addRequestHandlers(
+            Map<String, EzyRabbitRequestHandler> handlers
+        ) {
             for (String cmd : handlers.keySet()) {
                 EzyRabbitRequestHandler handler = handlers.get(cmd);
                 addRequestHandler(cmd, handler);
@@ -116,7 +126,7 @@ public class EzyRabbitRpcConsumerSetting extends EzyRabbitEndpointSetting {
                 requestQueueName,
                 threadPoolSize,
                 requestHandlers,
-                actionInterceptor
+                requestInterceptors
             );
         }
     }
