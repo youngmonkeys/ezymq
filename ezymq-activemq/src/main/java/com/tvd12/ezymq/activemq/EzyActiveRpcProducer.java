@@ -18,7 +18,9 @@ import com.tvd12.ezymq.activemq.util.EzyActiveProperties;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
-public class EzyActiveRpcProducer extends EzyLoggable implements EzyCloseable {
+public class EzyActiveRpcProducer
+    extends EzyLoggable
+    implements EzyCloseable {
 
     protected final EzyActiveRpcClient client;
     protected final EzyEntityCodec entityCodec;

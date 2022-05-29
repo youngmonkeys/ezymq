@@ -72,13 +72,12 @@ public class EzyActiveRpcConsumerManager
             .replyQueueName(setting.getReplyQueueName())
             .replyQueue(setting.getReplyQueue())
             .build();
-        EzyActiveRpcConsumer consumer = EzyActiveRpcConsumer.builder()
+        return EzyActiveRpcConsumer.builder()
             .dataCodec(dataCodec)
             .requestInterceptors(setting.getRequestInterceptors())
             .requestHandlers(setting.getRequestHandlers())
-            .server(client).build();
-        consumer.start();
-        return consumer;
+            .server(client)
+            .build();
     }
 
     public void close() {

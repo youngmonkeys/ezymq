@@ -16,12 +16,12 @@ import static com.tvd12.ezymq.rabbitmq.setting.EzyRabbitSettings.*;
 public class EzyRabbitConnectionFactoryBuilder
         implements EzyBuilder<ConnectionFactory> {
 
+    protected String uri;
     protected int port = 5672;
     protected String username = "guest";
     protected String password = "guest";
     protected String host = "localhost";
     protected String vhost = "/";
-    protected String uri = null;
     protected int requestedHeartbeat = 15;
     protected int sharedThreadPoolSize;
     protected int maxConnectionAttempts;

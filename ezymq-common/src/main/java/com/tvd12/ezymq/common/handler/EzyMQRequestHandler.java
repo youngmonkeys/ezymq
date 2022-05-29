@@ -17,7 +17,7 @@ public interface EzyMQRequestHandler<R> {
             Class<?>[] args = EzyGenerics.getGenericInterfacesArguments(
                 handlerClass,
                 EzyMQRequestHandler.class,
-                2
+                1
             );
             return args[0];
         } catch (Exception e) {

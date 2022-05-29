@@ -8,7 +8,9 @@ import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.ezymq.kafka.endpoint.EzyKafkaClient;
 
-public class EzyKafkaProducer extends EzyLoggable implements EzyCloseable {
+public class EzyKafkaProducer
+    extends EzyLoggable
+    implements EzyCloseable {
 
     protected final EzyKafkaClient client;
     protected final EzyEntityCodec entityCodec;

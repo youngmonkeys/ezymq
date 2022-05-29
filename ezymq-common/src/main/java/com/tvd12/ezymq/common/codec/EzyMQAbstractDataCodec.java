@@ -12,7 +12,7 @@ public abstract class EzyMQAbstractDataCodec implements EzyMQDataCodec {
 
     protected final EzyMarshaller marshaller;
     protected final EzyUnmarshaller unmarshaller;
-    protected final Map<String, Class> requestTypeMap;
+    protected final Map<String, Class> requestTypeByCommand;
 
     public EzyMQAbstractDataCodec(
         EzyMarshaller marshaller,
@@ -21,7 +21,7 @@ public abstract class EzyMQAbstractDataCodec implements EzyMQDataCodec {
     ) {
         this.marshaller = marshaller;
         this.unmarshaller = unmarshaller;
-        this.requestTypeMap = requestTypeMap;
+        this.requestTypeByCommand = requestTypeMap;
     }
 
     protected Object marshallEntity(Object entity) {
@@ -29,7 +29,7 @@ public abstract class EzyMQAbstractDataCodec implements EzyMQDataCodec {
     }
 
     protected Object unmarshallData(String cmd, Object value) {
-        Class requestType = requestTypeMap.get(cmd);
+        Class requestType = requestTypeByCommand.get(cmd);
         if (requestType == null) {
             throw new IllegalArgumentException("has no request type with command: " + cmd);
         }

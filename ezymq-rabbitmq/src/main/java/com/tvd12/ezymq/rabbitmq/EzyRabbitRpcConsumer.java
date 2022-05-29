@@ -7,7 +7,6 @@ import com.tvd12.ezyfox.exception.BadRequestException;
 import com.tvd12.ezyfox.exception.NotFoundException;
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyLoggable;
-import com.tvd12.ezyfox.util.EzyStartable;
 import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 import com.tvd12.ezymq.rabbitmq.concurrent.EzyRabbitThreadFactory;
 import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitErrorCodes;
@@ -24,7 +23,7 @@ import java.util.concurrent.ThreadFactory;
 
 public class EzyRabbitRpcConsumer
     extends EzyLoggable
-    implements EzyRabbitRpcCallHandler, EzyStartable, EzyCloseable {
+    implements EzyRabbitRpcCallHandler, EzyCloseable {
 
     protected final int threadPoolSize;
     protected final EzyMQDataCodec dataCodec;
@@ -62,6 +61,7 @@ public class EzyRabbitRpcConsumer
         this.requestInterceptors = requestInterceptors;
         this.threadPoolSize = threadPoolSize > 0 ? threadPoolSize : 1;
         this.executorService = newExecutorService();
+        this.executorService.execute();
     }
 
     protected EzyThreadList newExecutorService() {
@@ -80,11 +80,6 @@ public class EzyRabbitRpcConsumer
         } catch (Exception e) {
             logger.error("start consumer loop has exception", e);
         }
-    }
-
-    @Override
-    public void start() throws Exception {
-        executorService.execute();
     }
 
     @Override

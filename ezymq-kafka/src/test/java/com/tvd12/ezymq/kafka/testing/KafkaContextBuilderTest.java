@@ -21,7 +21,7 @@ public class KafkaContextBuilderTest extends KafkaBaseTest {
     public void test() throws Exception {
         EzyKafkaProxy kafkaContext = EzyKafkaProxy.builder()
             .scan("com.tvd12.ezymq.kafka.testing.entity")
-            .mapMessageType("hello", String.class)
+            .mapMessageType(TOPIC,"hello", String.class)
             .settingsBuilder()
             .property(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS)
             .producerSettingBuilder("clientA")

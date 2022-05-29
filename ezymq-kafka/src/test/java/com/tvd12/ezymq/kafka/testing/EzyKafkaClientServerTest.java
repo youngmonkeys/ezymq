@@ -5,9 +5,7 @@ import com.tvd12.ezyfox.binding.EzyMarshaller;
 import com.tvd12.ezyfox.binding.EzyUnmarshaller;
 import com.tvd12.ezyfox.binding.codec.EzyBindingEntityCodec;
 import com.tvd12.ezyfox.codec.*;
-import com.tvd12.ezyfox.identifier.EzyIdFetchers;
 import com.tvd12.ezyfox.identifier.EzySimpleIdFetcherImplementer;
-import com.tvd12.ezyfox.message.EzyMessageIdFetchers;
 import com.tvd12.ezymq.kafka.EzyKafkaConsumer;
 import com.tvd12.ezymq.kafka.EzyKafkaProducer;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaBytesDataCodec;
@@ -47,12 +45,12 @@ public class EzyKafkaClientServerTest extends BaseTest {
 
     private void run() throws Exception {
         EzyKafkaProducer client = newClient();
-        runClient(client, 5);
+        runClient(client);
         runServer();
         Thread.sleep(3000L);
     }
 
-    private EzyKafkaConsumer newServer() {
+    private void newServer() {
         Consumer consumer = newConsumer();
         EzyKafkaServer server = new EzyKafkaServer(TOPIC, consumer, 100);
         EzyKafkaDataCodec dataCodec = EzyKafkaBytesDataCodec.builder()
@@ -67,7 +65,7 @@ public class EzyKafkaClientServerTest extends BaseTest {
                 System.out.println("GREAT! We have just received message: " + message);
             }
         });
-        return new EzyKafkaConsumer(
+        new EzyKafkaConsumer(
             server,
             dataCodec,
             requestHandlers,
@@ -103,12 +101,6 @@ public class EzyKafkaClientServerTest extends BaseTest {
             .build();
     }
 
-    protected EzyIdFetchers newMessageIdFetchers() {
-        return EzyMessageIdFetchers.builder()
-            .scan("com.tvd12.ezymq.kafka.testing.entity")
-            .build();
-    }
-
     protected EzyMessageSerializer newMessageSerializer() {
         return new MsgPackSimpleSerializer();
     }
@@ -118,14 +110,13 @@ public class EzyKafkaClientServerTest extends BaseTest {
     }
 
     private void runServer() {
-        EzyKafkaConsumer server = newServer();
-        server.start();
+        newServer();
     }
 
-    private void runClient(EzyKafkaProducer client, int sendMessageCount) {
+    private void runClient(EzyKafkaProducer client) {
         long time = System.currentTimeMillis();
-        for (long index = time; index < time + sendMessageCount; index++) {
-            KafkaChatMessage message = new KafkaChatMessage(index, "Meessage#" + index);
+        for (long index = time; index < time + 5; index++) {
+            KafkaChatMessage message = new KafkaChatMessage(index, "Message#" + index);
             client.send(TOPIC, message);
             long elapsedTime = System.currentTimeMillis() - time;
             System.out.printf("sent record(value=%s), time=%d\n", message, elapsedTime);

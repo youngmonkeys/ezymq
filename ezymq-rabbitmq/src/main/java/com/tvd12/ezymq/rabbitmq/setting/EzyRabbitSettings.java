@@ -158,7 +158,7 @@ public class EzyRabbitSettings extends EzyMQRpcSettings {
             }
             return new EzyRabbitSettings(
                 properties,
-                requestTypes,
+                requestTypeByCommand,
                 queueArguments,
                 topicSettings,
                 rpcProducerSettings,

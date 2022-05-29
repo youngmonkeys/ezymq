@@ -13,6 +13,7 @@ import lombok.Setter;
 
 import java.io.IOException;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class EzyRabbitRpcServer
@@ -22,6 +23,7 @@ public class EzyRabbitRpcServer
     protected final String exchange;
     protected final String replyRoutingKey;
     protected final String requestQueueName;
+    protected final AtomicBoolean started;
     protected final AtomicInteger startCount;
     protected final EzyRabbitBufferConsumer consumer;
     protected volatile boolean active;
@@ -38,6 +40,7 @@ public class EzyRabbitRpcServer
         this.exchange = exchange;
         this.replyRoutingKey = replyRoutingKey;
         this.requestQueueName = requestQueueName;
+        this.started = new AtomicBoolean();
         this.startCount = new AtomicInteger();
         this.consumer = setupConsumer();
     }
@@ -54,10 +57,14 @@ public class EzyRabbitRpcServer
 
     @Override
     public void start() throws Exception {
-        this.active = true;
-        this.startCount.incrementAndGet();
-        while (active) {
-            handleRequestOne();
+        if (started.compareAndSet(false, true)) {
+            this.active = true;
+            this.startCount.incrementAndGet();
+            while (active) {
+                handleRequestOne();
+            }
+        } else {
+            throw new IllegalStateException("start's already started");
         }
     }
 
@@ -123,11 +130,11 @@ public class EzyRabbitRpcServer
     }
 
     public static class Builder implements EzyBuilder<EzyRabbitRpcServer> {
-        protected Channel channel = null;
+        protected Channel channel;
         protected String exchange = "";
         protected String replyRoutingKey = "";
-        protected String queueName = null;
-        protected EzyRabbitRpcCallHandler callHandler = null;
+        protected String queueName;
+        protected EzyRabbitRpcCallHandler callHandler;
 
         public Builder channel(Channel channel) {
             this.channel = channel;

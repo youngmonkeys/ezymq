@@ -2,10 +2,10 @@ package com.tvd12.ezymq.kafka;
 
 import com.tvd12.ezymq.common.EzyMQProxyBuilder;
 import com.tvd12.ezymq.common.setting.EzyMQSettings;
+import com.tvd12.ezymq.kafka.annotation.EzyKafkaHandler;
+import com.tvd12.ezymq.kafka.annotation.EzyKafkaInterceptor;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaBytesDataCodec;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaDataCodec;
-import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageInterceptor;
-import com.tvd12.ezymq.kafka.handler.EzyKafkaRecordsHandler;
 import com.tvd12.ezymq.kafka.setting.EzyKafkaSettings;
 
 import java.util.HashMap;
@@ -74,12 +74,12 @@ public class EzyKafkaProxyBuilder extends EzyMQProxyBuilder<
 
     @Override
     public Class<?> getRequestInterceptorAnnotation() {
-        return EzyKafkaMessageInterceptor.class;
+        return EzyKafkaInterceptor.class;
     }
 
     @Override
     public Class<?> getRequestHandlerAnnotation() {
-        return EzyKafkaRecordsHandler.class;
+        return EzyKafkaHandler.class;
     }
 
     @Override

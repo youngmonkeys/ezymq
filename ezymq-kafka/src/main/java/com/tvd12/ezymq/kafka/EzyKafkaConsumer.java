@@ -3,7 +3,6 @@ package com.tvd12.ezymq.kafka;
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyLoggable;
-import com.tvd12.ezyfox.util.EzyStartable;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaDataCodec;
 import com.tvd12.ezymq.kafka.endpoint.EzyKafkaServer;
 import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageHandlers;
@@ -17,7 +16,7 @@ import java.util.Arrays;
 @SuppressWarnings("rawtypes")
 public class EzyKafkaConsumer
     extends EzyLoggable
-    implements EzyKafkaRecordsHandler, EzyStartable, EzyCloseable {
+    implements EzyKafkaRecordsHandler, EzyCloseable {
 
     protected final EzyKafkaServer server;
     protected final EzyKafkaDataCodec dataCodec;
@@ -32,20 +31,16 @@ public class EzyKafkaConsumer
         EzyKafkaMessageHandlers messageHandlers,
         EzyKafkaMessageInterceptors messageInterceptors
     ) {
-        this.server = server;
-        this.server.setRecordsHandler(this);
         this.dataCodec = dataCodec;
         this.messageHandlers = messageHandlers;
         this.messageInterceptors = messageInterceptors;
+        this.server = server;
+        this.server.setRecordsHandler(this);
+        this.server.start();
     }
 
     public static Builder builder() {
         return new Builder();
-    }
-
-    @Override
-    public void start() {
-        server.start();
     }
 
     @Override

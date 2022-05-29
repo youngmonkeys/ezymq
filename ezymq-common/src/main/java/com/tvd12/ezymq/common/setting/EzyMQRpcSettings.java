@@ -8,7 +8,7 @@ import lombok.Getter;
 import java.util.*;
 
 @Getter
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class EzyMQRpcSettings extends EzyMQSettings {
 
     protected final Map<String, Class> requestTypes;
@@ -34,10 +34,10 @@ public abstract class EzyMQRpcSettings extends EzyMQSettings {
         >
         extends EzyMQSettings.Builder<S, B> {
 
-        protected final Map<String, Class> requestTypes =
-            new HashMap<>();
         protected final List<RI> requestInterceptors =
             new ArrayList<>();
+        protected final Map<String, Class> requestTypeByCommand =
+            new HashMap<>();
         protected final Map<String, RH> requestHandlerByCommand =
             new HashMap<>();
 
@@ -50,44 +50,44 @@ public abstract class EzyMQRpcSettings extends EzyMQSettings {
             return (EzyMQRpcProxyBuilder) super.parent();
         }
 
-        public Builder<S, RI, RH, B> mapRequestType(
+        public B mapRequestType(
             String command,
             Class requestType
         ) {
-            this.requestTypes.put(command, requestType);
-            return this;
+            this.requestTypeByCommand.put(command, requestType);
+            return (B) this;
         }
 
-        public Builder<S, RI, RH, B> mapRequestTypes(
+        public B mapRequestTypes(
             Map<String, Class> requestTypes
         ) {
-            this.requestTypes.putAll(requestTypes);
-            return this;
+            this.requestTypeByCommand.putAll(requestTypes);
+            return (B) this;
         }
 
-        public Builder<S, RI, RH, B> addRequestInterceptor(
+        public B addRequestInterceptor(
             RI requestInterceptor
         ) {
             this.requestInterceptors.add(requestInterceptor);
-            return this;
+            return (B) this;
         }
 
-        public Builder<S, RI, RH, B> addRequestInterceptors(
+        public B addRequestInterceptors(
             Collection<RI> requestInterceptors
         ) {
             this.requestInterceptors.addAll(requestInterceptors);
-            return this;
+            return (B) this;
         }
 
-        public Builder<S, RI, RH, B> addRequestHandlers(
+        public B addRequestHandlers(
             List<RH> requestHandlers
         ) {
             for (RH handler : requestHandlers) {
                 String command = getRequestCommand(handler);
                 this.requestHandlerByCommand.put(command, handler);
-                mapRequestType(command, handler.getRequestType());
+                this.requestTypeByCommand.put(command, handler.getRequestType());
             }
-            return this;
+            return (B) this;
         }
 
         protected abstract String getRequestCommand(Object handler);

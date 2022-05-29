@@ -7,10 +7,13 @@ public interface EzyRabbitMessageHandler {
 
     void handle(
         BasicProperties properties,
-        byte[] messageBody);
+        byte[] messageBody
+    );
 
     default void handle(Delivery request) {
-        handle(request.getProperties(),
-            request.getBody());
+        handle(
+            request.getProperties(),
+            request.getBody()
+        );
     }
 }

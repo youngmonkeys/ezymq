@@ -68,14 +68,12 @@ public class EzyRabbitRpcConsumerManager extends EzyRabbitAbstractManager {
             .replyRoutingKey(setting.getReplyRoutingKey())
             .queueName(setting.getRequestQueueName())
             .build();
-        EzyRabbitRpcConsumer consumer = EzyRabbitRpcConsumer.builder()
+        return EzyRabbitRpcConsumer.builder()
             .dataCodec(dataCodec)
             .requestInterceptors(setting.getRequestInterceptors())
             .requestHandlers(setting.getRequestHandlers())
             .threadPoolSize(setting.getThreadPoolSize())
             .server(client).build();
-        consumer.start();
-        return consumer;
     }
 
     public void close() {

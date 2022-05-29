@@ -10,7 +10,8 @@ import lombok.Setter;
 import java.io.IOException;
 
 public class EzyRabbitTopicServer
-    extends EzyRabbitEndpoint implements EzyStartable {
+    extends EzyRabbitEndpoint
+    implements EzyStartable {
 
     protected final String queueName;
     protected final Consumer consumer;

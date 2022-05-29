@@ -13,6 +13,7 @@ import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.codec.*;
 import com.tvd12.ezyfox.entity.EzyData;
 import com.tvd12.ezyfox.message.annotation.EzyMessage;
+import com.tvd12.ezyfox.message.annotation.Message;
 import com.tvd12.ezyfox.reflect.EzyReflection;
 import com.tvd12.ezyfox.reflect.EzyReflectionProxy;
 import com.tvd12.ezyfox.reflect.EzyTypes;
@@ -272,6 +273,7 @@ public abstract class EzyMQProxyBuilder<
             EzyReflection reflection = new EzyReflectionProxy(packagesToScan);
             builder
                 .addAllClasses(reflection)
+                .addClasses((Set) reflection.getAnnotatedClasses(Message.class))
                 .addClasses((Set) reflection.getAnnotatedClasses(EzyMessage.class));
         }
         return builder.build();

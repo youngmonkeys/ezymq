@@ -13,6 +13,7 @@ import org.apache.kafka.common.serialization.Deserializer;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.tvd12.ezyfox.util.EzyProcessor.processWithLogException;
 
@@ -26,6 +27,7 @@ public class EzyKafkaServer
     protected final Thread poolRecordThread;
     protected final ExecutorService executorService;
     protected volatile boolean active;
+    protected final AtomicBoolean started;
     @Setter
     protected EzyKafkaRecordsHandler recordsHandler;
 
@@ -60,6 +62,7 @@ public class EzyKafkaServer
         super(topic);
         this.consumer = consumer;
         this.pollTimeOut = poolTimeOut;
+        this.started = new AtomicBoolean();
         this.executorService = executorService;
         this.poolRecordThread = newPoolRecordThread(topic);
     }
@@ -68,8 +71,10 @@ public class EzyKafkaServer
         String topic,
         int threadPoolSize
     ) {
-        ExecutorService executorService = EzyExecutors
-            .newFixedThreadPool(threadPoolSize, "kafka-consumer-" + topic);
+        ExecutorService executorService = EzyExecutors.newFixedThreadPool(
+            threadPoolSize,
+            "kafka-consumer-" + topic
+        );
         Runtime.getRuntime().addShutdownHook(new Thread(executorService::shutdown));
         return executorService;
     }
@@ -86,9 +91,13 @@ public class EzyKafkaServer
     @SuppressWarnings("unchecked")
     @Override
     public void start() {
-        this.active = true;
-        this.consumer.subscribe(Collections.singletonList(topic));
-        this.poolRecordThread.start();
+        if (started.compareAndSet(false, true)) {
+            this.active = true;
+            this.consumer.subscribe(Collections.singletonList(topic));
+            this.poolRecordThread.start();
+        } else {
+            throw new IllegalStateException("server's already started");
+        }
     }
 
     protected void loop() {
@@ -125,7 +134,9 @@ public class EzyKafkaServer
     @Override
     public void close() {
         this.active = false;
-        processWithLogException(consumer::close);
+        synchronized (this) {
+            processWithLogException(consumer::close);
+        }
         processWithLogException(executorService::shutdown);
     }
 

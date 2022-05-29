@@ -5,7 +5,6 @@ import com.tvd12.ezyfox.exception.BadRequestException;
 import com.tvd12.ezyfox.exception.NotFoundException;
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyLoggable;
-import com.tvd12.ezyfox.util.EzyStartable;
 import com.tvd12.ezymq.activemq.constant.EzyActiveErrorCodes;
 import com.tvd12.ezymq.activemq.constant.EzyActiveKeys;
 import com.tvd12.ezymq.activemq.constant.EzyActiveStatusCodes;
@@ -21,7 +20,7 @@ import java.util.Map;
 
 public class EzyActiveRpcConsumer
     extends EzyLoggable
-    implements EzyActiveRpcCallHandler, EzyStartable, EzyCloseable {
+    implements EzyActiveRpcCallHandler, EzyCloseable {
 
     protected final EzyMQDataCodec dataCodec;
     protected final EzyActiveRpcServer server;
@@ -34,20 +33,16 @@ public class EzyActiveRpcConsumer
         EzyActiveRequestHandlers requestHandlers,
         EzyActiveRequestInterceptors requestInterceptors
     ) {
-        this.server = server;
-        this.server.setCallHandler(this);
         this.dataCodec = dataCodec;
         this.requestHandlers = requestHandlers;
         this.requestInterceptors = requestInterceptors;
+        this.server = server;
+        this.server.setCallHandler(this);
+        this.server.start();
     }
 
     public static Builder builder() {
         return new Builder();
-    }
-
-    @Override
-    public void start() throws Exception {
-        server.start();
     }
 
     @Override

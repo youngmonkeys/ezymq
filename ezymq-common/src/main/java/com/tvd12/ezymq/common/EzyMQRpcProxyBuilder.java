@@ -69,7 +69,7 @@ public abstract class EzyMQRpcProxyBuilder<
             .unmarshaller(unmarshaller)
             .messageSerializer(messageSerializer)
             .messageDeserializer(messageDeserializer)
-            .mapRequestTypes(requestTypeByCommand)
+            .mapRequestTypes(settings.getRequestTypes())
             .build();
     }
 }

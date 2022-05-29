@@ -73,12 +73,11 @@ public class RabbitFireAndForgetRunner extends EzyLoggable {
             try {
                 System.out.println("thread-" + Thread.currentThread().getName() + ": start server");
                 EzyRabbitRpcServer server = newServer();
-                EzyRabbitRpcConsumer consumer = EzyRabbitRpcConsumer.builder()
+                EzyRabbitRpcConsumer.builder()
                     .server(server)
                     .dataCodec(dataCodec)
                     .requestHandlers(requestHandlers)
                     .build();
-                consumer.start();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -88,17 +87,6 @@ public class RabbitFireAndForgetRunner extends EzyLoggable {
 
     protected void sleep() throws Exception {
         Thread.sleep(1000);
-    }
-
-    protected void asyncRpc() {
-        new Thread(() -> {
-            try {
-                fire();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        })
-            .start();
     }
 
     protected void fire() throws Exception {

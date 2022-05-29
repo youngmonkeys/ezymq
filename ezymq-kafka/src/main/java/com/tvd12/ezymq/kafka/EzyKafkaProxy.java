@@ -38,10 +38,6 @@ public class EzyKafkaProxy
         return consumerManager.getConsumer(name);
     }
 
-    public void startConsumers() throws Exception {
-        consumerManager.startConsumers();
-    }
-
     public Map<String, EzyKafkaConsumer> getConsumers() {
         return consumerManager.getConsumers();
     }

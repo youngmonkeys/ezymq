@@ -6,6 +6,7 @@ import com.tvd12.ezymq.activemq.util.EzyActiveProperties;
 import lombok.Setter;
 
 import javax.jms.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EzyActiveRpcServer
     extends EzyActiveRpcEndpoint
@@ -13,6 +14,7 @@ public class EzyActiveRpcServer
 
     @Setter
     protected EzyActiveRpcCallHandler callHandler;
+    protected final AtomicBoolean started = new AtomicBoolean();
 
     public EzyActiveRpcServer(
         Session session,
@@ -38,9 +40,13 @@ public class EzyActiveRpcServer
     }
 
     @Override
-    public void start() throws Exception {
-        this.active = true;
-        this.executorService.execute();
+    public void start() {
+        if (started.compareAndSet(false, true)) {
+            this.active = true;
+            this.executorService.execute();
+        } else {
+            throw new java.lang.IllegalStateException("server's already started");
+        }
     }
 
     @Override
@@ -96,13 +102,6 @@ public class EzyActiveRpcServer
     }
 
     public static class Builder extends EzyActiveRpcEndpoint.Builder<Builder> {
-
-        protected EzyActiveRpcCallHandler callHandler = null;
-
-        public Builder callHandler(EzyActiveRpcCallHandler callHandler) {
-            this.callHandler = callHandler;
-            return this;
-        }
 
         @Override
         public EzyActiveRpcServer build() {

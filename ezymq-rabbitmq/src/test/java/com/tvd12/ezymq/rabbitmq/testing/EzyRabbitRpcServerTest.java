@@ -41,7 +41,6 @@ public class EzyRabbitRpcServerTest extends BaseTest {
         channel.basicCancel("cancel_EzyRabbitRpcServerTest.queueName");
         server.start();
         channel.basicCancel("shutdown_EzyRabbitRpcServerTest.queueName");
-        server.start();
         System.out.println("set up server done");
         Thread.sleep(100);
         server.close();

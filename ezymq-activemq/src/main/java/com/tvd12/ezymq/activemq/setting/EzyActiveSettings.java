@@ -145,7 +145,7 @@ public class EzyActiveSettings extends EzyMQRpcSettings {
             }
             return new EzyActiveSettings(
                 properties,
-                requestTypes,
+                requestTypeByCommand,
                 topicSettings,
                 rpcProducerSettings,
                 rpcConsumerSettings

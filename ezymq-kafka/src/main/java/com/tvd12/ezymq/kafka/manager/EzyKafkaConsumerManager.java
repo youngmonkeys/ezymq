@@ -35,12 +35,6 @@ public class EzyKafkaConsumerManager
         return consumer;
     }
 
-    public void startConsumers() throws Exception {
-        for (EzyKafkaConsumer consumer : consumers.values()) {
-            consumer.start();
-        }
-    }
-
     protected Map<String, EzyKafkaConsumer> createRpcConsumers() {
         Map<String, EzyKafkaConsumer> map = new HashMap<>();
         for (String name : consumerSettings.keySet()) {
