@@ -2,8 +2,8 @@ package com.tvd12.ezymq.rabbitmq.manager;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
+import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitTopic;
-import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitDataCodec;
 import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitExchangeTypes;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitTopicClient;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitTopicServer;
@@ -15,13 +15,13 @@ import java.util.Map;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class EzyRabbitTopicManager extends EzyRabbitAbstractManager {
 
-    protected final EzyRabbitDataCodec dataCodec;
+    protected final EzyMQDataCodec dataCodec;
     protected final Map<String, EzyRabbitTopic> topics;
     protected final Map<String, Map<String, Object>> queueArguments;
     protected final Map<String, EzyRabbitTopicSetting> topicSettings;
 
     public EzyRabbitTopicManager(
-        EzyRabbitDataCodec dataCodec,
+        EzyMQDataCodec dataCodec,
         ConnectionFactory connectionFactory,
         Map<String, Map<String, Object>> queueArguments,
         Map<String, EzyRabbitTopicSetting> topicSettings

@@ -7,7 +7,7 @@ import java.util.List;
 public class EzyMQRequestInterceptors<I extends EzyMQRequestInterceptor>
     implements EzyMQRequestInterceptor {
 
-    private final List<I> interceptors =
+    protected final List<I> interceptors =
         new ArrayList<>();
 
     public void addInterceptor(I interceptor) {

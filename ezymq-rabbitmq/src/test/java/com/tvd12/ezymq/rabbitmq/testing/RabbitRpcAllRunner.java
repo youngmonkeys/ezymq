@@ -8,6 +8,7 @@ import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcConsumer;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcClient;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcServer;
+import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandler;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandlers;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestInterceptors;
 
@@ -17,7 +18,14 @@ public class RabbitRpcAllRunner extends RabbitBaseTest {
 
     public RabbitRpcAllRunner() {
         this.requestHandlers = new EzyRabbitRequestHandlers();
-        this.requestHandlers.addHandler("fibonacci", a -> (int) a + 3);
+        this.requestHandlers.addHandler(
+            "fibonacci",
+            new EzyRabbitRequestHandler<Integer>() {
+                @Override
+                public Object handle(Integer request) {
+                    return request + 3;
+                }
+            });
     }
 
     public static void main(String[] args) throws Exception {
@@ -35,8 +43,8 @@ public class RabbitRpcAllRunner extends RabbitBaseTest {
             EzyRabbitRpcServer server = newServer();
             EzyRabbitRpcConsumer consumer = new EzyRabbitRpcConsumer(
                 3,
-                server,
                 dataCodec,
+                server,
                 requestHandlers,
                 new EzyRabbitRequestInterceptors()
             );
@@ -48,17 +56,6 @@ public class RabbitRpcAllRunner extends RabbitBaseTest {
 
     protected void sleep() throws Exception {
         Thread.sleep(1000);
-    }
-
-    protected void asyncRpc() {
-        new Thread(() -> {
-            try {
-                rpc();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        })
-            .start();
     }
 
     @SuppressWarnings("resource")

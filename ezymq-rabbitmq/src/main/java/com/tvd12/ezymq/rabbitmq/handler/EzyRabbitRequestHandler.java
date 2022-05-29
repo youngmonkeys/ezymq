@@ -1,6 +1,6 @@
 package com.tvd12.ezymq.rabbitmq.handler;
 
-public interface EzyRabbitRequestHandler<I, O> {
+import com.tvd12.ezymq.common.handler.EzyMQRequestHandler;
 
-    O handle(I request) throws Exception;
-}
+public interface EzyRabbitRequestHandler<R>
+    extends EzyMQRequestHandler<R> {}

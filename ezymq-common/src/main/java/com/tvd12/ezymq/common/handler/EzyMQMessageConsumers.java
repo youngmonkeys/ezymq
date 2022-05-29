@@ -3,43 +3,36 @@ package com.tvd12.ezymq.common.handler;
 import com.tvd12.ezyfox.util.EzyLoggable;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
-@SuppressWarnings({"rawtypes", "unchecked"})
-public class EzyMQMessageConsumers<C extends EzyMQMessageConsumer>
-    extends EzyLoggable {
+@SuppressWarnings("rawtypes")
+public class EzyMQMessageConsumers extends EzyLoggable {
 
-    protected final Map<String, List<C>> consumers;
+    protected final Map<String, List<EzyMQMessageConsumer>> consumers =
+        new ConcurrentHashMap<>();
 
-    public EzyMQMessageConsumers() {
-        this.consumers = new HashMap<>();
+    public void addConsumer(String cmd, EzyMQMessageConsumer consumer) {
+        consumers
+            .computeIfAbsent(
+                cmd,
+                k -> Collections.synchronizedList(new ArrayList<>())
+            )
+            .add(consumer);
     }
 
-    public void addConsumer(String cmd, C consumer) {
-        synchronized (consumers) {
-            List<C> consumerList
-                = consumers.computeIfAbsent(cmd, k -> new ArrayList<>());
-            consumerList.add(consumer);
-        }
-    }
-
-    public List<C> getConsumers(String cmd) {
-        List<C> answer;
-        synchronized (consumers) {
-            answer = consumers.get(cmd);
-        }
-        if (answer != null) {
-            return answer;
-        }
-        return Collections.EMPTY_LIST;
-    }
-
+    @SuppressWarnings("unchecked")
     public void consume(String cmd, Object message) {
-        List<C> consumerList = getConsumers(cmd);
-        for (C consumer : consumerList) {
+        List<EzyMQMessageConsumer> consumerList =
+            consumers.getOrDefault(cmd, Collections.emptyList());
+        for (EzyMQMessageConsumer consumer : consumerList) {
             try {
                 consumer.consume(message);
             } catch (Exception e) {
-                logger.warn("consume command: {} message: {} error", cmd, message);
+                logger.warn(
+                    "consume command: {} message: {} error",
+                    cmd,
+                    message
+                );
             }
         }
     }

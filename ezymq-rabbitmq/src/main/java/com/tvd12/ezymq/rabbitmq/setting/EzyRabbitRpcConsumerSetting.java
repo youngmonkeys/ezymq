@@ -43,7 +43,7 @@ public class EzyRabbitRpcConsumerSetting extends EzyRabbitEndpointSetting {
 
     public static class Builder extends EzyRabbitEndpointSetting.Builder<Builder> {
 
-        protected int threadPoolSize = 3;
+        protected int threadPoolSize = 1;
         protected String replyRoutingKey = "";
         protected String requestQueueName = null;
         protected EzyRabbitSettings.Builder parent;

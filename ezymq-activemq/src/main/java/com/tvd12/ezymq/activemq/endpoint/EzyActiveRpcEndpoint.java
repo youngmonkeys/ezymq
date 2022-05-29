@@ -77,7 +77,7 @@ public abstract class EzyActiveRpcEndpoint
     public abstract static class Builder<B extends Builder<B>>
         extends EzyActiveEndpoint.Builder<B> {
 
-        protected int threadPoolSize = 3;
+        protected int threadPoolSize = 1;
         protected String requestQueueName;
         protected String replyQueueName;
         protected Destination requestQueue;

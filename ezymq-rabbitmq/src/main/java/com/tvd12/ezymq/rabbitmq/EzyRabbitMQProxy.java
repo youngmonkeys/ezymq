@@ -2,33 +2,28 @@ package com.tvd12.ezymq.rabbitmq;
 
 import com.rabbitmq.client.ConnectionFactory;
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
-import com.tvd12.ezyfox.util.EzyCloseable;
-import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitDataCodec;
+import com.tvd12.ezymq.common.EzyMQRpcProxy;
+import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitConnectionFactory;
-import com.tvd12.ezymq.rabbitmq.manager.EzyRabbitRpcProducerManager;
 import com.tvd12.ezymq.rabbitmq.manager.EzyRabbitRpcConsumerManager;
+import com.tvd12.ezymq.rabbitmq.manager.EzyRabbitRpcProducerManager;
 import com.tvd12.ezymq.rabbitmq.manager.EzyRabbitTopicManager;
 import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitSettings;
 
-public class EzyRabbitMQProxy implements EzyCloseable {
+public class EzyRabbitMQProxy extends EzyMQRpcProxy<EzyRabbitSettings> {
 
-    protected final EzyRabbitSettings settings;
-    protected final EzyEntityCodec entityCodec;
-    protected final EzyRabbitDataCodec dataCodec;
     protected final EzyRabbitTopicManager topicManager;
     protected final ConnectionFactory connectionFactory;
     protected final EzyRabbitRpcProducerManager rpcProducerManager;
     protected final EzyRabbitRpcConsumerManager rpcConsumerManager;
 
     public EzyRabbitMQProxy(
-        EzyEntityCodec entityCodec,
-        EzyRabbitDataCodec dataCodec,
         EzyRabbitSettings settings,
+        EzyMQDataCodec dataCodec,
+        EzyEntityCodec entityCodec,
         ConnectionFactory connectionFactory
     ) {
-        this.settings = settings;
-        this.dataCodec = dataCodec;
-        this.entityCodec = entityCodec;
+        super(settings, dataCodec, entityCodec);
         this.connectionFactory = connectionFactory;
         this.topicManager = newTopicManager();
         this.rpcProducerManager = newRpcProducerManager();

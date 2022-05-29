@@ -19,12 +19,13 @@ public class EzyActiveSettings extends EzyMQRpcSettings {
     protected final Map<String, EzyActiveRpcConsumerSetting> rpcConsumerSettings;
 
     public EzyActiveSettings(
+        Properties properties,
         Map<String, Class> requestTypes,
         Map<String, EzyActiveTopicSetting> topicSettings,
         Map<String, EzyActiveRpcProducerSetting> rpcProducerSettings,
         Map<String, EzyActiveRpcConsumerSetting> rpcConsumerSettings
     ) {
-        super(requestTypes);
+        super(properties, requestTypes);
         this.topicSettings = Collections.unmodifiableMap(topicSettings);
         this.rpcProducerSettings = Collections.unmodifiableMap(rpcProducerSettings);
         this.rpcConsumerSettings = Collections.unmodifiableMap(rpcConsumerSettings);
@@ -32,10 +33,6 @@ public class EzyActiveSettings extends EzyMQRpcSettings {
 
     public static Builder builder() {
         return new Builder();
-    }
-
-    public List<Class> getMessageTypeList() {
-        return new ArrayList<>(requestTypes.values());
     }
 
     public static class Builder extends EzyMQRpcSettings.Builder<
@@ -142,6 +139,7 @@ public class EzyActiveSettings extends EzyMQRpcSettings {
                 rpcConsumerSettings.put(name, builder.build());
             }
             return new EzyActiveSettings(
+                properties,
                 requestTypes,
                 topicSettings,
                 rpcProducerSettings,

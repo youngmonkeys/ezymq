@@ -25,15 +25,15 @@ import java.util.*;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class EzyMQProxyBuilder<
     S extends EzyMQSettings,
-    D,
-    P extends EzyMQProxy<S, D>,
-    PB extends EzyMQProxyBuilder<S, D, P, PB>
+    DC,
+    P extends EzyMQProxy<S, DC>,
+    PB extends EzyMQProxyBuilder<S, DC, P, PB>
     >
     extends EzyPropertiesKeeper<PB>
     implements EzyBuilder<P> {
 
     protected S settings;
-    protected D dataCodec;
+    protected DC dataCodec;
     protected boolean scanAndAddAllBeans;
     protected EzyMarshaller marshaller;
     protected EzyUnmarshaller unmarshaller;
@@ -81,74 +81,79 @@ public abstract class EzyMQProxyBuilder<
 
     protected abstract EzyMQSettings.Builder newSettingBuilder();
 
-    public EzyMQProxyBuilder settings(S settings) {
+    public PB settings(S settings) {
         this.settings = settings;
-        return this;
+        return (PB) this;
     }
 
-    public EzyMQProxyBuilder marshaller(EzyMarshaller marshaller) {
+    public PB marshaller(EzyMarshaller marshaller) {
         this.marshaller = marshaller;
-        return this;
+        return (PB) this;
     }
 
-    public EzyMQProxyBuilder unmarshaller(EzyUnmarshaller unmarshaller) {
+    public PB unmarshaller(EzyUnmarshaller unmarshaller) {
         this.unmarshaller = unmarshaller;
-        return this;
+        return (PB) this;
     }
 
-    public EzyMQProxyBuilder entityCodec(EzyEntityCodec entityCodec) {
+    public PB dataCodec(DC dataCodec) {
+        this.dataCodec = dataCodec;
+        return (PB) this;
+    }
+
+    public PB entityCodec(EzyEntityCodec entityCodec) {
         this.entityCodec = entityCodec;
-        return this;
+        return (PB) this;
     }
 
-    public EzyMQProxyBuilder addSingleton(Object singleton) {
+    public PB addSingleton(Object singleton) {
         this.beanContextBuilder.addSingleton(singleton);
-        return this;
+        return (PB) this;
     }
 
-    public EzyMQProxyBuilder addSingleton(String name, Object singleton) {
+    public PB addSingleton(String name, Object singleton) {
         this.beanContextBuilder.addSingleton(name, singleton);
-        return this;
+        return (PB) this;
     }
 
-    public EzyMQProxyBuilder addSingletons(List singletons) {
+    public PB addSingletons(List singletons) {
         singletons.forEach(beanContextBuilder::addSingleton);
-        return this;
+        return (PB) this;
     }
 
-    public EzyMQProxyBuilder addSingletons(Map singletons) {
+    public PB addSingletons(Map singletons) {
         beanContextBuilder.addSingletons(singletons);
-        return this;
+        return (PB) this;
     }
 
-    public EzyMQProxyBuilder beanContext(EzyBeanContext beanContext) {
+    public PB beanContext(EzyBeanContext beanContext) {
         this.beanContextBuilder.addSingletonsByKey(beanContext.getSingletonMapByKey());
-        return this;
+        return (PB) this;
     }
 
-    public EzyMQProxyBuilder bindingContext(EzyBindingContext bindingContext) {
+    public PB bindingContext(EzyBindingContext bindingContext) {
         this.bindingContext = bindingContext;
-        return this;
+        return (PB) this;
     }
 
-    public EzyMQProxyBuilder scanAndAddAllBeans(boolean scanAndAddAllBeans) {
+    public PB scanAndAddAllBeans(boolean scanAndAddAllBeans) {
         this.scanAndAddAllBeans = scanAndAddAllBeans;
-        return this;
+        return (PB) this;
     }
 
-    public EzyMQProxyBuilder messageSerializer(EzyMessageSerializer messageSerializer) {
+    public PB messageSerializer(EzyMessageSerializer messageSerializer) {
         this.messageSerializer = messageSerializer;
-        return this;
+        return (PB) this;
     }
 
-    public EzyMQProxyBuilder messageDeserializer(EzyMessageDeserializer messageDeserializer) {
+    public PB messageDeserializer(EzyMessageDeserializer messageDeserializer) {
         this.messageDeserializer = messageDeserializer;
-        return this;
+        return (PB) this;
     }
 
-    public EzyMQProxyBuilder textMessageDeserializer(EzyMessageDeserializer textMessageDeserializer) {
+    public PB textMessageDeserializer(EzyMessageDeserializer textMessageDeserializer) {
         this.textMessageDeserializer = textMessageDeserializer;
-        return this;
+        return (PB) this;
     }
 
     @Override
@@ -183,6 +188,7 @@ public abstract class EzyMQProxyBuilder<
         if (entityCodec == null) {
             entityCodec = newEntityCodec();
         }
+        preNewProxy();
         return newProxy();
     }
 
@@ -190,7 +196,9 @@ public abstract class EzyMQProxyBuilder<
         EzyMQSettings.Builder settingsBuilder
     );
 
-    protected abstract D newDataCodec();
+    protected abstract DC newDataCodec();
+
+    protected void preNewProxy() {}
 
     protected abstract P newProxy();
 

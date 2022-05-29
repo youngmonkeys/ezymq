@@ -1,27 +1,46 @@
 package com.tvd12.ezymq.rabbitmq.setting;
 
-import com.tvd12.ezyfox.builder.EzyBuilder;
+import com.tvd12.ezymq.common.setting.EzyMQRpcSettings;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitMQProxyBuilder;
+import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandler;
+import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestInterceptor;
 import lombok.Getter;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
+
+import static com.tvd12.ezymq.rabbitmq.util.EzyRabbitHandlerAnnotations.getCommand;
 
 @Getter
-public class EzyRabbitSettings {
+@SuppressWarnings("rawtypes")
+public class EzyRabbitSettings extends EzyMQRpcSettings {
 
     protected final Map<String, Map<String, Object>> queueArguments;
     protected final Map<String, EzyRabbitTopicSetting> topicSettings;
     protected final Map<String, EzyRabbitRpcProducerSetting> rpcProducerSettings;
     protected final Map<String, EzyRabbitRpcConsumerSetting> rpcConsumerSettings;
 
+    public static String URI = "rabbitmq.uri";
+    public static String HOST = "rabbitmq.host";
+    public static String PORT = "rabbitmq.port";
+    public static String USERNAME = "rabbitmq.username";
+    public static String PASSWORD = "rabbitmq.password";
+    public static String VHOST = "rabbitmq.vhost";
+    public static String MAX_CONNECTION_ATTEMPTS = "rabbitmq.requested_heart_beat";
+    public static String REQUESTED_HEART_BEAT = "rabbitmq.max_connection_attempts";
+    public static String SHARED_THREAD_POOL_SIZE = "rabbitmq.shared_thread_pool_size";
+
     public EzyRabbitSettings(
+        Properties properties,
+        Map<String, Class> requestTypes,
         Map<String, Map<String, Object>> queueArguments,
         Map<String, EzyRabbitTopicSetting> topicSettings,
         Map<String, EzyRabbitRpcProducerSetting> rpcProducerSettings,
         Map<String, EzyRabbitRpcConsumerSetting> rpcConsumerSettings
     ) {
+        super(properties, requestTypes);
         this.queueArguments = Collections.unmodifiableMap(queueArguments);
         this.topicSettings = Collections.unmodifiableMap(topicSettings);
         this.rpcProducerSettings = Collections.unmodifiableMap(rpcProducerSettings);
@@ -32,9 +51,13 @@ public class EzyRabbitSettings {
         return new Builder();
     }
 
-    public static class Builder implements EzyBuilder<EzyRabbitSettings> {
+    public static class Builder extends EzyMQRpcSettings.Builder<
+        EzyRabbitSettings,
+        EzyRabbitRequestInterceptor,
+        EzyRabbitRequestHandler,
+        Builder
+        > {
 
-        protected EzyRabbitMQProxyBuilder parent;
         protected Map<String, Map<String, Object>> queueArguments;
         protected Map<String, EzyRabbitTopicSetting> topicSettings;
         protected Map<String, EzyRabbitRpcProducerSetting> rpcProducerSettings;
@@ -48,7 +71,7 @@ public class EzyRabbitSettings {
         }
 
         public Builder(EzyRabbitMQProxyBuilder parent) {
-            this.parent = parent;
+            super(parent);
             this.topicSettings = new HashMap<>();
             this.queueArguments = new HashMap<>();
             this.rpcProducerSettings = new HashMap<>();
@@ -56,6 +79,11 @@ public class EzyRabbitSettings {
             this.topicSettingBuilders = new HashMap<>();
             this.rpcProducerSettingBuilders = new HashMap<>();
             this.rpcConsumerSettingBuilders = new HashMap<>();
+        }
+
+        @Override
+        public EzyRabbitMQProxyBuilder parent() {
+            return (EzyRabbitMQProxyBuilder) super.parent();
         }
 
         public Builder queueArgument(String queue, String key, Object value) {
@@ -106,9 +134,9 @@ public class EzyRabbitSettings {
             return this;
         }
 
-
-        public EzyRabbitMQProxyBuilder parent() {
-            return parent;
+        @Override
+        protected String getRequestCommand(Object handler) {
+            return getCommand(handler);
         }
 
         @Override
@@ -129,6 +157,8 @@ public class EzyRabbitSettings {
                 rpcConsumerSettings.put(name, builder.build());
             }
             return new EzyRabbitSettings(
+                properties,
+                requestTypes,
                 queueArguments,
                 topicSettings,
                 rpcProducerSettings,

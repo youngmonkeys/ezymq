@@ -7,8 +7,11 @@ import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.io.EzyStrings;
 import com.tvd12.ezymq.rabbitmq.concurrent.EzyRabbitThreadFactory;
 
+import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+
+import static com.tvd12.ezymq.rabbitmq.setting.EzyRabbitSettings.*;
 
 public class EzyRabbitConnectionFactoryBuilder
         implements EzyBuilder<ConnectionFactory> {
@@ -20,6 +23,7 @@ public class EzyRabbitConnectionFactoryBuilder
     protected String uri = null;
     protected int requestedHeartbeat = 15;
     protected int sharedThreadPoolSize;
+    protected int maxConnectionAttempts;
     protected ThreadFactory threadFactory;
     protected ExceptionHandler exceptionHandler;
 
@@ -58,22 +62,64 @@ public class EzyRabbitConnectionFactoryBuilder
         return this;
     }
 
-    public EzyRabbitConnectionFactoryBuilder threadFactory(String poolName) {
+    public EzyRabbitConnectionFactoryBuilder threadFactory(
+        String poolName
+    ) {
         return threadFactory(EzyRabbitThreadFactory.create(poolName));
     }
 
-    public EzyRabbitConnectionFactoryBuilder requestedHeartbeat(int requestedHeartbeat) {
+    public EzyRabbitConnectionFactoryBuilder requestedHeartbeat(
+        int requestedHeartbeat
+    ) {
         this.requestedHeartbeat = requestedHeartbeat;
         return this;
     }
 
-    public EzyRabbitConnectionFactoryBuilder sharedThreadPoolSize(int sharedThreadPoolSize) {
+    public EzyRabbitConnectionFactoryBuilder sharedThreadPoolSize(
+        int sharedThreadPoolSize
+    ) {
         this.sharedThreadPoolSize = sharedThreadPoolSize;
         return this;
     }
 
-    public EzyRabbitConnectionFactoryBuilder exceptionHandler(ExceptionHandler exceptionHandler) {
+    public EzyRabbitConnectionFactoryBuilder maxConnectionAttempts(
+        int maxConnectionAttempts
+    ) {
+        this.maxConnectionAttempts = maxConnectionAttempts;
+        return this;
+    }
+
+    public EzyRabbitConnectionFactoryBuilder exceptionHandler(
+        ExceptionHandler exceptionHandler
+    ) {
         this.exceptionHandler = exceptionHandler;
+        return this;
+    }
+
+    public EzyRabbitConnectionFactoryBuilder properties(Properties properties) {
+        this.maxConnectionAttempts = Integer.parseInt(
+            properties
+                .getOrDefault(MAX_CONNECTION_ATTEMPTS, maxConnectionAttempts)
+                .toString()
+        );
+        this.uri = properties.getProperty(URI, uri);
+        this.host = properties.getProperty(HOST, host);
+        this.port = Integer.parseInt(
+            properties.getOrDefault(PORT, port).toString()
+        );
+        this.username = properties.getProperty(USERNAME, username);
+        this.password = properties.getProperty(PASSWORD, password);
+        this.vhost = properties.getProperty(VHOST, vhost);
+        this.requestedHeartbeat = Integer.parseInt(
+            properties
+                .getOrDefault(REQUESTED_HEART_BEAT, requestedHeartbeat)
+                .toString()
+        );
+        this.sharedThreadPoolSize = Integer.parseInt(
+            properties
+                .getOrDefault(SHARED_THREAD_POOL_SIZE, sharedThreadPoolSize)
+                .toString()
+        );
         return this;
     }
 
@@ -85,7 +131,7 @@ public class EzyRabbitConnectionFactoryBuilder
         if (exceptionHandler == null) {
             exceptionHandler = newExceptionHandler();
         }
-        ConnectionFactory factory = new EzyRabbitConnectionFactory();
+        EzyRabbitConnectionFactory factory = new EzyRabbitConnectionFactory();
         if (EzyStrings.isNoContent(uri)) {
             factory.setHost(host);
             factory.setPort(port);
@@ -102,6 +148,9 @@ public class EzyRabbitConnectionFactoryBuilder
         }
         if (sharedThreadPoolSize > 0) {
             factory.setSharedExecutor(Executors.newFixedThreadPool(sharedThreadPoolSize, threadFactory));
+        }
+        if (maxConnectionAttempts > 0) {
+            factory.setMaxConnectionAttempts(maxConnectionAttempts);
         }
         return factory;
     }

@@ -5,39 +5,25 @@ import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.exception.InternalServerErrorException;
 import com.tvd12.ezyfox.io.EzyStrings;
 import com.tvd12.ezyfox.message.EzyMessageTypeFetcher;
-import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitDataCodec;
+import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
+import com.tvd12.ezymq.common.handler.EzyMQMessageConsumer;
+import com.tvd12.ezymq.common.handler.EzyMQMessageConsumers;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitTopicClient;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitTopicServer;
-import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitMessageConsumer;
-import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitMessageConsumers;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitMessageHandler;
 
 public class EzyRabbitTopic<T> {
 
     protected final EzyRabbitTopicClient client;
     protected final EzyRabbitTopicServer server;
-    protected final EzyRabbitDataCodec dataCodec;
+    protected final EzyMQDataCodec dataCodec;
     protected volatile boolean consuming;
-    protected EzyRabbitMessageConsumers consumers;
+    protected EzyMQMessageConsumers consumers;
 
     public EzyRabbitTopic(
-        EzyRabbitTopicServer server,
-        EzyRabbitDataCodec dataCodec
-    ) {
-        this(null, server, dataCodec);
-    }
-
-    public EzyRabbitTopic(
+        EzyMQDataCodec dataCodec,
         EzyRabbitTopicClient client,
-        EzyRabbitDataCodec dataCodec
-    ) {
-        this(client, null, dataCodec);
-    }
-
-    public EzyRabbitTopic(
-        EzyRabbitTopicClient client,
-        EzyRabbitTopicServer server,
-        EzyRabbitDataCodec dataCodec
+        EzyRabbitTopicServer server
     ) {
         this.client = client;
         this.server = server;
@@ -80,11 +66,11 @@ public class EzyRabbitTopic<T> {
         }
     }
 
-    public void addConsumer(EzyRabbitMessageConsumer<T> consumer) {
+    public void addConsumer(EzyMQMessageConsumer<T> consumer) {
         addConsumer("", consumer);
     }
 
-    public void addConsumer(String cmd, EzyRabbitMessageConsumer<T> consumer) {
+    public void addConsumer(String cmd, EzyMQMessageConsumer<T> consumer) {
         if (server == null) {
             throw new IllegalStateException(
                 "this topic is publishing only, set the server to consume"
@@ -93,7 +79,7 @@ public class EzyRabbitTopic<T> {
         synchronized (this) {
             if (!consuming) {
                 this.consuming = true;
-                this.consumers = new EzyRabbitMessageConsumers();
+                this.consumers = new EzyMQMessageConsumers();
                 this.startConsuming();
             }
             consumers.addConsumer(cmd, consumer);
@@ -102,16 +88,13 @@ public class EzyRabbitTopic<T> {
 
     @SuppressWarnings("unchecked")
     protected void startConsuming() {
-        EzyRabbitMessageHandler messageHandler = new EzyRabbitMessageHandler() {
-            @Override
-            public void handle(BasicProperties requestProperties, byte[] requestBody) {
-                String cmd = requestProperties.getType();
-                if (EzyStrings.isNoContent(cmd)) {
-                    cmd = "";
-                }
-                T message = (T) dataCodec.deserialize(cmd, requestBody);
-                consumers.consume(cmd, message);
+        EzyRabbitMessageHandler messageHandler = (requestProperties, requestBody) -> {
+            String cmd = requestProperties.getType();
+            if (EzyStrings.isNoContent(cmd)) {
+                cmd = "";
             }
+            T message = (T) dataCodec.deserialize(cmd, requestBody);
+            consumers.consume(cmd, message);
         };
         server.setMessageHandler(messageHandler);
         try {
@@ -126,7 +109,7 @@ public class EzyRabbitTopic<T> {
 
         protected EzyRabbitTopicClient client;
         protected EzyRabbitTopicServer server;
-        protected EzyRabbitDataCodec dataCodec;
+        protected EzyMQDataCodec dataCodec;
 
         public Builder client(EzyRabbitTopicClient client) {
             this.client = client;
@@ -138,13 +121,13 @@ public class EzyRabbitTopic<T> {
             return this;
         }
 
-        public Builder dataCodec(EzyRabbitDataCodec dataCodec) {
+        public Builder dataCodec(EzyMQDataCodec dataCodec) {
             this.dataCodec = dataCodec;
             return this;
         }
 
         public EzyRabbitTopic build() {
-            return new EzyRabbitTopic(client, server, dataCodec);
+            return new EzyRabbitTopic(dataCodec, client, server);
         }
     }
 }

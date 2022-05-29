@@ -3,7 +3,7 @@ package com.tvd12.ezymq.rabbitmq.testing;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitMQProxy;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitTopic;
-import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitMessageConsumer;
+import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,20 +44,21 @@ public class RabbitMQContextBuilderTest extends RabbitBaseTest {
             .requestQueueName("rmqia-rpc-queue")
             .exchange("rmqia-rpc-exchange")
             .replyRoutingKey("rmqia-rpc-client-routing-key")
-            .addRequestHandler("fibonacci", a -> {
-                return (int) a + 3;
-            })
+            .addRequestHandler(
+                "fibonacci",
+                new EzyRabbitRequestHandler<Integer>() {
+                    @Override
+                    public Object handle(Integer request) throws Exception {
+                        return request + 3;
+                    }
+                }
+            )
             .parent()
             .parent()
             .build();
         EzyRabbitTopic<String> topic = context.getTopic("test");
-        topic.addConsumer(new EzyRabbitMessageConsumer<String>() {
+        topic.addConsumer(message -> logger.info("topic message: " + message));
 
-            @Override
-            public void consume(String message) {
-                logger.info("topic message: " + message);
-            }
-        });
         long startTopicTime = System.currentTimeMillis();
         for (int i = 0; i < 1000; ++i) {
             topic.publish("hello topic " + i);
@@ -76,7 +77,9 @@ public class RabbitMQContextBuilderTest extends RabbitBaseTest {
         System.out.println("elapsed = " + (System.currentTimeMillis() - start));
         context.close();
 
+        //noinspection InfiniteLoopStatement
         while (true) {
+            //noinspection BusyWait
             Thread.sleep(100);
         }
     }

@@ -4,10 +4,11 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.tvd12.ezyfox.builder.EzyArrayBuilder;
 import com.tvd12.ezyfox.factory.EzyEntityFactory;
-import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcConsumer;
+import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcClient;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcServer;
+import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandler;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandlers;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestInterceptors;
 
@@ -17,7 +18,15 @@ public class RabbitRpcAllRunner2 extends RabbitBaseTest {
 
     public RabbitRpcAllRunner2() {
         this.requestHandlers = new EzyRabbitRequestHandlers();
-        this.requestHandlers.addHandler("fibonacci", a -> (int) a + 3);
+        this.requestHandlers.addHandler(
+            "fibonacci",
+            new EzyRabbitRequestHandler<Integer>() {
+                @Override
+                public Object handle(Integer request) {
+                    return request + 3;
+                }
+            }
+        );
     }
 
     public static void main(String[] args) throws Exception {
@@ -36,8 +45,8 @@ public class RabbitRpcAllRunner2 extends RabbitBaseTest {
                 System.out.println("thread-" + Thread.currentThread().getName() + ": start server");
                 EzyRabbitRpcServer server = newServer();
                 EzyRabbitRpcConsumer consumer = new EzyRabbitRpcConsumer(
-                    server,
                     dataCodec,
+                    server,
                     requestHandlers,
                     new EzyRabbitRequestInterceptors()
                 );
@@ -51,17 +60,6 @@ public class RabbitRpcAllRunner2 extends RabbitBaseTest {
 
     protected void sleep() throws Exception {
         Thread.sleep(1000);
-    }
-
-    protected void asyncRpc() {
-        new Thread(() -> {
-            try {
-                rpc();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        })
-            .start();
     }
 
     @SuppressWarnings("resource")

@@ -2,8 +2,8 @@ package com.tvd12.ezymq.rabbitmq.manager;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
+import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcConsumer;
-import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitDataCodec;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcServer;
 import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitRpcConsumerSetting;
 
@@ -14,12 +14,12 @@ import static com.tvd12.ezyfox.util.EzyProcessor.processWithLogException;
 
 public class EzyRabbitRpcConsumerManager extends EzyRabbitAbstractManager {
 
-    protected final EzyRabbitDataCodec dataCodec;
+    protected final EzyMQDataCodec dataCodec;
     protected final Map<String, EzyRabbitRpcConsumer> rpcConsumers;
     protected final Map<String, EzyRabbitRpcConsumerSetting> rpcConsumerSettings;
 
     public EzyRabbitRpcConsumerManager(
-        EzyRabbitDataCodec dataCodec,
+        EzyMQDataCodec dataCodec,
         ConnectionFactory connectionFactory,
         Map<String, EzyRabbitRpcConsumerSetting> rpcConsumerSettings
     ) {

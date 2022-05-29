@@ -9,11 +9,15 @@ import java.util.*;
 
 @Getter
 @SuppressWarnings("rawtypes")
-public class EzyMQRpcSettings extends EzyMQSettings {
+public abstract class EzyMQRpcSettings extends EzyMQSettings {
 
     protected final Map<String, Class> requestTypes;
 
-    public EzyMQRpcSettings(Map<String, Class> requestTypes) {
+    public EzyMQRpcSettings(
+        Properties properties,
+        Map<String, Class> requestTypes
+    ) {
+        super(properties);
         this.requestTypes = Collections.unmodifiableMap(requestTypes);
     }
 

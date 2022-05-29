@@ -1,18 +1,18 @@
 package com.tvd12.ezymq.rabbitmq.testing;
 
 import com.tvd12.ezyfox.binding.EzyBindingContext;
+import com.tvd12.ezyfox.binding.codec.EzyBindingEntityCodec;
 import com.tvd12.ezyfox.codec.*;
 import com.tvd12.ezyfox.collect.Sets;
 import com.tvd12.ezyfox.exception.BadRequestException;
 import com.tvd12.ezyfox.exception.NotFoundException;
-import com.tvd12.ezyfox.reflect.EzyReflectionProxy;
 import com.tvd12.ezyfox.util.EzyMapBuilder;
+import com.tvd12.ezymq.common.codec.EzyMQBytesDataCodec;
+import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitMQProxy;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitTopic;
-import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitBytesDataCodec;
-import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitBytesEntityCodec;
-import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitDataCodec;
+import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandler;
 import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitSettings;
 import com.tvd12.ezymq.rabbitmq.testing.entity.FiboRequest2;
 import com.tvd12.ezymq.rabbitmq.testing.mockup.ConnectionFactoryMockup;
@@ -59,26 +59,39 @@ public class RabbitMQContextBuilderUnitTest extends BaseTest {
             .requestQueueName("rmqia-rpc-queue")
             .exchange("rmqia-rpc-exchange")
             .replyRoutingKey("rmqia-rpc-client-routing-key")
-            .addRequestHandler("fibonacci", a -> {
-                int value = (int) a;
-                if (value == 0) {
-                    throw new NotFoundException("not found value 0");
+            .addRequestHandler(
+                "fibonacci",
+                new EzyRabbitRequestHandler<Integer>() {
+                    @Override
+                    public Object handle(Integer value) {
+                        if (value == 0) {
+                            throw new NotFoundException("not found value 0");
+                        }
+                        if (value == -1) {
+                            throw new BadRequestException(1, "value = -1 invalid");
+                        }
+                        if (value == -2) {
+                            throw new IllegalArgumentException("value = -2 invalid");
+                        }
+                        if (value == -3) {
+                            throw new UnsupportedOperationException("value = -3 not accepted");
+                        }
+                        if (value < -3) {
+                            throw new IllegalStateException("server maintain");
+                        }
+                        return value + 3;
+                    }
                 }
-                if (value == -1) {
-                    throw new BadRequestException(1, "value = -1 invalid");
+            )
+            .addRequestHandler(
+                "fibonacci2",
+                new EzyRabbitRequestHandler<Integer>() {
+                    @Override
+                    public Object handle(Integer request) {
+                        return 1;
+                    }
                 }
-                if (value == -2) {
-                    throw new IllegalArgumentException("value = -2 invalid");
-                }
-                if (value == -3) {
-                    throw new UnsupportedOperationException("value = -3 not accepted");
-                }
-                if (value < -3) {
-                    throw new IllegalStateException("server maintain");
-                }
-                return value + 3;
-            })
-            .addRequestHandler("fibonacci2", a -> 1)
+            )
             .parent()
             .parent()
             .build();
@@ -162,13 +175,13 @@ public class RabbitMQContextBuilderUnitTest extends BaseTest {
             .build();
         EzyMessageSerializer messageSerializer = newMessageSerializer();
         EzyMessageDeserializer messageDeserializer = newMessageDeserializer();
-        EzyEntityCodec entityCodec = EzyRabbitBytesEntityCodec.builder()
+        EzyEntityCodec entityCodec = EzyBindingEntityCodec.builder()
             .marshaller(bindingContext.newMarshaller())
             .unmarshaller(bindingContext.newUnmarshaller())
             .messageSerializer(messageSerializer)
             .messageDeserializer(messageDeserializer)
             .build();
-        EzyRabbitDataCodec dataCodec = EzyRabbitBytesDataCodec.builder()
+        EzyMQDataCodec dataCodec = EzyMQBytesDataCodec.builder()
             .marshaller(bindingContext.newMarshaller())
             .unmarshaller(bindingContext.newUnmarshaller())
             .messageSerializer(messageSerializer)
@@ -180,7 +193,6 @@ public class RabbitMQContextBuilderUnitTest extends BaseTest {
             .scan("com.tvd12.ezymq.rabbitmq.testing.entity")
             .scan("com.tvd12.ezymq.rabbitmq.testing.entity", "com.tvd12.ezymq.rabbitmq.testing.entity")
             .scan(Sets.newHashSet("com.tvd12.ezymq.rabbitmq.testing.entity"))
-            .scan(new EzyReflectionProxy("com.tvd12.ezymq.rabbitmq.testing.entity"))
             .settings(settings)
             .bindingContext(bindingContext)
             .marshaller(bindingContext.newMarshaller())

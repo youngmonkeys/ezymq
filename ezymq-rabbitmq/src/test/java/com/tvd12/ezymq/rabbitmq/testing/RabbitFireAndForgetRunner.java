@@ -6,25 +6,26 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.tvd12.ezyfox.binding.EzyBindingContext;
 import com.tvd12.ezyfox.binding.EzyMarshaller;
 import com.tvd12.ezyfox.binding.EzyUnmarshaller;
+import com.tvd12.ezyfox.binding.codec.EzyBindingEntityCodec;
 import com.tvd12.ezyfox.binding.impl.EzySimpleBindingContext;
 import com.tvd12.ezyfox.builder.EzyArrayBuilder;
 import com.tvd12.ezyfox.codec.*;
 import com.tvd12.ezyfox.factory.EzyEntityFactory;
 import com.tvd12.ezyfox.util.EzyLoggable;
+import com.tvd12.ezymq.common.codec.EzyMQBytesDataCodec;
+import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcConsumer;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
-import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitBytesDataCodec;
-import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitBytesEntityCodec;
-import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitDataCodec;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitConnectionFactoryBuilder;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcClient;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcServer;
+import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandler;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandlers;
 
 public class RabbitFireAndForgetRunner extends EzyLoggable {
 
     private final EzyEntityCodec entityCodec;
-    private final EzyRabbitDataCodec dataCodec;
+    private final EzyMQDataCodec dataCodec;
     private final EzyRabbitRequestHandlers requestHandlers;
 
     public RabbitFireAndForgetRunner() {
@@ -33,13 +34,13 @@ public class RabbitFireAndForgetRunner extends EzyLoggable {
         EzyBindingContext bindingContext = newBindingContext();
         EzyMarshaller marshaller = bindingContext.newMarshaller();
         EzyUnmarshaller unmarshaller = bindingContext.newUnmarshaller();
-        this.entityCodec = EzyRabbitBytesEntityCodec.builder()
+        this.entityCodec = EzyBindingEntityCodec.builder()
             .marshaller(marshaller)
             .unmarshaller(unmarshaller)
             .messageSerializer(messageSerializer)
             .messageDeserializer(messageDeserializer)
             .build();
-        this.dataCodec = EzyRabbitBytesDataCodec.builder()
+        this.dataCodec = EzyMQBytesDataCodec.builder()
             .marshaller(marshaller)
             .unmarshaller(unmarshaller)
             .messageSerializer(messageSerializer)
@@ -47,7 +48,15 @@ public class RabbitFireAndForgetRunner extends EzyLoggable {
             .mapRequestType("fibonacci", int.class)
             .build();
         this.requestHandlers = new EzyRabbitRequestHandlers();
-        this.requestHandlers.addHandler("fibonacci", a -> (int) a + 3);
+        this.requestHandlers.addHandler(
+            "fibonacci",
+            new EzyRabbitRequestHandler<Integer>() {
+                @Override
+                public Object handle(Integer request) {
+                    return request + 3;
+                }
+            }
+        );
     }
 
     public static void main(String[] args) throws Exception {

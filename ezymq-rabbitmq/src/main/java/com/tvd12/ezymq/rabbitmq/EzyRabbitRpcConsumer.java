@@ -8,7 +8,7 @@ import com.tvd12.ezyfox.exception.NotFoundException;
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.ezyfox.util.EzyStartable;
-import com.tvd12.ezymq.rabbitmq.codec.EzyRabbitDataCodec;
+import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 import com.tvd12.ezymq.rabbitmq.concurrent.EzyRabbitThreadFactory;
 import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitErrorCodes;
 import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitKeys;
@@ -27,22 +27,22 @@ public class EzyRabbitRpcConsumer
     implements EzyRabbitRpcCallHandler, EzyStartable, EzyCloseable {
 
     protected final int threadPoolSize;
+    protected final EzyMQDataCodec dataCodec;
     protected final EzyRabbitRpcServer server;
-    protected final EzyRabbitDataCodec dataCodec;
     protected final EzyThreadList executorService;
     protected final EzyRabbitRequestHandlers requestHandlers;
     protected final EzyRabbitRequestInterceptors requestInterceptors;
 
     public EzyRabbitRpcConsumer(
+        EzyMQDataCodec dataCodec,
         EzyRabbitRpcServer server,
-        EzyRabbitDataCodec dataCodec,
         EzyRabbitRequestHandlers requestHandlers,
         EzyRabbitRequestInterceptors requestInterceptors
     ) {
         this(
             0,
-            server,
             dataCodec,
+            server,
             requestHandlers,
             requestInterceptors
         );
@@ -50,8 +50,8 @@ public class EzyRabbitRpcConsumer
 
     public EzyRabbitRpcConsumer(
         int threadPoolSize,
+        EzyMQDataCodec dataCodec,
         EzyRabbitRpcServer server,
-        EzyRabbitDataCodec dataCodec,
         EzyRabbitRequestHandlers requestHandlers,
         EzyRabbitRequestInterceptors requestInterceptors
     ) {
@@ -60,9 +60,7 @@ public class EzyRabbitRpcConsumer
         this.dataCodec = dataCodec;
         this.requestHandlers = requestHandlers;
         this.requestInterceptors = requestInterceptors;
-        this.threadPoolSize = threadPoolSize > 0
-            ? threadPoolSize
-            : Runtime.getRuntime().availableProcessors();
+        this.threadPoolSize = threadPoolSize > 0 ? threadPoolSize : 1;
         this.executorService = newExecutorService();
     }
 
@@ -164,7 +162,7 @@ public class EzyRabbitRpcConsumer
     public static class Builder implements EzyBuilder<EzyRabbitRpcConsumer> {
         protected int threadPoolSize;
         protected EzyRabbitRpcServer server;
-        protected EzyRabbitDataCodec dataCodec;
+        protected EzyMQDataCodec dataCodec;
         protected EzyRabbitRequestHandlers requestHandlers;
         protected EzyRabbitRequestInterceptors requestInterceptors;
 
@@ -178,7 +176,7 @@ public class EzyRabbitRpcConsumer
             return this;
         }
 
-        public Builder dataCodec(EzyRabbitDataCodec dataCodec) {
+        public Builder dataCodec(EzyMQDataCodec dataCodec) {
             this.dataCodec = dataCodec;
             return this;
         }
@@ -201,8 +199,8 @@ public class EzyRabbitRpcConsumer
         public EzyRabbitRpcConsumer build() {
             return new EzyRabbitRpcConsumer(
                 threadPoolSize,
-                server,
                 dataCodec,
+                server,
                 requestHandlers,
                 requestInterceptors
             );

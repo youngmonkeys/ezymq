@@ -24,11 +24,7 @@ public class EzyActiveMQProxy extends EzyMQRpcProxy<EzyActiveSettings> {
         EzyEntityCodec entityCodec,
         ConnectionFactory connectionFactory
     ) {
-        super(
-            settings,
-            dataCodec,
-            entityCodec
-        );
+        super(settings, dataCodec, entityCodec);
         this.connectionFactory = connectionFactory;
         this.topicManager = newTopicManager();
         this.rpcProducerManager = newRpcProducerManager();

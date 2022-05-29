@@ -8,7 +8,8 @@ import lombok.Setter;
 import javax.jms.*;
 
 public class EzyActiveRpcServer
-    extends EzyActiveRpcEndpoint implements EzyStartable {
+    extends EzyActiveRpcEndpoint
+    implements EzyStartable {
 
     @Setter
     protected EzyActiveRpcCallHandler callHandler;

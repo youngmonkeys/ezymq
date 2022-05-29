@@ -77,7 +77,7 @@ public class EzyActiveTopicServer
 
     public static class Builder extends EzyActiveTopicEndpoint.Builder<Builder> {
 
-        protected int threadPoolSize = 3;
+        protected int threadPoolSize = 1;
 
         public Builder threadPoolSize(int threadPoolSize) {
             this.threadPoolSize = threadPoolSize;

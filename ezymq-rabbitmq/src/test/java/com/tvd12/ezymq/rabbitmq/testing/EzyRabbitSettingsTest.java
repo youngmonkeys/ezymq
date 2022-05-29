@@ -3,6 +3,7 @@ package com.tvd12.ezymq.rabbitmq.testing;
 import com.rabbitmq.client.Channel;
 import com.tvd12.ezyfox.io.EzyMaps;
 import com.tvd12.ezymq.rabbitmq.factory.EzyRabbitSimpleCorrelationIdFactory;
+import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandler;
 import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitRpcConsumerSetting;
 import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitRpcProducerSetting;
 import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitSettings;
@@ -32,7 +33,16 @@ public class EzyRabbitSettingsTest extends BaseTest {
                 .channel(channel)
                 .threadPoolSize(8)
                 .prefetchCount(100)
-                .addRequestHandlers(EzyMaps.newHashMap("a", v -> 1))
+                .addRequestHandlers(
+                    EzyMaps.newHashMap(
+                        "a", new EzyRabbitRequestHandler<Integer>() {
+                            @Override
+                            public Object handle(Integer request) {
+                                return 1;
+                            }
+                        }
+                    )
+                )
                 .build())
             .build();
         assert settings.getQueueArguments().get("a").size() == 2;

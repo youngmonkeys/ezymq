@@ -44,7 +44,7 @@ public class EzyKafkaConsumerSetting extends EzyKafkaEndpointSetting {
     public static class Builder extends EzyKafkaEndpointSetting.Builder<Builder> {
 
         protected Consumer consumer;
-        protected int threadPoolSize = 3;
+        protected int threadPoolSize = 1;
         protected long pollTimeOut = 100;
         protected final EzyKafkaSettings.Builder parent;
         protected final EzyKafkaMessageHandlers messageHandlers;

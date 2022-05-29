@@ -7,19 +7,19 @@ import com.tvd12.ezyfox.message.EzyMessageTypeFetcher;
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveTopicClient;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveTopicServer;
-import com.tvd12.ezymq.activemq.handler.EzyActiveMessageConsumer;
-import com.tvd12.ezymq.activemq.handler.EzyActiveMessageConsumers;
 import com.tvd12.ezymq.activemq.handler.EzyActiveMessageHandler;
 import com.tvd12.ezymq.activemq.util.EzyActiveProperties;
 import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
+import com.tvd12.ezymq.common.handler.EzyMQMessageConsumer;
+import com.tvd12.ezymq.common.handler.EzyMQMessageConsumers;
 
 public class EzyActiveTopic<T> implements EzyCloseable {
 
+    protected volatile boolean consuming;
+    protected EzyMQMessageConsumers consumers;
     protected final EzyMQDataCodec dataCodec;
     protected final EzyActiveTopicClient client;
     protected final EzyActiveTopicServer server;
-    protected volatile boolean consuming;
-    protected EzyActiveMessageConsumers consumers;
 
     public EzyActiveTopic(
         EzyMQDataCodec dataCodec,
@@ -65,18 +65,18 @@ public class EzyActiveTopic<T> implements EzyCloseable {
         }
     }
 
-    public void addConsumer(EzyActiveMessageConsumer<T> consumer) {
+    public void addConsumer(EzyMQMessageConsumer<T> consumer) {
         addConsumer("", consumer);
     }
 
-    public void addConsumer(String cmd, EzyActiveMessageConsumer<T> consumer) {
+    public void addConsumer(String cmd, EzyMQMessageConsumer<T> consumer) {
         if (server == null) {
             throw new IllegalStateException("this topic is publishing only, set the server to consume");
         }
         synchronized (this) {
             if (!consuming) {
                 this.consuming = true;
-                this.consumers = new EzyActiveMessageConsumers();
+                this.consumers = new EzyMQMessageConsumers();
                 this.startConsuming();
             }
             consumers.addConsumer(cmd, consumer);

@@ -20,11 +20,7 @@ public class EzyKafkaProxy
         EzyKafkaDataCodec dataCodec,
         EzyEntityCodec entityCodec
     ) {
-        super(
-            settings,
-            dataCodec,
-            entityCodec
-        );
+        super(settings, dataCodec, entityCodec);
         this.producerManager = newProducerManager();
         this.consumerManager = newConsumerManager();
 
