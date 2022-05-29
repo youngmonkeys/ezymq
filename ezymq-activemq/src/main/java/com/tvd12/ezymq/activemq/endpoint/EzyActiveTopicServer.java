@@ -1,7 +1,6 @@
 package com.tvd12.ezymq.activemq.endpoint;
 
 import com.tvd12.ezyfox.concurrent.EzyThreadList;
-import com.tvd12.ezyfox.util.EzyProcessor;
 import com.tvd12.ezyfox.util.EzyStartable;
 import com.tvd12.ezymq.activemq.concurrent.EzyActiveThreadFactory;
 import com.tvd12.ezymq.activemq.handler.EzyActiveMessageHandler;
@@ -11,14 +10,16 @@ import lombok.Setter;
 import javax.jms.*;
 import java.util.concurrent.ThreadFactory;
 
+import static com.tvd12.ezyfox.util.EzyProcessor.processWithLogException;
+
 public class EzyActiveTopicServer
     extends EzyActiveTopicEndpoint
     implements EzyStartable {
 
+    protected volatile boolean active;
     protected final int threadPoolSize;
     protected final MessageConsumer consumer;
-    protected volatile boolean active;
-    protected EzyThreadList executorService;
+    protected final EzyThreadList executorService;
     @Setter
     protected EzyActiveMessageHandler messageHandler;
 
@@ -29,6 +30,7 @@ public class EzyActiveTopicServer
     ) throws Exception {
         super(session, topic);
         this.threadPoolSize = threadPoolSize;
+        this.executorService = newExecutorService();
         this.consumer = session.createConsumer(topic);
     }
 
@@ -39,7 +41,6 @@ public class EzyActiveTopicServer
     @Override
     public void start() throws Exception {
         this.active = true;
-        this.executorService = newExecutorService();
         this.executorService.execute();
     }
 
@@ -71,8 +72,8 @@ public class EzyActiveTopicServer
     @Override
     public void close() {
         this.active = false;
-        this.executorService = null;
-        EzyProcessor.processWithLogException(consumer::close);
+        processWithLogException(executorService::interrupt);
+        processWithLogException(consumer::close);
     }
 
     public static class Builder extends EzyActiveTopicEndpoint.Builder<Builder> {

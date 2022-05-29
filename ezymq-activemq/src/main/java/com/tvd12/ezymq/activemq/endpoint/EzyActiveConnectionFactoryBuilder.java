@@ -10,9 +10,9 @@ import javax.jms.ExceptionListener;
 
 public class EzyActiveConnectionFactoryBuilder implements EzyBuilder<ConnectionFactory> {
 
+    protected String uri;
     protected String username;
     protected String password;
-    protected String uri = null;
     protected int maxThreadPoolSize;
     protected ExceptionListener exceptionListener;
 

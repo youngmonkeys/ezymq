@@ -29,10 +29,12 @@ public class EzyKafkaSettings extends EzyMQSettings {
     public static final String MESSAGE_TYPES = "message_types";
 
     public EzyKafkaSettings(
+        Properties properties,
         Map<String, Map<String, Class>> messageTypesByTopic,
         Map<String, EzyKafkaProducerSetting> consumerSettings,
         Map<String, EzyKafkaConsumerSetting> handlerSettings
     ) {
+        super(properties);
         this.producerSettings = Collections.unmodifiableMap(consumerSettings);
         this.consumerSettings = Collections.unmodifiableMap(handlerSettings);
         this.messageTypesByTopic = Collections.unmodifiableMap(messageTypesByTopic);
@@ -227,7 +229,12 @@ public class EzyKafkaSettings extends EzyMQSettings {
                     mapMessageType(topic, cmd.toString(), EzyClasses.getClass(messageTypes.get(cmd).toString()));
                 }
             }
-            return new EzyKafkaSettings(messageTypesByTopic, producerSettings, consumerSettings);
+            return new EzyKafkaSettings(
+                properties,
+                messageTypesByTopic,
+                producerSettings,
+                consumerSettings
+            );
         }
     }
 }

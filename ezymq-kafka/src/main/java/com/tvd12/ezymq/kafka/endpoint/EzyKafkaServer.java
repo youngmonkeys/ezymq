@@ -2,7 +2,6 @@ package com.tvd12.ezymq.kafka.endpoint;
 
 import com.tvd12.ezyfox.concurrent.EzyExecutors;
 import com.tvd12.ezyfox.util.EzyCloseable;
-import com.tvd12.ezyfox.util.EzyProcessor;
 import com.tvd12.ezyfox.util.EzyStartable;
 import com.tvd12.ezymq.kafka.handler.EzyKafkaRecordsHandler;
 import lombok.Setter;
@@ -14,6 +13,8 @@ import org.apache.kafka.common.serialization.Deserializer;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
+
+import static com.tvd12.ezyfox.util.EzyProcessor.processWithLogException;
 
 @SuppressWarnings("rawtypes")
 public class EzyKafkaServer
@@ -124,10 +125,8 @@ public class EzyKafkaServer
     @Override
     public void close() {
         this.active = false;
-        synchronized (this) {
-            EzyProcessor.processWithLogException(consumer::close);
-        }
-        this.executorService.shutdown();
+        processWithLogException(consumer::close);
+        processWithLogException(executorService::shutdown);
     }
 
     public static class Builder extends EzyKafkaEndpoint.Builder<Builder> {

@@ -10,7 +10,10 @@ public class EzyRabbitTopicClient extends EzyRabbitEndpoint {
     protected final String routingKey;
 
     public EzyRabbitTopicClient(
-        Channel channel, String exchange, String routingKey) {
+        Channel channel,
+        String exchange,
+        String routingKey
+    ) {
         super(channel, exchange);
         this.routingKey = routingKey;
     }
@@ -38,7 +41,8 @@ public class EzyRabbitTopicClient extends EzyRabbitEndpoint {
             return new EzyRabbitTopicClient(
                 channel,
                 exchange,
-                routingKey);
+                routingKey
+            );
         }
     }
 }

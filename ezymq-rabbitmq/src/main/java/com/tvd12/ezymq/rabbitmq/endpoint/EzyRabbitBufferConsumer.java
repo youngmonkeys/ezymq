@@ -11,8 +11,9 @@ public class EzyRabbitBufferConsumer
     extends DefaultConsumer
     implements EzyCloseable {
 
-    protected final BlockingQueue<Delivery> queue;
     protected volatile Exception exception;
+    protected final BlockingQueue<Delivery> queue;
+
     protected static final Delivery POISON =
         new Delivery(null, null, null);
 

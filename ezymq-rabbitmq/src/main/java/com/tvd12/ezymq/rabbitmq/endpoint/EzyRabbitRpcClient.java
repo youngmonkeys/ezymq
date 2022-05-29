@@ -16,7 +16,8 @@ import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 public class EzyRabbitRpcClient
-    extends EzyRabbitEndpoint implements EzyCloseable {
+    extends EzyRabbitEndpoint
+    implements EzyCloseable {
 
     protected final int capacity;
     protected final int defaultTimeout;

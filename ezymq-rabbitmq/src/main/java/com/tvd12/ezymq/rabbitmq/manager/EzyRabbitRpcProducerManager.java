@@ -121,8 +121,8 @@ public class EzyRabbitRpcProducerManager
     }
 
     public void close() {
-        for (EzyRabbitRpcProducer consumer : rpProducers.values()) {
-            consumer.close();
+        for (EzyRabbitRpcProducer producer : rpProducers.values()) {
+            producer.close();
         }
     }
 }

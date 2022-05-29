@@ -1,7 +1,7 @@
 package com.tvd12.ezymq.activemq;
 
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
-import com.tvd12.ezymq.activemq.endpoint.EzyActiveConnectionFactory;
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.activemq.manager.EzyActiveRpcConsumerManager;
 import com.tvd12.ezymq.activemq.manager.EzyActiveRpcProducerManager;
 import com.tvd12.ezymq.activemq.manager.EzyActiveTopicManager;
@@ -10,6 +10,8 @@ import com.tvd12.ezymq.common.EzyMQRpcProxy;
 import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 
 import javax.jms.ConnectionFactory;
+
+import static com.tvd12.ezyfox.util.EzyProcessor.processWithLogException;
 
 public class EzyActiveMQProxy extends EzyMQRpcProxy<EzyActiveSettings> {
 
@@ -52,8 +54,8 @@ public class EzyActiveMQProxy extends EzyMQRpcProxy<EzyActiveSettings> {
         topicManager.close();
         rpcConsumerManager.close();
         rpcProducerManager.close();
-        if (connectionFactory instanceof EzyActiveConnectionFactory) {
-            ((EzyActiveConnectionFactory) connectionFactory).close();
+        if (connectionFactory instanceof EzyCloseable) {
+            processWithLogException(((EzyCloseable) connectionFactory)::close);
         }
     }
 

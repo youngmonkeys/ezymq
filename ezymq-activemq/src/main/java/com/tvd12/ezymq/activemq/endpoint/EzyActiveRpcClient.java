@@ -151,12 +151,16 @@ public class EzyActiveRpcClient extends EzyActiveRpcEndpoint {
             return this;
         }
 
-        public Builder correlationIdFactory(EzyActiveCorrelationIdFactory correlationIdFactory) {
+        public Builder correlationIdFactory(
+            EzyActiveCorrelationIdFactory correlationIdFactory
+        ) {
             this.correlationIdFactory = correlationIdFactory;
             return this;
         }
 
-        public Builder unconsumedResponseConsumer(EzyActiveResponseConsumer unconsumedResponseConsumer) {
+        public Builder unconsumedResponseConsumer(
+            EzyActiveResponseConsumer unconsumedResponseConsumer
+        ) {
             this.unconsumedResponseConsumer = unconsumedResponseConsumer;
             return this;
         }
@@ -179,7 +183,8 @@ public class EzyActiveRpcClient extends EzyActiveRpcEndpoint {
                 threadPoolSize,
                 defaultTimeout,
                 correlationIdFactory,
-                unconsumedResponseConsumer);
+                unconsumedResponseConsumer
+            );
         }
     }
 }

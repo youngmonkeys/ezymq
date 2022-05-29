@@ -17,15 +17,19 @@ public class EzyActiveConnectionFactory
     extends ActiveMQConnectionFactory
     implements EzyCloseable {
 
-    protected final List<Connection> createdConnections
-        = Collections.synchronizedList(new ArrayList<>());
+    protected final List<Connection> createdConnections =
+        Collections.synchronizedList(new ArrayList<>());
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
     protected ActiveMQConnection createActiveMQConnection(
         Transport transport,
-        JMSStatsImpl stats) throws Exception {
-        ActiveMQConnection connection = super.createActiveMQConnection(transport, stats);
+        JMSStatsImpl stats
+    ) throws Exception {
+        ActiveMQConnection connection = super.createActiveMQConnection(
+            transport,
+            stats
+        );
         createdConnections.add(connection);
         return connection;
     }

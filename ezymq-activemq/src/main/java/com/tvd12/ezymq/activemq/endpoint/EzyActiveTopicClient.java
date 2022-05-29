@@ -1,11 +1,12 @@
 package com.tvd12.ezymq.activemq.endpoint;
 
-import com.tvd12.ezyfox.util.EzyProcessor;
 import com.tvd12.ezymq.activemq.util.EzyActiveProperties;
 
 import javax.jms.Destination;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+
+import static com.tvd12.ezyfox.util.EzyProcessor.processWithLogException;
 
 public class EzyActiveTopicClient extends EzyActiveTopicEndpoint {
 
@@ -30,7 +31,7 @@ public class EzyActiveTopicClient extends EzyActiveTopicEndpoint {
 
     @Override
     public void close() {
-        EzyProcessor.processWithLogException(producer::close);
+        processWithLogException(producer::close);
     }
 
     public static class Builder extends EzyActiveTopicEndpoint.Builder<Builder> {

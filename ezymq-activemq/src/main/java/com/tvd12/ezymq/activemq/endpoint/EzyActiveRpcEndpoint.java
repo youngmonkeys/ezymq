@@ -2,7 +2,6 @@ package com.tvd12.ezymq.activemq.endpoint;
 
 import com.tvd12.ezyfox.concurrent.EzyThreadList;
 import com.tvd12.ezyfox.util.EzyCloseable;
-import com.tvd12.ezyfox.util.EzyProcessor;
 import com.tvd12.ezymq.activemq.concurrent.EzyActiveThreadFactory;
 import com.tvd12.ezymq.activemq.constant.EzyActiveDestinationType;
 import com.tvd12.ezymq.activemq.util.EzyActiveProperties;
@@ -12,6 +11,8 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import java.util.concurrent.ThreadFactory;
+
+import static com.tvd12.ezyfox.util.EzyProcessor.processWithLogException;
 
 public abstract class EzyActiveRpcEndpoint
     extends EzyActiveEndpoint
@@ -65,10 +66,11 @@ public abstract class EzyActiveRpcEndpoint
         publish(producer, props, message);
     }
 
+    @Override
     public void close() {
         this.active = false;
-        EzyProcessor.processWithLogException(producer::close);
-        EzyProcessor.processWithLogException(consumer::close);
+        processWithLogException(producer::close);
+        processWithLogException(consumer::close);
     }
 
     protected abstract String getThreadName();

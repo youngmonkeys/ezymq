@@ -15,6 +15,7 @@ import static com.tvd12.ezymq.rabbitmq.setting.EzyRabbitSettings.*;
 
 public class EzyRabbitConnectionFactoryBuilder
         implements EzyBuilder<ConnectionFactory> {
+
     protected int port = 5672;
     protected String username = "guest";
     protected String password = "guest";

@@ -1,10 +1,11 @@
 package com.tvd12.ezymq.kafka.endpoint;
 
 import com.tvd12.ezyfox.util.EzyCloseable;
-import com.tvd12.ezyfox.util.EzyProcessor;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serializer;
+
+import static com.tvd12.ezyfox.util.EzyProcessor.processWithLogException;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class EzyKafkaClient
@@ -33,7 +34,7 @@ public class EzyKafkaClient
 
     @Override
     public void close() {
-        EzyProcessor.processWithLogException(producer::close);
+        processWithLogException(producer::close);
     }
 
     public static class Builder extends EzyKafkaEndpoint.Builder<Builder> {

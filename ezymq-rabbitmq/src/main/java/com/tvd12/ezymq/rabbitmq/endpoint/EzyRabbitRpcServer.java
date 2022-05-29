@@ -32,7 +32,8 @@ public class EzyRabbitRpcServer
         Channel channel,
         String exchange,
         String replyRoutingKey,
-        String requestQueueName) throws Exception {
+        String requestQueueName
+    ) throws Exception {
         super(channel, requestQueueName);
         this.exchange = exchange;
         this.replyRoutingKey = replyRoutingKey;

@@ -20,7 +20,8 @@ public class EzyRabbitTopicServer
     public EzyRabbitTopicServer(
         Channel channel,
         String exchange,
-        String queueName) throws IOException {
+        String queueName
+    ) throws IOException {
         super(channel, exchange);
         this.queueName = fetchQueueName(queueName);
         this.consumer = newConsumer();
@@ -72,7 +73,8 @@ public class EzyRabbitTopicServer
                 return new EzyRabbitTopicServer(
                     channel,
                     exchange,
-                    queueName);
+                    queueName
+                );
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
