@@ -7,6 +7,9 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.ExceptionListener;
+import java.util.Properties;
+
+import static com.tvd12.ezymq.activemq.setting.EzyActiveSettings.*;
 
 public class EzyActiveConnectionFactoryBuilder implements EzyBuilder<ConnectionFactory> {
 
@@ -31,20 +34,36 @@ public class EzyActiveConnectionFactoryBuilder implements EzyBuilder<ConnectionF
         return this;
     }
 
-    public EzyActiveConnectionFactoryBuilder maxThreadPoolSize(int maxThreadPoolSize) {
+    public EzyActiveConnectionFactoryBuilder maxThreadPoolSize(
+        int maxThreadPoolSize
+    ) {
         this.maxThreadPoolSize = maxThreadPoolSize;
         return this;
     }
 
-    public EzyActiveConnectionFactoryBuilder exceptionListener(ExceptionListener exceptionListener) {
+    public EzyActiveConnectionFactoryBuilder exceptionListener(
+        ExceptionListener exceptionListener
+    ) {
         this.exceptionListener = exceptionListener;
+        return this;
+    }
+
+    public EzyActiveConnectionFactoryBuilder properties(Properties properties) {
+        this.uri = properties.getProperty(URI, uri);
+        this.username = properties.getProperty(USERNAME, username);
+        this.password = properties.getProperty(PASSWORD, password);
+        this.maxThreadPoolSize = Integer.parseInt(
+            properties
+                .getOrDefault(MAX_THREAD_POOL_SIZE, maxThreadPoolSize)
+                .toString()
+        );
         return this;
     }
 
     @Override
     public ConnectionFactory build() {
         if (exceptionListener == null) {
-            exceptionListener = newExceptionListner();
+            exceptionListener = newExceptionListener();
         }
         ActiveMQConnectionFactory factory = new EzyActiveConnectionFactory();
         if (!EzyStrings.isNoContent(uri)) {
@@ -71,7 +90,7 @@ public class EzyActiveConnectionFactoryBuilder implements EzyBuilder<ConnectionF
         }
     }
 
-    protected ExceptionListener newExceptionListner() {
+    protected ExceptionListener newExceptionListener() {
         return new EzyActiveExceptionListener();
     }
 }

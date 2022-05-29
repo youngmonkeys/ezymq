@@ -18,6 +18,11 @@ public class EzyActiveSettings extends EzyMQRpcSettings {
     protected final Map<String, EzyActiveRpcProducerSetting> rpcProducerSettings;
     protected final Map<String, EzyActiveRpcConsumerSetting> rpcConsumerSettings;
 
+    public static String URI = "activemq.uri";
+    public static String USERNAME = "activemq.username";
+    public static String PASSWORD = "activemq.password";
+    public static String MAX_THREAD_POOL_SIZE = "activemq.max_thread_pool_size";
+
     public EzyActiveSettings(
         Properties properties,
         Map<String, Class> requestTypes,

@@ -2,6 +2,7 @@ package com.tvd12.ezymq.activemq;
 
 import com.tvd12.ezymq.activemq.annotation.EzyActiveHandler;
 import com.tvd12.ezymq.activemq.annotation.EzyActiveInterceptor;
+import com.tvd12.ezymq.activemq.endpoint.EzyActiveConnectionFactoryBuilder;
 import com.tvd12.ezymq.activemq.setting.EzyActiveSettings;
 import com.tvd12.ezymq.common.EzyMQRpcProxyBuilder;
 
@@ -38,6 +39,15 @@ public class EzyActiveMQProxyBuilder extends EzyMQRpcProxyBuilder<
     @Override
     public Class<?> getRequestHandlerAnnotation() {
         return EzyActiveHandler.class;
+    }
+
+    @Override
+    protected void preNewProxy() {
+        if (connectionFactory == null) {
+            connectionFactory = new EzyActiveConnectionFactoryBuilder()
+                .properties(settings.getProperties())
+                .build();
+        }
     }
 
     @Override
