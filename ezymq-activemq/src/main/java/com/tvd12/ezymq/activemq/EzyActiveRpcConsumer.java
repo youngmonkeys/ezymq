@@ -6,7 +6,6 @@ import com.tvd12.ezyfox.exception.NotFoundException;
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.ezyfox.util.EzyStartable;
-import com.tvd12.ezymq.activemq.codec.EzyActiveDataCodec;
 import com.tvd12.ezymq.activemq.constant.EzyActiveErrorCodes;
 import com.tvd12.ezymq.activemq.constant.EzyActiveKeys;
 import com.tvd12.ezymq.activemq.constant.EzyActiveStatusCodes;
@@ -15,6 +14,7 @@ import com.tvd12.ezymq.activemq.handler.EzyActiveRequestHandlers;
 import com.tvd12.ezymq.activemq.handler.EzyActiveRequestInterceptors;
 import com.tvd12.ezymq.activemq.handler.EzyActiveRpcCallHandler;
 import com.tvd12.ezymq.activemq.util.EzyActiveProperties;
+import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,14 +23,14 @@ public class EzyActiveRpcConsumer
     extends EzyLoggable
     implements EzyActiveRpcCallHandler, EzyStartable, EzyCloseable {
 
+    protected final EzyMQDataCodec dataCodec;
     protected final EzyActiveRpcServer server;
-    protected final EzyActiveDataCodec dataCodec;
     protected final EzyActiveRequestHandlers requestHandlers;
     protected final EzyActiveRequestInterceptors requestInterceptors;
 
     public EzyActiveRpcConsumer(
+        EzyMQDataCodec dataCodec,
         EzyActiveRpcServer server,
-        EzyActiveDataCodec dataCodec,
         EzyActiveRequestHandlers requestHandlers,
         EzyActiveRequestInterceptors requestInterceptors
     ) {
@@ -118,23 +118,17 @@ public class EzyActiveRpcConsumer
     }
 
     public static class Builder implements EzyBuilder<EzyActiveRpcConsumer> {
-        protected int threadPoolSize;
+        protected EzyMQDataCodec dataCodec;
         protected EzyActiveRpcServer server;
-        protected EzyActiveDataCodec dataCodec;
         protected EzyActiveRequestHandlers requestHandlers;
         protected EzyActiveRequestInterceptors requestInterceptors;
-
-        public Builder threadPoolSize(int threadPoolSize) {
-            this.threadPoolSize = threadPoolSize;
-            return this;
-        }
 
         public Builder server(EzyActiveRpcServer server) {
             this.server = server;
             return this;
         }
 
-        public Builder dataCodec(EzyActiveDataCodec dataCodec) {
+        public Builder dataCodec(EzyMQDataCodec dataCodec) {
             this.dataCodec = dataCodec;
             return this;
         }
@@ -159,8 +153,8 @@ public class EzyActiveRpcConsumer
                 requestInterceptors = new EzyActiveRequestInterceptors();
             }
             return new EzyActiveRpcConsumer(
-                server,
                 dataCodec,
+                server,
                 requestHandlers,
                 requestInterceptors
             );

@@ -6,5 +6,6 @@ public interface EzyActiveMessageHandler {
 
     void handle(
         EzyActiveProperties properties,
-        byte[] messageBody);
+        byte[] messageBody
+    );
 }

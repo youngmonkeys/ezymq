@@ -1,35 +1,34 @@
 package com.tvd12.ezymq.activemq;
 
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
-import com.tvd12.ezyfox.util.EzyCloseable;
-import com.tvd12.ezymq.activemq.codec.EzyActiveDataCodec;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveConnectionFactory;
-import com.tvd12.ezymq.activemq.manager.EzyActiveRpcProducerManager;
 import com.tvd12.ezymq.activemq.manager.EzyActiveRpcConsumerManager;
+import com.tvd12.ezymq.activemq.manager.EzyActiveRpcProducerManager;
 import com.tvd12.ezymq.activemq.manager.EzyActiveTopicManager;
 import com.tvd12.ezymq.activemq.setting.EzyActiveSettings;
+import com.tvd12.ezymq.common.EzyMQRpcProxy;
+import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 
 import javax.jms.ConnectionFactory;
 
-public class EzyActiveMQProxy implements EzyCloseable {
+public class EzyActiveMQProxy extends EzyMQRpcProxy<EzyActiveSettings> {
 
-    protected final EzyActiveSettings settings;
-    protected final EzyEntityCodec entityCodec;
-    protected final EzyActiveDataCodec dataCodec;
     protected final EzyActiveTopicManager topicManager;
     protected final ConnectionFactory connectionFactory;
     protected final EzyActiveRpcProducerManager rpcProducerManager;
     protected final EzyActiveRpcConsumerManager rpcConsumerManager;
 
     public EzyActiveMQProxy(
-        EzyEntityCodec entityCodec,
-        EzyActiveDataCodec dataCodec,
         EzyActiveSettings settings,
+        EzyMQDataCodec dataCodec,
+        EzyEntityCodec entityCodec,
         ConnectionFactory connectionFactory
     ) {
-        this.settings = settings;
-        this.dataCodec = dataCodec;
-        this.entityCodec = entityCodec;
+        super(
+            settings,
+            dataCodec,
+            entityCodec
+        );
         this.connectionFactory = connectionFactory;
         this.topicManager = newTopicManager();
         this.rpcProducerManager = newRpcProducerManager();

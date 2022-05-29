@@ -5,40 +5,26 @@ import com.tvd12.ezyfox.exception.InternalServerErrorException;
 import com.tvd12.ezyfox.io.EzyStrings;
 import com.tvd12.ezyfox.message.EzyMessageTypeFetcher;
 import com.tvd12.ezyfox.util.EzyCloseable;
-import com.tvd12.ezymq.activemq.codec.EzyActiveDataCodec;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveTopicClient;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveTopicServer;
 import com.tvd12.ezymq.activemq.handler.EzyActiveMessageConsumer;
 import com.tvd12.ezymq.activemq.handler.EzyActiveMessageConsumers;
 import com.tvd12.ezymq.activemq.handler.EzyActiveMessageHandler;
 import com.tvd12.ezymq.activemq.util.EzyActiveProperties;
+import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 
 public class EzyActiveTopic<T> implements EzyCloseable {
 
+    protected final EzyMQDataCodec dataCodec;
     protected final EzyActiveTopicClient client;
     protected final EzyActiveTopicServer server;
-    protected final EzyActiveDataCodec dataCodec;
     protected volatile boolean consuming;
     protected EzyActiveMessageConsumers consumers;
 
     public EzyActiveTopic(
-        EzyActiveTopicServer server,
-        EzyActiveDataCodec dataCodec
-    ) {
-        this(null, server, dataCodec);
-    }
-
-    public EzyActiveTopic(
+        EzyMQDataCodec dataCodec,
         EzyActiveTopicClient client,
-        EzyActiveDataCodec dataCodec
-    ) {
-        this(client, null, dataCodec);
-    }
-
-    public EzyActiveTopic(
-        EzyActiveTopicClient client,
-        EzyActiveTopicServer server,
-        EzyActiveDataCodec dataCodec
+        EzyActiveTopicServer server
     ) {
         this.client = client;
         this.server = server;
@@ -128,9 +114,14 @@ public class EzyActiveTopic<T> implements EzyCloseable {
     @SuppressWarnings("rawtypes")
     public static class Builder implements EzyBuilder<EzyActiveTopic> {
 
+        protected EzyMQDataCodec dataCodec;
         protected EzyActiveTopicClient client;
         protected EzyActiveTopicServer server;
-        protected EzyActiveDataCodec dataCodec;
+
+        public Builder dataCodec(EzyMQDataCodec dataCodec) {
+            this.dataCodec = dataCodec;
+            return this;
+        }
 
         public Builder client(EzyActiveTopicClient client) {
             this.client = client;
@@ -142,13 +133,8 @@ public class EzyActiveTopic<T> implements EzyCloseable {
             return this;
         }
 
-        public Builder dataCodec(EzyActiveDataCodec dataCodec) {
-            this.dataCodec = dataCodec;
-            return this;
-        }
-
         public EzyActiveTopic build() {
-            return new EzyActiveTopic(client, server, dataCodec);
+            return new EzyActiveTopic(dataCodec, client, server);
         }
     }
 }

@@ -109,5 +109,6 @@
 		<module>ezymq-kafka</module>
 		<module>ezymq-rabbitmq</module>
 		<module>ezymq-activemq</module>
-	</modules>
+        <module>ezymq-common</module>
+    </modules>
 </project>

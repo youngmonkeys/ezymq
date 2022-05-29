@@ -4,26 +4,16 @@ import com.tvd12.ezyfox.binding.EzyMarshaller;
 import com.tvd12.ezyfox.binding.EzyUnmarshaller;
 import com.tvd12.ezyfox.codec.EzyMessageDeserializer;
 import com.tvd12.ezyfox.codec.EzyMessageSerializer;
+import com.tvd12.ezymq.common.codec.EzyMQBytesDataCodec;
 import lombok.Setter;
 
 import java.util.Map;
 
 @Setter
 @SuppressWarnings("rawtypes")
-public class EzyActiveBytesDataCodec extends EzyActiveAbstractDataCodec {
-
-    protected EzyMessageSerializer messageSerializer;
-    protected EzyMessageDeserializer messageDeserializer;
-
-    public EzyActiveBytesDataCodec() {}
-
-    public EzyActiveBytesDataCodec(
-        EzyMessageSerializer messageSerializer,
-        EzyMessageDeserializer messageDeserializer
-    ) {
-        this.messageSerializer = messageSerializer;
-        this.messageDeserializer = messageDeserializer;
-    }
+public class EzyActiveBytesDataCodec
+    extends EzyMQBytesDataCodec
+    implements EzyActiveDataCodec {
 
     public EzyActiveBytesDataCodec(
         EzyMarshaller marshaller,
@@ -32,44 +22,30 @@ public class EzyActiveBytesDataCodec extends EzyActiveAbstractDataCodec {
         EzyMessageDeserializer messageDeserializer,
         Map<String, Class> requestTypeMap
     ) {
-        super(marshaller, unmarshaller, requestTypeMap);
-        this.messageSerializer = messageSerializer;
-        this.messageDeserializer = messageDeserializer;
+        super(
+            marshaller,
+            unmarshaller,
+            messageSerializer,
+            messageDeserializer,
+            requestTypeMap
+        );
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
-    @Override
-    public Object deserialize(String cmd, byte[] request) {
-        Object data = messageDeserializer.deserialize(request);
-        return unmarshallData(cmd, data);
-    }
-
-    @Override
-    public byte[] serialize(Object response) {
-        Object data = marshallEntity(response);
-        return messageSerializer.serialize(data);
-    }
-
-    public static class Builder extends EzyActiveAbstractDataCodecBuilder<Builder> {
-        protected EzyMessageSerializer messageSerializer;
-        protected EzyMessageDeserializer messageDeserializer;
-
-        public Builder messageSerializer(EzyMessageSerializer messageSerializer) {
-            this.messageSerializer = messageSerializer;
-            return this;
-        }
-
-        public Builder messageDeserializer(EzyMessageDeserializer messageDeserializer) {
-            this.messageDeserializer = messageDeserializer;
-            return this;
-        }
+    public static class Builder extends EzyMQBytesDataCodec.Builder {
 
         @Override
-        protected EzyActiveAbstractDataCodec newProduct() {
-            return new EzyActiveBytesDataCodec(messageSerializer, messageDeserializer);
+        public EzyActiveBytesDataCodec build() {
+            return new EzyActiveBytesDataCodec(
+                marshaller,
+                unmarshaller,
+                messageSerializer,
+                messageDeserializer,
+                requestTypeByCommand
+            );
         }
     }
 }

@@ -1,9 +1,9 @@
 package com.tvd12.ezymq.activemq.setting;
 
-import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezymq.activemq.EzyActiveMQProxyBuilder;
 import com.tvd12.ezymq.activemq.handler.EzyActiveRequestHandler;
 import com.tvd12.ezymq.activemq.handler.EzyActiveRequestInterceptor;
+import com.tvd12.ezymq.common.setting.EzyMQRpcSettings;
 import lombok.Getter;
 
 import java.util.*;
@@ -12,9 +12,8 @@ import static com.tvd12.ezymq.activemq.util.EzyActiveHandlerAnnotations.getComma
 
 @Getter
 @SuppressWarnings("rawtypes")
-public class EzyActiveSettings {
+public class EzyActiveSettings extends EzyMQRpcSettings {
 
-    protected final Map<String, Class> requestTypes;
     protected final Map<String, EzyActiveTopicSetting> topicSettings;
     protected final Map<String, EzyActiveRpcProducerSetting> rpcProducerSettings;
     protected final Map<String, EzyActiveRpcConsumerSetting> rpcConsumerSettings;
@@ -25,7 +24,7 @@ public class EzyActiveSettings {
         Map<String, EzyActiveRpcProducerSetting> rpcProducerSettings,
         Map<String, EzyActiveRpcConsumerSetting> rpcConsumerSettings
     ) {
-        this.requestTypes = Collections.unmodifiableMap(requestTypes);
+        super(requestTypes);
         this.topicSettings = Collections.unmodifiableMap(topicSettings);
         this.rpcProducerSettings = Collections.unmodifiableMap(rpcProducerSettings);
         this.rpcConsumerSettings = Collections.unmodifiableMap(rpcConsumerSettings);
@@ -39,16 +38,17 @@ public class EzyActiveSettings {
         return new ArrayList<>(requestTypes.values());
     }
 
-    public static class Builder implements EzyBuilder<EzyActiveSettings> {
+    public static class Builder extends EzyMQRpcSettings.Builder<
+        EzyActiveSettings,
+        EzyActiveRequestInterceptor,
+        EzyActiveRequestHandler,
+        Builder
+        > {
 
-        protected EzyActiveMQProxyBuilder parent;
-        protected Map<String, Class> requestTypes;
         protected Map<String, EzyActiveTopicSetting> topicSettings;
         protected Map<String, EzyActiveRpcProducerSetting> rpcProducerSettings;
         protected Map<String, EzyActiveRpcConsumerSetting> rpcConsumerSettings;
         protected Map<String, EzyActiveTopicSetting.Builder> topicSettingBuilders;
-        protected List<EzyActiveRequestInterceptor> requestInterceptors;
-        protected Map<String, EzyActiveRequestHandler> requestHandlerByCommand;
         protected Map<String, EzyActiveRpcProducerSetting.Builder> rpcProducerSettingBuilders;
         protected Map<String, EzyActiveRpcConsumerSetting.Builder> rpcConsumerSettingBuilders;
 
@@ -57,16 +57,18 @@ public class EzyActiveSettings {
         }
 
         public Builder(EzyActiveMQProxyBuilder parent) {
-            this.parent = parent;
-            this.requestTypes = new HashMap<>();
+            super(parent);
             this.topicSettings = new HashMap<>();
             this.rpcProducerSettings = new HashMap<>();
             this.rpcConsumerSettings = new HashMap<>();
-            this.requestInterceptors = new ArrayList<>();
-            this.requestHandlerByCommand = new HashMap<>();
             this.topicSettingBuilders = new HashMap<>();
             this.rpcProducerSettingBuilders = new HashMap<>();
             this.rpcConsumerSettingBuilders = new HashMap<>();
+        }
+
+        @Override
+        public EzyActiveMQProxyBuilder parent() {
+            return (EzyActiveMQProxyBuilder) super.parent();
         }
 
         public EzyActiveTopicSetting.Builder topicSettingBuilder(String name) {
@@ -115,43 +117,9 @@ public class EzyActiveSettings {
             return this;
         }
 
-        public Builder mapRequestType(String command, Class requestType) {
-            this.requestTypes.put(command, requestType);
-            return this;
-        }
-
-        public Builder mapRequestTypes(Map<String, Class> requestTypes) {
-            this.requestTypes.putAll(requestTypes);
-            return this;
-        }
-
-        public Builder addRequestInterceptor(
-            EzyActiveRequestInterceptor requestInterceptor
-        ) {
-            this.requestInterceptors.add(requestInterceptor);
-            return this;
-        }
-
-        public Builder addRequestInterceptors(
-            Collection<EzyActiveRequestInterceptor> requestInterceptors
-        ) {
-            this.requestInterceptors.addAll(requestInterceptors);
-            return this;
-        }
-
-        public Builder addRequestHandlers(
-            List<EzyActiveRequestHandler> requestHandlers
-        ) {
-            for (EzyActiveRequestHandler handler : requestHandlers) {
-                String command = getCommand(handler);
-                this.requestHandlerByCommand.put(command, handler);
-                mapRequestType(command, handler.getRequestType());
-            }
-            return this;
-        }
-
-        public EzyActiveMQProxyBuilder parent() {
-            return parent;
+        @Override
+        protected String getRequestCommand(Object handler) {
+            return getCommand(handler);
         }
 
         @Override

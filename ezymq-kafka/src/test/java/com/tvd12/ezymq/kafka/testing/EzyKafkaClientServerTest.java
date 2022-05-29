@@ -3,6 +3,7 @@ package com.tvd12.ezymq.kafka.testing;
 import com.tvd12.ezyfox.binding.EzyBindingContext;
 import com.tvd12.ezyfox.binding.EzyMarshaller;
 import com.tvd12.ezyfox.binding.EzyUnmarshaller;
+import com.tvd12.ezyfox.binding.codec.EzyBindingEntityCodec;
 import com.tvd12.ezyfox.codec.*;
 import com.tvd12.ezyfox.identifier.EzyIdFetchers;
 import com.tvd12.ezyfox.identifier.EzySimpleIdFetcherImplementer;
@@ -10,7 +11,6 @@ import com.tvd12.ezyfox.message.EzyMessageIdFetchers;
 import com.tvd12.ezymq.kafka.EzyKafkaConsumer;
 import com.tvd12.ezymq.kafka.EzyKafkaProducer;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaBytesDataCodec;
-import com.tvd12.ezymq.kafka.codec.EzyKafkaBytesEntityCodec;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaDataCodec;
 import com.tvd12.ezymq.kafka.endpoint.EzyKafkaClient;
 import com.tvd12.ezymq.kafka.endpoint.EzyKafkaServer;
@@ -79,7 +79,7 @@ public class EzyKafkaClientServerTest extends BaseTest {
         EzySimpleIdFetcherImplementer.setDebug(true);
         Producer producer = newProducer();
         EzyKafkaClient client = new EzyKafkaClient(null, producer);
-        EzyEntityCodec entityCodec = EzyKafkaBytesEntityCodec.builder()
+        EzyEntityCodec entityCodec = EzyBindingEntityCodec.builder()
             .marshaller(marshaller)
             .messageSerializer(messageSerializer)
             .build();

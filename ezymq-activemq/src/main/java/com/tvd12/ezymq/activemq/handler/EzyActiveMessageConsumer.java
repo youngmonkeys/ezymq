@@ -1,6 +1,9 @@
 package com.tvd12.ezymq.activemq.handler;
 
-public interface EzyActiveMessageConsumer<T> {
+import com.tvd12.ezymq.common.handler.EzyMQMessageConsumer;
+
+public interface EzyActiveMessageConsumer<T>
+    extends EzyMQMessageConsumer<T> {
 
     void consume(T message);
 }

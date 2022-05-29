@@ -11,7 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EzyKafkaProducerManager
-    extends EzyKafkaAbstractManager implements EzyCloseable {
+    extends EzyKafkaAbstractManager
+    implements EzyCloseable {
 
     protected final EzyEntityCodec entityCodec;
     @Getter

@@ -1,18 +1,15 @@
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.tvd12</groupId>
         <artifactId>ezymq</artifactId>
+        <groupId>com.tvd12</groupId>
         <version>1.1.8</version>
     </parent>
-    <artifactId>ezymq-rabbitmq</artifactId>
-    <name>ezymq-rabbitmq</name>
-    <url>http://maven.apache.org</url>
+    <modelVersion>4.0.0</modelVersion>
 
-    <properties>
-        <rabbitmq.version>5.14.2</rabbitmq.version>
-    </properties>
+    <artifactId>ezymq-common</artifactId>
 
     <dependencies>
         <dependency>
@@ -31,15 +28,15 @@
             <version>${ezy.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.rabbitmq</groupId>
-            <artifactId>amqp-client</artifactId>
-            <version>${rabbitmq.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.tvd12</groupId>
             <artifactId>ezyfox-msgpack</artifactId>
             <version>${ezy.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.tvd12</groupId>
+            <artifactId>ezyfox-jackson</artifactId>
+            <version>${ezy.version}</version>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
-
 </project>

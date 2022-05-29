@@ -2,10 +2,10 @@ package com.tvd12.ezymq.activemq.manager;
 
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.activemq.EzyActiveTopic;
-import com.tvd12.ezymq.activemq.codec.EzyActiveDataCodec;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveTopicClient;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveTopicServer;
 import com.tvd12.ezymq.activemq.setting.EzyActiveTopicSetting;
+import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Session;
@@ -16,12 +16,12 @@ import java.util.Map;
 public class EzyActiveTopicManager
     extends EzyActiveAbstractManager implements EzyCloseable {
 
-    protected final EzyActiveDataCodec dataCodec;
+    protected final EzyMQDataCodec dataCodec;
     protected final Map<String, EzyActiveTopic> topics;
     protected final Map<String, EzyActiveTopicSetting> topicSettings;
 
     public EzyActiveTopicManager(
-        EzyActiveDataCodec dataCodec,
+        EzyMQDataCodec dataCodec,
         ConnectionFactory connectionFactory,
         Map<String, EzyActiveTopicSetting> topicSettings
     ) {

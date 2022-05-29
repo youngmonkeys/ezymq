@@ -9,6 +9,7 @@ import com.tvd12.ezymq.activemq.codec.EzyActiveBytesDataCodec;
 import com.tvd12.ezymq.activemq.codec.EzyActiveBytesEntityCodec;
 import com.tvd12.ezymq.activemq.codec.EzyActiveDataCodec;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveConnectionFactoryBuilder;
+import com.tvd12.ezymq.common.codec.EzyMQBytesDataCodec;
 
 import javax.jms.ConnectionFactory;
 
@@ -20,7 +21,7 @@ public class ActiveMQBaseTest {
     protected static EzyMessageDeserializer messageDeserializer;
 
     protected static EzyEntityCodec entityCodec;
-    protected static EzyActiveDataCodec dataCodec;
+    protected static EzyMQBytesDataCodec dataCodec;
     protected static EzyBindingContext bindingContext;
 
     protected static ConnectionFactory connectionFactory;
@@ -39,7 +40,7 @@ public class ActiveMQBaseTest {
             .messageSerializer(messageSerializer)
             .messageDeserializer(messageDeserializer)
             .build();
-        dataCodec = EzyActiveBytesDataCodec.builder()
+        dataCodec = EzyMQBytesDataCodec.builder()
             .marshaller(marshaller)
             .unmarshaller(unmarshaller)
             .messageSerializer(messageSerializer)

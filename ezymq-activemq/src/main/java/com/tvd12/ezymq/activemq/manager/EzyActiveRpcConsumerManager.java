@@ -2,9 +2,9 @@ package com.tvd12.ezymq.activemq.manager;
 
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.activemq.EzyActiveRpcConsumer;
-import com.tvd12.ezymq.activemq.codec.EzyActiveDataCodec;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveRpcServer;
 import com.tvd12.ezymq.activemq.setting.EzyActiveRpcConsumerSetting;
+import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Session;
@@ -17,12 +17,12 @@ public class EzyActiveRpcConsumerManager
     extends EzyActiveAbstractManager
     implements EzyCloseable {
 
-    protected final EzyActiveDataCodec dataCodec;
+    protected final EzyMQDataCodec dataCodec;
     protected final Map<String, EzyActiveRpcConsumer> rpcConsumers;
     protected final Map<String, EzyActiveRpcConsumerSetting> rpcConsumerSettings;
 
     public EzyActiveRpcConsumerManager(
-        EzyActiveDataCodec dataCodec,
+        EzyMQDataCodec dataCodec,
         ConnectionFactory connectionFactory,
         Map<String, EzyActiveRpcConsumerSetting> rpcConsumerSettings
     ) {
