@@ -3,7 +3,7 @@
 <suite name="AllTests">
     <test name="All">
         <packages>
-            <package name="com.tvd12.ezymq.kafka.testing"/>
+            <package name="com.tvd12.ezymq.kafka.test"/>
         </packages>
     </test>
 </suite>
