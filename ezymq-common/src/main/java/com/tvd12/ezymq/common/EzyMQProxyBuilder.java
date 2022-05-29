@@ -35,7 +35,6 @@ public abstract class EzyMQProxyBuilder<
     protected S settings;
     protected D dataCodec;
     protected boolean scanAndAddAllBeans;
-    protected Set<String> packagesToScan;
     protected EzyMarshaller marshaller;
     protected EzyUnmarshaller unmarshaller;
     protected EzyEntityCodec entityCodec;
@@ -45,11 +44,10 @@ public abstract class EzyMQProxyBuilder<
     protected EzyMessageDeserializer messageDeserializer;
     protected EzyMessageDeserializer textMessageDeserializer;
     protected EzyMQSettings.Builder settingsBuilder;
-    protected EzyBeanContextBuilder beanContextBuilder;
-    protected Map<String, Map<String, Class>> messageTypesByTopic;
+    protected final Set<String> packagesToScan;
+    protected final EzyBeanContextBuilder beanContextBuilder;
 
     public EzyMQProxyBuilder() {
-        this.messageTypesByTopic = new HashMap<>();
         this.packagesToScan = new HashSet<>();
         this.beanContextBuilder = EzyBeanContext.builder();
     }
@@ -153,27 +151,6 @@ public abstract class EzyMQProxyBuilder<
         return this;
     }
 
-    public EzyMQProxyBuilder mapMessageType(String topic, Class messageType) {
-        return mapMessageType(topic, "", messageType);
-    }
-
-    public EzyMQProxyBuilder mapMessageType(String topic, String cmd, Class messageType) {
-        this.messageTypesByTopic.computeIfAbsent(topic, k -> new HashMap<>())
-            .put(cmd, messageType);
-        return this;
-    }
-
-    public EzyMQProxyBuilder mapMessageTypes(String topic, Map<String, Class> messageTypeByCommand) {
-        this.messageTypesByTopic.computeIfAbsent(topic, k -> new HashMap<>())
-            .putAll(messageTypeByCommand);
-        return this;
-    }
-
-    public EzyMQProxyBuilder mapMessageTypes(Map<String, Map<String, Class>> messageTypesByTopic) {
-        this.messageTypesByTopic.putAll(messageTypesByTopic);
-        return this;
-    }
-
     @Override
     public P build() {
         beanContext = newBeanContext();
@@ -181,6 +158,7 @@ public abstract class EzyMQProxyBuilder<
             if (settingsBuilder == null) {
                 settingsBuilder = newSettingBuilder();
             }
+            settingsBuilder.properties(properties);
             decorateSettingBuilder(settingsBuilder);
             settings = (S) settingsBuilder.build();
         }
@@ -284,8 +262,9 @@ public abstract class EzyMQProxyBuilder<
         }
         if (packagesToScan.size() > 0) {
             EzyReflection reflection = new EzyReflectionProxy(packagesToScan);
-            builder.addClasses((Set) reflection.getAnnotatedClasses(EzyMessage.class));
-            builder.addAllClasses(reflection);
+            builder
+                .addAllClasses(reflection)
+                .addClasses((Set) reflection.getAnnotatedClasses(EzyMessage.class));
         }
         return builder.build();
     }

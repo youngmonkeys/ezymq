@@ -3,11 +3,9 @@ package com.tvd12.ezymq.activemq.test;
 import com.tvd12.ezyfox.binding.EzyBindingContext;
 import com.tvd12.ezyfox.binding.EzyMarshaller;
 import com.tvd12.ezyfox.binding.EzyUnmarshaller;
+import com.tvd12.ezyfox.binding.codec.EzyBindingEntityCodec;
 import com.tvd12.ezyfox.binding.impl.EzySimpleBindingContext;
 import com.tvd12.ezyfox.codec.*;
-import com.tvd12.ezymq.activemq.codec.EzyActiveBytesDataCodec;
-import com.tvd12.ezymq.activemq.codec.EzyActiveBytesEntityCodec;
-import com.tvd12.ezymq.activemq.codec.EzyActiveDataCodec;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveConnectionFactoryBuilder;
 import com.tvd12.ezymq.common.codec.EzyMQBytesDataCodec;
 
@@ -34,7 +32,7 @@ public class ActiveMQBaseTest {
         bindingContext = newBindingContext();
         marshaller = bindingContext.newMarshaller();
         unmarshaller = bindingContext.newUnmarshaller();
-        entityCodec = EzyActiveBytesEntityCodec.builder()
+        entityCodec = EzyBindingEntityCodec.builder()
             .marshaller(marshaller)
             .unmarshaller(unmarshaller)
             .messageSerializer(messageSerializer)

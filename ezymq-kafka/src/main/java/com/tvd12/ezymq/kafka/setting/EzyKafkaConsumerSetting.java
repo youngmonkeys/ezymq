@@ -46,19 +46,19 @@ public class EzyKafkaConsumerSetting extends EzyKafkaEndpointSetting {
         protected Consumer consumer;
         protected int threadPoolSize = 3;
         protected long pollTimeOut = 100;
-        protected EzyKafkaSettings.Builder parent;
-        protected EzyKafkaMessageHandlers messageHandlers;
-        protected EzyKafkaMessageInterceptors messageInterceptors;
+        protected final EzyKafkaSettings.Builder parent;
+        protected final EzyKafkaMessageHandlers messageHandlers;
+        protected final EzyKafkaMessageInterceptors messageInterceptors;
 
         public Builder() {
             this(null);
-            this.messageHandlers = new EzyKafkaMessageHandlers();
-            this.messageInterceptors = new EzyKafkaMessageInterceptors();
         }
 
         public Builder(EzyKafkaSettings.Builder parent) {
             super();
             this.parent = parent;
+            this.messageHandlers = new EzyKafkaMessageHandlers();
+            this.messageInterceptors = new EzyKafkaMessageInterceptors();
         }
 
         public Builder pollTimeOut(long pollTimeOut) {

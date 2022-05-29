@@ -27,7 +27,7 @@ public class EzyKafkaProducerSetting extends EzyKafkaEndpointSetting {
     public static class Builder extends EzyKafkaEndpointSetting.Builder<Builder> {
 
         protected Producer producer;
-        protected EzyKafkaSettings.Builder parent;
+        protected final EzyKafkaSettings.Builder parent;
 
         public Builder() {
             this(null);

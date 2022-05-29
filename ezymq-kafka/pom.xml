@@ -17,35 +17,13 @@
     <dependencies>
         <dependency>
             <groupId>com.tvd12</groupId>
-            <artifactId>ezyfox-bean</artifactId>
-            <version>${ezy.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.tvd12</groupId>
-            <artifactId>ezyfox-binding-codec</artifactId>
-            <version>${ezy.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.tvd12</groupId>
-            <artifactId>ezyfox-message</artifactId>
-            <version>${ezy.version}</version>
+            <artifactId>ezymq-common</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka_2.12</artifactId>
             <version>${kafka.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.tvd12</groupId>
-            <artifactId>ezyfox-msgpack</artifactId>
-            <version>${ezy.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.tvd12</groupId>
-            <artifactId>ezyfox-jackson</artifactId>
-            <version>${ezy.version}</version>
-            <optional>true</optional>
-        </dependency>
     </dependencies>
-
 </project>

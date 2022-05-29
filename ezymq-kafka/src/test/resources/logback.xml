@@ -7,11 +7,7 @@
         </layout>
     </appender>
 
-    <logger name="com.tvd12" level="debug"/>
-    <logger name="org.apache.kafka" level="debug"/>
-
-
-    <root level="debug">
+    <root level="info">
         <appender-ref ref="stdout"/>
     </root>
 </configuration>

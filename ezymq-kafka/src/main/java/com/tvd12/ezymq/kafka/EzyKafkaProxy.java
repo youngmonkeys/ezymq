@@ -1,7 +1,7 @@
 package com.tvd12.ezymq.kafka;
 
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
-import com.tvd12.ezyfox.util.EzyCloseable;
+import com.tvd12.ezymq.common.EzyMQProxy;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaDataCodec;
 import com.tvd12.ezymq.kafka.manager.EzyKafkaConsumerManager;
 import com.tvd12.ezymq.kafka.manager.EzyKafkaProducerManager;
@@ -9,22 +9,22 @@ import com.tvd12.ezymq.kafka.setting.EzyKafkaSettings;
 
 import java.util.Map;
 
-public class EzyKafkaProxy implements EzyCloseable {
+public class EzyKafkaProxy
+    extends EzyMQProxy<EzyKafkaSettings, EzyKafkaDataCodec> {
 
-    protected final EzyKafkaSettings settings;
-    protected final EzyEntityCodec entityCodec;
-    protected final EzyKafkaDataCodec dataCodec;
     protected final EzyKafkaProducerManager producerManager;
     protected final EzyKafkaConsumerManager consumerManager;
 
     public EzyKafkaProxy(
-        EzyEntityCodec entityCodec,
+        EzyKafkaSettings settings,
         EzyKafkaDataCodec dataCodec,
-        EzyKafkaSettings settings
+        EzyEntityCodec entityCodec
     ) {
-        this.settings = settings;
-        this.dataCodec = dataCodec;
-        this.entityCodec = entityCodec;
+        super(
+            settings,
+            dataCodec,
+            entityCodec
+        );
         this.producerManager = newProducerManager();
         this.consumerManager = newConsumerManager();
 

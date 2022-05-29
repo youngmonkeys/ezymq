@@ -1,7 +1,7 @@
 package com.tvd12.ezymq.kafka.setting;
 
-import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.reflect.EzyClasses;
+import com.tvd12.ezymq.common.setting.EzyMQSettings;
 import com.tvd12.ezymq.kafka.EzyKafkaProxyBuilder;
 import com.tvd12.ezymq.kafka.annotation.EzyKafkaHandler;
 import com.tvd12.ezymq.kafka.handler.EzyKafkaMessageHandler;
@@ -15,7 +15,7 @@ import java.util.*;
 
 @Getter
 @SuppressWarnings("rawtypes")
-public class EzyKafkaSettings {
+public class EzyKafkaSettings extends EzyMQSettings {
 
     protected final Map<String, Map<String, Class>> messageTypesByTopic;
     protected final Map<String, EzyKafkaProducerSetting> producerSettings;
@@ -42,6 +42,7 @@ public class EzyKafkaSettings {
         return new Builder();
     }
 
+    @Override
     public List<Class> getMessageTypeList() {
         List<Class> list = new ArrayList<>();
         for (Map<String, Class> messageByCommand : messageTypesByTopic.values()) {
@@ -50,10 +51,9 @@ public class EzyKafkaSettings {
         return list;
     }
 
-    public static class Builder implements EzyBuilder<EzyKafkaSettings> {
+    public static class Builder
+        extends EzyMQSettings.Builder<EzyKafkaSettings, Builder> {
 
-        protected EzyKafkaProxyBuilder parent;
-        protected Map<String, Object> properties;
         protected Map<String, Map<String, Class>> messageTypesByTopic;
         protected Map<String, EzyKafkaProducerSetting> producerSettings;
         protected Map<String, EzyKafkaConsumerSetting> consumerSettings;
@@ -67,8 +67,7 @@ public class EzyKafkaSettings {
         }
 
         public Builder(EzyKafkaProxyBuilder parent) {
-            this.parent = parent;
-            this.properties = new HashMap<>();
+            super(parent);
             this.producerSettings = new HashMap<>();
             this.consumerSettings = new HashMap<>();
             this.messageTypesByTopic = new HashMap<>();
@@ -76,16 +75,6 @@ public class EzyKafkaSettings {
             this.producerSettingBuilders = new HashMap<>();
             this.consumerSettingBuilders = new HashMap<>();
             this.consumerMessageHandlers = new HashMap<>();
-        }
-
-        public Builder property(String key, Object value) {
-            this.properties.put(key, value);
-            return this;
-        }
-
-        public Builder properties(Map<String, Object> properties) {
-            this.properties.putAll(properties);
-            return this;
         }
 
         public Builder addConsumerInterceptor(EzyKafkaMessageInterceptor consumerInterceptor) {
@@ -154,7 +143,7 @@ public class EzyKafkaSettings {
 
 
         public EzyKafkaProxyBuilder parent() {
-            return parent;
+            return (EzyKafkaProxyBuilder) super.parent();
         }
 
         @SuppressWarnings({"unchecked", "MethodLength"})
