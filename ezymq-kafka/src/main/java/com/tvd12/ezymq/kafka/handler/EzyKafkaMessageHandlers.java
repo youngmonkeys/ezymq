@@ -28,6 +28,6 @@ public class EzyKafkaMessageHandlers extends EzyLoggable {
         if (handler != null) {
             return handler.handle(message);
         }
-        throw new IllegalStateException("has no handler for command: " + cmd);
+        throw new IllegalArgumentException("has no handler for command: " + cmd);
     }
 }

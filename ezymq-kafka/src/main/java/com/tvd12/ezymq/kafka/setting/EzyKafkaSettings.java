@@ -180,7 +180,7 @@ public class EzyKafkaSettings extends EzyMQSettings {
 
         @Override
         public EzyKafkaSettings build() {
-            String bootstrapServers = (String) properties.get(
+            String bootstrapServers = properties.getProperty(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG
             );
             if (bootstrapServers == null) {
