@@ -24,12 +24,12 @@ public class EzyKafkaSettings extends EzyMQSettings {
     protected final Map<String, EzyKafkaProducerSetting> producerSettings;
     protected final Map<String, EzyKafkaConsumerSetting> consumerSettings;
 
-    public static final String PRODUCERS_KEY = "kafka.producers";
-    public static final String CONSUMERS_KEY = "kafka.consumers";
-    public static final String TOPIC_KEY = "topic";
-    public static final String THREAD_POOL_SIZE_KEY = "thread_pool_size";
-    public static final String MESSAGE_TYPE = "message_type";
-    public static final String MESSAGE_TYPES = "message_types";
+    public static final String KEY_CONSUMERS = "kafka.consumers";
+    public static final String KEY_MESSAGE_TYPE = "message_type";
+    public static final String KEY_MESSAGE_TYPES = "message_types";
+    public static final String KEY_PRODUCERS = "kafka.producers";
+    public static final String KEY_THREAD_POOL_SIZE = "thread_pool_size";
+    public static final String KEY_TOPIC = "topic";
 
     public EzyKafkaSettings(
         Properties properties,
@@ -199,7 +199,7 @@ public class EzyKafkaSettings extends EzyMQSettings {
 
         private void buildProducerSettings(String globalBootstrapServers) {
             Properties producersProperties =
-                getPropertiesByPrefix(properties, PRODUCERS_KEY);
+                getPropertiesByPrefix(properties, KEY_PRODUCERS);
             Set<String> producerNames = new HashSet<>();
             producerNames.addAll(producerSettingBuilders.keySet());
             producerNames.addAll(getFirstPropertyKeys(producersProperties));
@@ -216,7 +216,7 @@ public class EzyKafkaSettings extends EzyMQSettings {
                     ProducerConfig.CLIENT_ID_CONFIG,
                     name
                 );
-                String topic = producerProperties.getProperty(TOPIC_KEY, name);
+                String topic = producerProperties.getProperty(KEY_TOPIC, name);
                 EzyKafkaProducerSetting producerSetting = producerSettingBuilders
                     .computeIfAbsent(name, k ->
                         EzyKafkaProducerSetting.builder()
@@ -231,7 +231,7 @@ public class EzyKafkaSettings extends EzyMQSettings {
 
         private void buildConsumerSettings(String globalBootstrapServers) {
             Properties consumersProperties =
-                getPropertiesByPrefix(properties, CONSUMERS_KEY);
+                getPropertiesByPrefix(properties, KEY_CONSUMERS);
             Set<String> consumerNames = new HashSet<>();
             consumerNames.addAll(consumerSettingBuilders.keySet());
             consumerNames.addAll(getFirstPropertyKeys(consumersProperties));
@@ -248,7 +248,7 @@ public class EzyKafkaSettings extends EzyMQSettings {
                     ConsumerConfig.GROUP_ID_CONFIG,
                     name
                 );
-                String topic = consumerProperties.getProperty(TOPIC_KEY, name);
+                String topic = consumerProperties.getProperty(KEY_TOPIC, name);
                 EzyKafkaConsumerSetting consumerSetting = consumerSettingBuilders
                     .computeIfAbsent(name, k ->
                         EzyKafkaConsumerSetting.builder()
@@ -262,7 +262,7 @@ public class EzyKafkaSettings extends EzyMQSettings {
                     .threadPoolSize(
                         Integer.parseInt(
                             consumerProperties.getOrDefault(
-                                THREAD_POOL_SIZE_KEY,
+                                KEY_THREAD_POOL_SIZE,
                                 0
                             ).toString()
                         )
@@ -278,13 +278,13 @@ public class EzyKafkaSettings extends EzyMQSettings {
             String topic,
             Properties settingProperties
         ) {
-            String messageType = settingProperties.getProperty(MESSAGE_TYPE);
+            String messageType = settingProperties.getProperty(KEY_MESSAGE_TYPE);
             if (messageType != null) {
                 mapMessageType(endpointName, EzyClasses.getClass(messageType));
             }
             Properties messageTypes = getPropertiesByPrefix(
                 settingProperties,
-                MESSAGE_TYPES
+                KEY_MESSAGE_TYPES
             );
             for (String cmd : messageTypes.stringPropertyNames()) {
                 mapMessageType(

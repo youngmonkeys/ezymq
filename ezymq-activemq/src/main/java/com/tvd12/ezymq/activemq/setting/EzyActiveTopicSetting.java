@@ -5,6 +5,8 @@ import lombok.Getter;
 import javax.jms.Destination;
 import javax.jms.Session;
 
+import static com.tvd12.ezyfox.io.EzyStrings.isEmpty;
+
 @Getter
 public class EzyActiveTopicSetting extends EzyActiveEndpointSetting {
 
@@ -40,7 +42,7 @@ public class EzyActiveTopicSetting extends EzyActiveEndpointSetting {
         protected Destination topic;
         protected boolean producerEnable;
         protected boolean consumerEnable;
-        protected int serverThreadPoolSize;
+        protected int consumerThreadPoolSize = 1;
         protected EzyActiveSettings.Builder parent;
 
         public Builder() {
@@ -57,7 +59,9 @@ public class EzyActiveTopicSetting extends EzyActiveEndpointSetting {
         }
 
         public Builder topicName(String topicName) {
-            this.topicName = topicName;
+            if (isEmpty(this.topicName)) {
+                this.topicName = topicName;
+            }
             return this;
         }
 
@@ -71,8 +75,10 @@ public class EzyActiveTopicSetting extends EzyActiveEndpointSetting {
             return this;
         }
 
-        public Builder serverThreadPoolSize(int serverThreadPoolSize) {
-            this.serverThreadPoolSize = serverThreadPoolSize;
+        public Builder consumerThreadPoolSize(int consumerThreadPoolSize) {
+            if (consumerThreadPoolSize > 0) {
+                this.consumerThreadPoolSize = consumerThreadPoolSize;
+            }
             return this;
         }
 
@@ -81,14 +87,14 @@ public class EzyActiveTopicSetting extends EzyActiveEndpointSetting {
         }
 
         @Override
-        public EzyActiveEndpointSetting build() {
+        public EzyActiveTopicSetting build() {
             return new EzyActiveTopicSetting(
                 session,
                 topicName,
                 topic,
                 producerEnable,
                 consumerEnable,
-                serverThreadPoolSize
+                consumerThreadPoolSize
             );
         }
     }

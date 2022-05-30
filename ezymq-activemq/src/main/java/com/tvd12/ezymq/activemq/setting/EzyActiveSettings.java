@@ -9,6 +9,8 @@ import lombok.Getter;
 import java.util.*;
 
 import static com.tvd12.ezymq.activemq.util.EzyActiveHandlerAnnotations.getCommand;
+import static com.tvd12.properties.file.util.PropertiesUtil.getFirstPropertyKeys;
+import static com.tvd12.properties.file.util.PropertiesUtil.getPropertiesByPrefix;
 
 @Getter
 @SuppressWarnings("rawtypes")
@@ -18,10 +20,20 @@ public class EzyActiveSettings extends EzyMQRpcSettings {
     protected final Map<String, EzyActiveRpcProducerSetting> rpcProducerSettings;
     protected final Map<String, EzyActiveRpcConsumerSetting> rpcConsumerSettings;
 
-    public static String URI = "activemq.uri";
-    public static String USERNAME = "activemq.username";
-    public static String PASSWORD = "activemq.password";
-    public static String MAX_THREAD_POOL_SIZE = "activemq.max_thread_pool_size";
+    public static final String URI = "activemq.uri";
+    public static final String USERNAME = "activemq.username";
+    public static final String PASSWORD = "activemq.password";
+    public static final String KEY_CAPACITY = "capacity";
+    public static final String KEY_CONSUMER_THREAD_POOL_SIZE = "consumer_thread_pool_size";
+    public static final String KEY_CONSUMERS = "activemq.consumers";
+    public static final String KEY_DEFAULT_TIMEOUT = "default_timeout";
+    public static final String KEY_MAX_THREAD_POOL_SIZE = "activemq.max_thread_pool_size";
+    public static final String KEY_PRODUCERS = "activemq.producers";
+    public static final String KEY_REPLY_QUEUE_NAME = "reply_queue_name";
+    public static final String KEY_REQUEST_QUEUE_NAME = "request_queue_name";
+    public static final String KEY_THREAD_POOL_SIZE = "thread_pool_size";
+    public static final String KEY_TOPIC = "topic";
+    public static final String KEY_TOPICS = "activemq.topics";
 
     public EzyActiveSettings(
         Properties properties,
@@ -126,23 +138,9 @@ public class EzyActiveSettings extends EzyMQRpcSettings {
 
         @Override
         public EzyActiveSettings build() {
-            for (String name : topicSettingBuilders.keySet()) {
-                EzyActiveTopicSetting.Builder builder =
-                    topicSettingBuilders.get(name);
-                topicSettings.put(name, (EzyActiveTopicSetting) builder.build());
-            }
-            for (String name : rpcProducerSettingBuilders.keySet()) {
-                EzyActiveRpcProducerSetting.Builder builder =
-                    rpcProducerSettingBuilders.get(name);
-                rpcProducerSettings.put(name, builder.build());
-            }
-            for (String name : rpcConsumerSettingBuilders.keySet()) {
-                EzyActiveRpcConsumerSetting.Builder builder =
-                    rpcConsumerSettingBuilders.get(name)
-                        .addRequestInterceptors(requestInterceptors)
-                        .addRequestHandlers(requestHandlerByCommand);
-                rpcConsumerSettings.put(name, builder.build());
-            }
+            buildTopicSettings();
+            buildProducerSettings();
+            buildConsumerSettings();
             return new EzyActiveSettings(
                 properties,
                 requestTypeByCommand,
@@ -150,6 +148,133 @@ public class EzyActiveSettings extends EzyMQRpcSettings {
                 rpcProducerSettings,
                 rpcConsumerSettings
             );
+        }
+
+        private void buildTopicSettings() {
+            Properties topicsProperties =
+                getPropertiesByPrefix(properties, KEY_TOPICS);
+            Set<String> topicNames = new HashSet<>();
+            topicNames.addAll(topicSettingBuilders.keySet());
+            topicNames.addAll(getFirstPropertyKeys(topicsProperties));
+            for (String name : topicNames) {
+                Properties topicProperties = getPropertiesByPrefix(
+                    topicsProperties,
+                    name
+                );
+                EzyActiveTopicSetting topicSetting = topicSettingBuilders
+                    .computeIfAbsent(name, k ->
+                        EzyActiveTopicSetting.builder()
+                    )
+                    .topicName(topicProperties.getProperty(KEY_TOPIC, name))
+                    .consumerThreadPoolSize(
+                        Integer.parseInt(
+                            topicProperties.getOrDefault(
+                                KEY_CONSUMER_THREAD_POOL_SIZE,
+                                0
+                            ).toString()
+                        )
+                    )
+                    .build();
+                topicSettings.put(name, topicSetting);
+            }
+        }
+
+        private void buildProducerSettings() {
+            Properties producersProperties =
+                getPropertiesByPrefix(properties, KEY_PRODUCERS);
+            Set<String> producerNames = new HashSet<>();
+            producerNames.addAll(rpcProducerSettingBuilders.keySet());
+            producerNames.addAll(getFirstPropertyKeys(producersProperties));
+            for (String name : producerNames) {
+                Properties producerProperties = getPropertiesByPrefix(
+                    producersProperties,
+                    name
+                );
+                EzyActiveRpcProducerSetting producerSetting = rpcProducerSettingBuilders
+                    .computeIfAbsent(name, k ->
+                        EzyActiveRpcProducerSetting.builder()
+                    )
+                    .requestQueueName(
+                        producerProperties.getProperty(
+                            KEY_REQUEST_QUEUE_NAME,
+                            name + "-request"
+                        )
+                    )
+                    .replyQueueName(
+                        producerProperties.getProperty(
+                            KEY_REPLY_QUEUE_NAME,
+                            name + "-reply"
+                        )
+                    )
+                    .threadPoolSize(
+                        Integer.parseInt(
+                            producerProperties.getOrDefault(
+                                KEY_THREAD_POOL_SIZE,
+                                0
+                            ).toString()
+                        )
+                    )
+                    .capacity(
+                        Integer.parseInt(
+                            producerProperties.getOrDefault(
+                                KEY_CAPACITY,
+                                0
+                            ).toString()
+                        )
+                    )
+                    .defaultTimeout(
+                        Integer.parseInt(
+                            producerProperties.getOrDefault(
+                                KEY_DEFAULT_TIMEOUT,
+                                0
+                            ).toString()
+                        )
+                    )
+                    .build();
+                rpcProducerSettings.put(name, producerSetting);
+            }
+        }
+
+        private void buildConsumerSettings() {
+            Properties consumersProperties =
+                getPropertiesByPrefix(properties, KEY_CONSUMERS);
+            Set<String> consumerNames = new HashSet<>();
+            consumerNames.addAll(rpcConsumerSettingBuilders.keySet());
+            consumerNames.addAll(getFirstPropertyKeys(consumersProperties));
+            for (String name : consumerNames) {
+                Properties consumerProperties = getPropertiesByPrefix(
+                    consumersProperties,
+                    name
+                );
+                EzyActiveRpcConsumerSetting consumerSetting = rpcConsumerSettingBuilders
+                    .computeIfAbsent(name, k ->
+                        EzyActiveRpcConsumerSetting.builder()
+                    )
+                    .requestQueueName(
+                        consumerProperties.getProperty(
+                            KEY_REQUEST_QUEUE_NAME,
+                            name + "-request"
+                        )
+                    )
+                    .replyQueueName(
+                        consumerProperties.getProperty(
+                            KEY_REPLY_QUEUE_NAME,
+                            name + "-reply"
+                        )
+                    )
+                    .threadPoolSize(
+                        Integer.parseInt(
+                            consumerProperties.getOrDefault(
+                                KEY_THREAD_POOL_SIZE,
+                                0
+                            ).toString()
+                        )
+                    )
+                    .addRequestInterceptors(requestInterceptors)
+                    .addRequestHandlers(requestHandlerByCommand)
+                    .build();
+                rpcConsumerSettings.put(name, consumerSetting);
+            }
         }
     }
 }

@@ -62,12 +62,16 @@ public class EzyActiveRpcProducerSetting extends EzyActiveRpcEndpointSetting {
         }
 
         public Builder capacity(int capacity) {
-            this.capacity = capacity;
+            if (capacity > 0) {
+                this.capacity = capacity;
+            }
             return this;
         }
 
         public Builder defaultTimeout(int defaultTimeout) {
-            this.defaultTimeout = defaultTimeout;
+            if (defaultTimeout > 0) {
+                this.defaultTimeout = defaultTimeout;
+            }
             return this;
         }
 

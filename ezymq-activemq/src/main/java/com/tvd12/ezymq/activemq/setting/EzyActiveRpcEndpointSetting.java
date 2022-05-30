@@ -5,6 +5,8 @@ import lombok.Getter;
 import javax.jms.Destination;
 import javax.jms.Session;
 
+import static com.tvd12.ezyfox.io.EzyStrings.isEmpty;
+
 @Getter
 public class EzyActiveRpcEndpointSetting extends EzyActiveEndpointSetting {
 
@@ -41,7 +43,9 @@ public class EzyActiveRpcEndpointSetting extends EzyActiveEndpointSetting {
         protected Destination replyQueue;
 
         public B threadPoolSize(int threadPoolSize) {
-            this.threadPoolSize = threadPoolSize;
+            if (threadPoolSize > 0) {
+                this.threadPoolSize = threadPoolSize;
+            }
             return (B) this;
         }
 
@@ -56,12 +60,16 @@ public class EzyActiveRpcEndpointSetting extends EzyActiveEndpointSetting {
         }
 
         public B requestQueueName(String requestQueueName) {
-            this.requestQueueName = requestQueueName;
+            if (isEmpty(this.replyQueueName)) {
+                this.requestQueueName = requestQueueName;
+            }
             return (B) this;
         }
 
         public B replyQueueName(String replyQueueName) {
-            this.replyQueueName = replyQueueName;
+            if (isEmpty(this.replyQueueName)) {
+                this.replyQueueName = replyQueueName;
+            }
             return (B) this;
         }
     }

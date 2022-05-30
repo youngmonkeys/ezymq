@@ -1,0 +1,5 @@
+activemq:
+  producers:
+    test: 0
+  consumers:
+    test: 0

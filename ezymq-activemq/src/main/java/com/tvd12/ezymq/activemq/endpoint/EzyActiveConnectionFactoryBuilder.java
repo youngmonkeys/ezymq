@@ -54,7 +54,7 @@ public class EzyActiveConnectionFactoryBuilder implements EzyBuilder<ConnectionF
         this.password = properties.getProperty(PASSWORD, password);
         this.maxThreadPoolSize = Integer.parseInt(
             properties
-                .getOrDefault(MAX_THREAD_POOL_SIZE, maxThreadPoolSize)
+                .getOrDefault(KEY_MAX_THREAD_POOL_SIZE, maxThreadPoolSize)
                 .toString()
         );
         return this;

@@ -11,7 +11,7 @@ import java.util.Properties;
 
 public final class TestUtil {
 
-    public final static String BOOTSTRAP_SERVERS = "localhost:9092";
+    public static final String BOOTSTRAP_SERVERS = "localhost:9092";
 
     private TestUtil() {}
 

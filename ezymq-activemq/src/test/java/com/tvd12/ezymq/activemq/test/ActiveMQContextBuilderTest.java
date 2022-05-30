@@ -23,7 +23,7 @@ public class ActiveMQContextBuilderTest extends ActiveMQBaseTest {
             .producerEnable(true)
             .topicName("topic-test")
             .consumerEnable(true)
-            .serverThreadPoolSize(3)
+            .consumerThreadPoolSize(3)
             .parent()
             .rpcProducerSettingBuilder("fibonacci")
             .defaultTimeout(300 * 1000)
