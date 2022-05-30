@@ -10,23 +10,23 @@ public class EzyActiveTopicSetting extends EzyActiveEndpointSetting {
 
     protected final String topicName;
     protected final Destination topic;
-    protected final boolean clientEnable;
-    protected final boolean serverEnable;
+    protected final boolean producerEnable;
+    protected final boolean consumerEnable;
     protected final int serverThreadPoolSize;
 
     public EzyActiveTopicSetting(
         Session session,
         String topicName,
         Destination topic,
-        boolean clientEnable,
-        boolean serverEnable,
+        boolean producerEnable,
+        boolean consumerEnable,
         int serverThreadPoolSize
     ) {
         super(session);
         this.topic = topic;
         this.topicName = topicName;
-        this.clientEnable = clientEnable;
-        this.serverEnable = serverEnable;
+        this.producerEnable = producerEnable;
+        this.consumerEnable = consumerEnable;
         this.serverThreadPoolSize = serverThreadPoolSize;
     }
 
@@ -38,8 +38,8 @@ public class EzyActiveTopicSetting extends EzyActiveEndpointSetting {
 
         protected String topicName;
         protected Destination topic;
-        protected boolean clientEnable;
-        protected boolean serverEnable;
+        protected boolean producerEnable;
+        protected boolean consumerEnable;
         protected int serverThreadPoolSize;
         protected EzyActiveSettings.Builder parent;
 
@@ -61,13 +61,13 @@ public class EzyActiveTopicSetting extends EzyActiveEndpointSetting {
             return this;
         }
 
-        public Builder clientEnable(boolean clientEnable) {
-            this.clientEnable = clientEnable;
+        public Builder producerEnable(boolean producerEnable) {
+            this.producerEnable = producerEnable;
             return this;
         }
 
-        public Builder serverEnable(boolean serverEnable) {
-            this.serverEnable = serverEnable;
+        public Builder consumerEnable(boolean consumerEnable) {
+            this.consumerEnable = consumerEnable;
             return this;
         }
 
@@ -86,8 +86,8 @@ public class EzyActiveTopicSetting extends EzyActiveEndpointSetting {
                 session,
                 topicName,
                 topic,
-                clientEnable,
-                serverEnable,
+                producerEnable,
+                consumerEnable,
                 serverThreadPoolSize
             );
         }

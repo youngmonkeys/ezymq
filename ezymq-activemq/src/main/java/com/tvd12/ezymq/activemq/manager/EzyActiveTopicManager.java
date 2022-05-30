@@ -65,14 +65,14 @@ public class EzyActiveTopicManager
         EzyActiveTopicClient client = null;
         EzyActiveTopicServer server = null;
         Session session = getSession(setting);
-        if (setting.isClientEnable()) {
+        if (setting.isProducerEnable()) {
             client = EzyActiveTopicClient.builder()
                 .session(session)
                 .topic(setting.getTopic())
                 .topicName(setting.getTopicName())
                 .build();
         }
-        if (setting.isServerEnable()) {
+        if (setting.isConsumerEnable()) {
             server = EzyActiveTopicServer.builder()
                 .session(session)
                 .topic(setting.getTopic())

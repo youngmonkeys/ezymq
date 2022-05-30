@@ -68,14 +68,14 @@ public class EzyRabbitTopicManager extends EzyRabbitAbstractManager {
         EzyRabbitTopicServer server = null;
         Channel channel = getChannel(setting);
         declareComponents(channel, setting);
-        if (setting.isClientEnable()) {
+        if (setting.isProducerEnable()) {
             client = EzyRabbitTopicClient.builder()
                 .channel(channel)
                 .exchange(setting.getExchange())
                 .routingKey(setting.getClientRoutingKey())
                 .build();
         }
-        if (setting.isServerEnable()) {
+        if (setting.isConsumerEnable()) {
             server = EzyRabbitTopicServer.builder()
                 .channel(channel)
                 .exchange(setting.getExchange())

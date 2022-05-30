@@ -2,7 +2,6 @@ package com.tvd12.ezymq.rabbitmq.test;
 
 import com.tvd12.ezymq.rabbitmq.EzyRabbitMQProxy;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
-import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandler;
 import com.tvd12.ezymq.rabbitmq.test.request.SumRequest;
 import com.tvd12.ezymq.rabbitmq.test.response.SumResponse;
 
@@ -14,9 +13,9 @@ public class EzyRabbitMQProxyMainTest {
             .settingsBuilder()
             .topicSettingBuilder("test")
             .exchange("sum-topic-exchange")
-            .clientEnable(true)
+            .producerEnable(true)
             .clientRoutingKey("sum-topic-routing-key")
-            .serverEnable(true)
+            .consumerEnable(true)
             .serverQueueName("sum-topic")
             .parent()
             .rpcProducerSettingBuilder("test")

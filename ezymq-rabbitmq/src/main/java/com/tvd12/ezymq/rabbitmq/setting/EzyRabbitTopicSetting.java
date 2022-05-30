@@ -6,24 +6,24 @@ import lombok.Getter;
 @Getter
 public class EzyRabbitTopicSetting extends EzyRabbitEndpointSetting {
 
-    protected final boolean clientEnable;
+    protected final boolean producerEnable;
     protected final String clientRoutingKey;
-    protected final boolean serverEnable;
+    protected final boolean consumerEnable;
     protected final String serverQueueName;
 
     public EzyRabbitTopicSetting(
         Channel channel,
         String exchange,
         int prefetchCount,
-        boolean clientEnable,
+        boolean producerEnable,
         String clientRoutingKey,
-        boolean serverEnable,
+        boolean consumerEnable,
         String serverQueueName
     ) {
         super(channel, exchange, prefetchCount);
-        this.clientEnable = clientEnable;
+        this.producerEnable = producerEnable;
         this.clientRoutingKey = clientRoutingKey;
-        this.serverEnable = serverEnable;
+        this.consumerEnable = consumerEnable;
         this.serverQueueName = serverQueueName;
     }
 
@@ -33,9 +33,9 @@ public class EzyRabbitTopicSetting extends EzyRabbitEndpointSetting {
 
     public static class Builder extends EzyRabbitEndpointSetting.Builder<Builder> {
 
-        protected boolean clientEnable;
+        protected boolean producerEnable;
         protected String clientRoutingKey;
-        protected boolean serverEnable;
+        protected boolean consumerEnable;
         protected String serverQueueName;
         protected EzyRabbitSettings.Builder parent;
 
@@ -47,8 +47,8 @@ public class EzyRabbitTopicSetting extends EzyRabbitEndpointSetting {
             this.parent = parent;
         }
 
-        public Builder clientEnable(boolean clientEnable) {
-            this.clientEnable = clientEnable;
+        public Builder producerEnable(boolean producerEnable) {
+            this.producerEnable = producerEnable;
             return this;
         }
 
@@ -57,8 +57,8 @@ public class EzyRabbitTopicSetting extends EzyRabbitEndpointSetting {
             return this;
         }
 
-        public Builder serverEnable(boolean serverEnable) {
-            this.serverEnable = serverEnable;
+        public Builder consumerEnable(boolean consumerEnable) {
+            this.consumerEnable = consumerEnable;
             return this;
         }
 
@@ -77,9 +77,9 @@ public class EzyRabbitTopicSetting extends EzyRabbitEndpointSetting {
                 channel,
                 exchange,
                 prefetchCount,
-                clientEnable,
+                producerEnable,
                 clientRoutingKey,
-                serverEnable,
+                consumerEnable,
                 serverQueueName
             );
         }
