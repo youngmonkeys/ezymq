@@ -164,7 +164,9 @@ public abstract class EzyMQProxyBuilder<
             if (settingsBuilder == null) {
                 settingsBuilder = newSettingBuilder();
             }
-            settingsBuilder.properties(properties);
+            settingsBuilder
+                .properties(properties)
+                .properties(beanContext.getProperties());
             decorateSettingBuilder(settingsBuilder);
             settings = (S) settingsBuilder.build();
         }

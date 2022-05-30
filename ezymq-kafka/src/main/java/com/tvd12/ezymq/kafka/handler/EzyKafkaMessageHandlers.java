@@ -7,10 +7,16 @@ import java.util.Map;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class EzyKafkaMessageHandlers extends EzyLoggable {
-    protected final Map<String, EzyKafkaMessageHandler> handlers = new HashMap<>();
+
+    protected final Map<String, EzyKafkaMessageHandler> handlers =
+        new HashMap<>();
 
     public void addHandler(String cmd, EzyKafkaMessageHandler handler) {
-        handlers.put(cmd, handler);
+        this.handlers.put(cmd, handler);
+    }
+
+    public void addHandlers(Map<String, EzyKafkaMessageHandler> handlers) {
+        this.handlers.putAll(handlers);
     }
 
     public EzyKafkaMessageHandler getHandler(String cmd) {
@@ -22,7 +28,6 @@ public class EzyKafkaMessageHandlers extends EzyLoggable {
         if (handler != null) {
             return handler.handle(message);
         }
-        logger.warn("has no handler for command: {}", cmd);
-        return null;
+        throw new IllegalArgumentException("has no handler for command: " + cmd);
     }
 }
