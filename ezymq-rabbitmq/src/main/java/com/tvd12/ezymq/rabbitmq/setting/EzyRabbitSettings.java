@@ -6,12 +6,11 @@ import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandler;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestInterceptor;
 import lombok.Getter;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import static com.tvd12.ezymq.rabbitmq.util.EzyRabbitHandlerAnnotations.getCommand;
+import static com.tvd12.properties.file.util.PropertiesUtil.getFirstPropertyKeys;
+import static com.tvd12.properties.file.util.PropertiesUtil.getPropertiesByPrefix;
 
 @Getter
 @SuppressWarnings("rawtypes")
@@ -22,15 +21,34 @@ public class EzyRabbitSettings extends EzyMQRpcSettings {
     protected final Map<String, EzyRabbitRpcProducerSetting> rpcProducerSettings;
     protected final Map<String, EzyRabbitRpcConsumerSetting> rpcConsumerSettings;
 
-    public static String URI = "rabbitmq.uri";
-    public static String HOST = "rabbitmq.host";
-    public static String PORT = "rabbitmq.port";
-    public static String USERNAME = "rabbitmq.username";
-    public static String PASSWORD = "rabbitmq.password";
-    public static String VHOST = "rabbitmq.vhost";
-    public static String MAX_CONNECTION_ATTEMPTS = "rabbitmq.requested_heart_beat";
-    public static String REQUESTED_HEART_BEAT = "rabbitmq.max_connection_attempts";
-    public static String SHARED_THREAD_POOL_SIZE = "rabbitmq.shared_thread_pool_size";
+    public static final String KEY_URI = "rabbitmq.uri";
+    public static final String KEY_HOST = "rabbitmq.host";
+    public static final String KEY_PORT = "rabbitmq.port";
+    public static final String KEY_USERNAME = "rabbitmq.username";
+    public static final String KEY_PASSWORD = "rabbitmq.password";
+    public static final String KEY_VHOST = "rabbitmq.vhost";
+    public static final String KEY_MAX_CONNECTION_ATTEMPTS = "rabbitmq.requested_heart_beat";
+    public static final String KEY_REQUESTED_HEART_BEAT = "rabbitmq.max_connection_attempts";
+    public static final String KEY_SHARED_THREAD_POOL_SIZE = "rabbitmq.shared_thread_pool_size";
+    public static final String KEY_CAPACITY = "capacity";
+    public static final String KEY_CONSUMER = "consumer";
+    public static final String KEY_CONSUMER_THREAD_POOL_SIZE = "consumer_thread_pool_size";
+    public static final String KEY_CONSUMERS = "rabbitmq.consumers";
+    public static final String KEY_DEFAULT_TIMEOUT = "default_timeout";
+    public static final String KEY_ENABLE = "enable";
+    public static final String KEY_EXCHANGE = "exchange";
+    public static final String KEY_MAX_THREAD_POOL_SIZE = "rabbitmq.max_thread_pool_size";
+    public static final String KEY_PREFETCH_COUNT = "prefetch_count";
+    public static final String KEY_PRODUCERS = "rabbitmq.producers";
+    public static final String KEY_PRODUCER = "producer";
+    public static final String KEY_QUEUE_NAME = "queue_name";
+    public static final String KEY_REPLY_QUEUE_NAME = "reply_queue_name";
+    public static final String KEY_REPLY_ROUTING_KEY = "reply_queue_name";
+    public static final String KEY_REQUEST_QUEUE_NAME = "request_queue_name";
+    public static final String KEY_REQUEST_ROUTING_KEY = "request_routing_key";
+    public static final String KEY_ROUTING_KEY = "routing_key";
+    public static final String KEY_THREAD_POOL_SIZE = "thread_pool_size";
+    public static final String KEY_TOPICS = "rabbitmq.topics";
 
     public EzyRabbitSettings(
         Properties properties,
@@ -141,21 +159,9 @@ public class EzyRabbitSettings extends EzyMQRpcSettings {
 
         @Override
         public EzyRabbitSettings build() {
-            for (String name : topicSettingBuilders.keySet()) {
-                EzyRabbitTopicSetting.Builder builder =
-                    topicSettingBuilders.get(name);
-                topicSettings.put(name, builder.build());
-            }
-            for (String name : rpcProducerSettingBuilders.keySet()) {
-                EzyRabbitRpcProducerSetting.Builder builder =
-                    rpcProducerSettingBuilders.get(name);
-                rpcProducerSettings.put(name, builder.build());
-            }
-            for (String name : rpcConsumerSettingBuilders.keySet()) {
-                EzyRabbitRpcConsumerSetting.Builder builder =
-                    rpcConsumerSettingBuilders.get(name);
-                rpcConsumerSettings.put(name, builder.build());
-            }
+            buildTopicSettings();
+            buildProducerSettings();
+            buildConsumerSettings();
             return new EzyRabbitSettings(
                 properties,
                 requestTypeByCommand,
@@ -164,6 +170,198 @@ public class EzyRabbitSettings extends EzyMQRpcSettings {
                 rpcProducerSettings,
                 rpcConsumerSettings
             );
+        }
+
+        private void buildTopicSettings() {
+            Properties topicsProperties =
+                getPropertiesByPrefix(properties, KEY_TOPICS);
+            Set<String> topicNames = new HashSet<>();
+            topicNames.addAll(topicSettingBuilders.keySet());
+            topicNames.addAll(getFirstPropertyKeys(topicsProperties));
+            for (String name : topicNames) {
+                Properties topicProperties = getPropertiesByPrefix(
+                    topicsProperties,
+                    name
+                );
+                EzyRabbitTopicSetting.Builder builder = topicSettingBuilders
+                    .computeIfAbsent(name, k ->
+                        EzyRabbitTopicSetting.builder()
+                    )
+                    .exchange(
+                        topicProperties.getProperty(
+                            KEY_EXCHANGE,
+                            "topic-" + name + "-exchange"
+                        )
+                    )
+                    .prefetchCount(
+                        Integer.parseInt(
+                            topicProperties.getOrDefault(
+                                KEY_PREFETCH_COUNT,
+                                0
+                            ).toString()
+                        )
+                    );
+                if (topicProperties.containsKey(KEY_PRODUCER)) {
+                    Properties producerProperties = getPropertiesByPrefix(
+                        topicProperties,
+                        KEY_PRODUCER
+                    );
+                    builder
+                        .producerEnable(true)
+                        .producerRoutingKey(
+                            producerProperties.getProperty(
+                                KEY_ROUTING_KEY,
+                                "topic-" + name + "-routing-key"
+                            )
+                        );
+                }
+                if (topicProperties.containsKey(KEY_CONSUMER)) {
+                    Properties consumerProperties = getPropertiesByPrefix(
+                        topicProperties,
+                        KEY_CONSUMER
+                    );
+                    builder
+                        .consumerEnable(true)
+                        .consumerQueueName(
+                            consumerProperties.getProperty(
+                                KEY_QUEUE_NAME,
+                                "topic-" + name + "-queue"
+                            )
+                        );
+                }
+                topicSettings.put(name, builder.build());
+            }
+        }
+
+        @SuppressWarnings("MethodLength")
+        private void buildProducerSettings() {
+            Properties producersProperties =
+                getPropertiesByPrefix(properties, KEY_PRODUCERS);
+            Set<String> producerNames = new HashSet<>();
+            producerNames.addAll(rpcProducerSettingBuilders.keySet());
+            producerNames.addAll(getFirstPropertyKeys(producersProperties));
+            for (String name : producerNames) {
+                Properties producerProperties = getPropertiesByPrefix(
+                    producersProperties,
+                    name
+                );
+                EzyRabbitRpcProducerSetting producerSetting = rpcProducerSettingBuilders
+                    .computeIfAbsent(name, k ->
+                        EzyRabbitRpcProducerSetting.builder()
+                    )
+                    .exchange(
+                        producerProperties.getProperty(
+                            KEY_EXCHANGE,
+                            name + "-exchange"
+                        )
+                    )
+                    .prefetchCount(
+                        Integer.parseInt(
+                            producerProperties.getOrDefault(
+                                KEY_PREFETCH_COUNT,
+                                0
+                            ).toString()
+                        )
+                    )
+                    .requestQueueName(
+                        producerProperties.getProperty(
+                            KEY_REQUEST_QUEUE_NAME,
+                            name + "-request-queue"
+                        )
+                    )
+                    .requestRoutingKey(
+                        producerProperties.getProperty(
+                            KEY_REQUEST_ROUTING_KEY,
+                            name + "-request-routing-key"
+                        )
+                    )
+                    .replyQueueName(
+                        producerProperties.getProperty(
+                            KEY_REPLY_QUEUE_NAME,
+                            name + "-reply-queue"
+                        )
+                    )
+                    .replyRoutingKey(
+                        producerProperties.getProperty(
+                            KEY_REPLY_ROUTING_KEY,
+                            name + "-reply-routing-key"
+                        )
+                    )
+                    .capacity(
+                        Integer.parseInt(
+                            producerProperties.getOrDefault(
+                                KEY_CAPACITY,
+                                0
+                            ).toString()
+                        )
+                    )
+                    .defaultTimeout(
+                        Integer.parseInt(
+                            producerProperties.getOrDefault(
+                                KEY_DEFAULT_TIMEOUT,
+                                0
+                            ).toString()
+                        )
+                    )
+                    .build();
+                rpcProducerSettings.put(name, producerSetting);
+            }
+        }
+
+        private void buildConsumerSettings() {
+            Properties consumersProperties =
+                getPropertiesByPrefix(properties, KEY_CONSUMERS);
+            Set<String> consumerNames = new HashSet<>();
+            consumerNames.addAll(rpcConsumerSettingBuilders.keySet());
+            consumerNames.addAll(getFirstPropertyKeys(consumersProperties));
+            for (String name : consumerNames) {
+                Properties consumerProperties = getPropertiesByPrefix(
+                    consumersProperties,
+                    name
+                );
+                EzyRabbitRpcConsumerSetting consumerSetting = rpcConsumerSettingBuilders
+                    .computeIfAbsent(name, k ->
+                        EzyRabbitRpcConsumerSetting.builder()
+                    )
+                    .exchange(
+                        consumerProperties.getProperty(
+                            KEY_EXCHANGE,
+                            name + "-exchange"
+                        )
+                    )
+                    .prefetchCount(
+                        Integer.parseInt(
+                            consumerProperties.getOrDefault(
+                                KEY_PREFETCH_COUNT,
+                                0
+                            ).toString()
+                        )
+                    )
+                    .requestQueueName(
+                        consumerProperties.getProperty(
+                            KEY_REQUEST_QUEUE_NAME,
+                            name + "-request-queue"
+                        )
+                    )
+                    .replyRoutingKey(
+                        consumerProperties.getProperty(
+                            KEY_REPLY_ROUTING_KEY,
+                            name + "-reply-routing-key"
+                        )
+                    )
+                    .threadPoolSize(
+                        Integer.parseInt(
+                            consumerProperties.getOrDefault(
+                                KEY_THREAD_POOL_SIZE,
+                                0
+                            ).toString()
+                        )
+                    )
+                    .addRequestInterceptors(requestInterceptors)
+                    .addRequestHandlers(requestHandlerByCommand)
+                    .build();
+                rpcConsumerSettings.put(name, consumerSetting);
+            }
         }
     }
 }

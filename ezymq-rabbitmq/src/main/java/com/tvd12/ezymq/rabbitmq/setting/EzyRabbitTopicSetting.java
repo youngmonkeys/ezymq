@@ -34,9 +34,9 @@ public class EzyRabbitTopicSetting extends EzyRabbitEndpointSetting {
     public static class Builder extends EzyRabbitEndpointSetting.Builder<Builder> {
 
         protected boolean producerEnable;
-        protected String clientRoutingKey;
+        protected String producerRoutingKey;
         protected boolean consumerEnable;
-        protected String serverQueueName;
+        protected String consumerQueueName;
         protected EzyRabbitSettings.Builder parent;
 
         public Builder() {
@@ -52,8 +52,8 @@ public class EzyRabbitTopicSetting extends EzyRabbitEndpointSetting {
             return this;
         }
 
-        public Builder clientRoutingKey(String clientRoutingKey) {
-            this.clientRoutingKey = clientRoutingKey;
+        public Builder producerRoutingKey(String producerRoutingKey) {
+            this.producerRoutingKey = producerRoutingKey;
             return this;
         }
 
@@ -62,8 +62,8 @@ public class EzyRabbitTopicSetting extends EzyRabbitEndpointSetting {
             return this;
         }
 
-        public Builder serverQueueName(String serverQueueName) {
-            this.serverQueueName = serverQueueName;
+        public Builder consumerQueueName(String consumerQueueName) {
+            this.consumerQueueName = consumerQueueName;
             return this;
         }
 
@@ -78,9 +78,9 @@ public class EzyRabbitTopicSetting extends EzyRabbitEndpointSetting {
                 exchange,
                 prefetchCount,
                 producerEnable,
-                clientRoutingKey,
+                producerRoutingKey,
                 consumerEnable,
-                serverQueueName
+                consumerQueueName
             );
         }
     }

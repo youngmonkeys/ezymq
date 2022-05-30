@@ -4,6 +4,8 @@ import com.rabbitmq.client.Channel;
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import lombok.Getter;
 
+import static com.tvd12.ezyfox.io.EzyStrings.isEmpty;
+
 @Getter
 public class EzyRabbitEndpointSetting {
 
@@ -33,12 +35,16 @@ public class EzyRabbitEndpointSetting {
         }
 
         public B exchange(String exchange) {
-            this.exchange = exchange;
+            if (isEmpty(this.exchange)) {
+                this.exchange = exchange;
+            }
             return (B) this;
         }
 
         public B prefetchCount(int prefetchCount) {
-            this.prefetchCount = prefetchCount;
+            if (prefetchCount > 0) {
+                this.prefetchCount = prefetchCount;
+            }
             return (B) this;
         }
     }

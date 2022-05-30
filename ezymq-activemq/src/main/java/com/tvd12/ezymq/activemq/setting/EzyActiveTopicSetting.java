@@ -14,7 +14,7 @@ public class EzyActiveTopicSetting extends EzyActiveEndpointSetting {
     protected final Destination topic;
     protected final boolean producerEnable;
     protected final boolean consumerEnable;
-    protected final int serverThreadPoolSize;
+    protected final int consumerThreadPoolSize;
 
     public EzyActiveTopicSetting(
         Session session,
@@ -22,14 +22,14 @@ public class EzyActiveTopicSetting extends EzyActiveEndpointSetting {
         Destination topic,
         boolean producerEnable,
         boolean consumerEnable,
-        int serverThreadPoolSize
+        int consumerThreadPoolSize
     ) {
         super(session);
         this.topic = topic;
         this.topicName = topicName;
         this.producerEnable = producerEnable;
         this.consumerEnable = consumerEnable;
-        this.serverThreadPoolSize = serverThreadPoolSize;
+        this.consumerThreadPoolSize = consumerThreadPoolSize;
     }
 
     public static Builder builder() {

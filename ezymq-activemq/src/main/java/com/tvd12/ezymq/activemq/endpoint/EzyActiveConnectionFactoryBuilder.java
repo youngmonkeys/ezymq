@@ -49,9 +49,9 @@ public class EzyActiveConnectionFactoryBuilder implements EzyBuilder<ConnectionF
     }
 
     public EzyActiveConnectionFactoryBuilder properties(Properties properties) {
-        this.uri = properties.getProperty(URI, uri);
-        this.username = properties.getProperty(USERNAME, username);
-        this.password = properties.getProperty(PASSWORD, password);
+        this.uri = properties.getProperty(KEY_URI, uri);
+        this.username = properties.getProperty(KEY_USERNAME, username);
+        this.password = properties.getProperty(KEY_PASSWORD, password);
         this.maxThreadPoolSize = Integer.parseInt(
             properties
                 .getOrDefault(KEY_MAX_THREAD_POOL_SIZE, maxThreadPoolSize)

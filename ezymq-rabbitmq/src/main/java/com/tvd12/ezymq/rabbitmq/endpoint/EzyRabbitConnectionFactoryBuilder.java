@@ -100,25 +100,25 @@ public class EzyRabbitConnectionFactoryBuilder
     public EzyRabbitConnectionFactoryBuilder properties(Properties properties) {
         this.maxConnectionAttempts = Integer.parseInt(
             properties
-                .getOrDefault(MAX_CONNECTION_ATTEMPTS, maxConnectionAttempts)
+                .getOrDefault(KEY_MAX_CONNECTION_ATTEMPTS, maxConnectionAttempts)
                 .toString()
         );
-        this.uri = properties.getProperty(URI, uri);
-        this.host = properties.getProperty(HOST, host);
+        this.uri = properties.getProperty(KEY_URI, uri);
+        this.host = properties.getProperty(KEY_HOST, host);
         this.port = Integer.parseInt(
-            properties.getOrDefault(PORT, port).toString()
+            properties.getOrDefault(KEY_PORT, port).toString()
         );
-        this.username = properties.getProperty(USERNAME, username);
-        this.password = properties.getProperty(PASSWORD, password);
-        this.vhost = properties.getProperty(VHOST, vhost);
+        this.username = properties.getProperty(KEY_USERNAME, username);
+        this.password = properties.getProperty(KEY_PASSWORD, password);
+        this.vhost = properties.getProperty(KEY_VHOST, vhost);
         this.requestedHeartbeat = Integer.parseInt(
             properties
-                .getOrDefault(REQUESTED_HEART_BEAT, requestedHeartbeat)
+                .getOrDefault(KEY_REQUESTED_HEART_BEAT, requestedHeartbeat)
                 .toString()
         );
         this.sharedThreadPoolSize = Integer.parseInt(
             properties
-                .getOrDefault(SHARED_THREAD_POOL_SIZE, sharedThreadPoolSize)
+                .getOrDefault(KEY_SHARED_THREAD_POOL_SIZE, sharedThreadPoolSize)
                 .toString()
         );
         return this;
