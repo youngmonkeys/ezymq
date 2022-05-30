@@ -67,7 +67,9 @@ public class EzyKafkaConsumerSetting extends EzyKafkaEndpointSetting {
         }
 
         public Builder threadPoolSize(int threadPoolSize) {
-            this.threadPoolSize = threadPoolSize;
+            if (threadPoolSize > 0) {
+                this.threadPoolSize = threadPoolSize;
+            }
             return this;
         }
 
@@ -92,12 +94,7 @@ public class EzyKafkaConsumerSetting extends EzyKafkaEndpointSetting {
         }
 
         public Builder addMessageHandlers(Map<String, EzyKafkaMessageHandler> handlers) {
-            if (handlers != null) {
-                for (String cmd : handlers.keySet()) {
-                    EzyKafkaMessageHandler handler = handlers.get(cmd);
-                    addMessageHandler(cmd, handler);
-                }
-            }
+            this.messageHandlers.addHandlers(handlers);
             return this;
         }
 

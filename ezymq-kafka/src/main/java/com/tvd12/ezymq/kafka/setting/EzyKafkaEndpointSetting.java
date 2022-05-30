@@ -71,7 +71,8 @@ public class EzyKafkaEndpointSetting {
             return (B) this;
         }
 
-        public B properties(Map<String, Object> properties) {
+        @SuppressWarnings("rawtypes")
+        public B properties(Map properties) {
             if (properties != null) {
                 this.properties.putAll(properties);
             }

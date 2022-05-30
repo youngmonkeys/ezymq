@@ -1,0 +1,10 @@
+kafka:
+  producers:
+    test:
+      topic: test
+      bootstrap.servers: localhost:9092
+      client.id: KafkaProducerExample
+  consumers:
+    test:
+      topic: test
+      group.id: KafkaConsumerExample
