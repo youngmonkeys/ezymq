@@ -1,5 +1,7 @@
 package com.tvd12.ezymq.kafka.handler;
 
+import com.tvd12.ezymq.kafka.util.EzyKafkaInterceptorComparator;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -11,10 +13,12 @@ public class EzyKafkaMessageInterceptors implements EzyKafkaMessageInterceptor {
 
     public void addInterceptor(EzyKafkaMessageInterceptor interceptor) {
         this.interceptors.add(interceptor);
+        this.interceptors.sort(EzyKafkaInterceptorComparator.getInstance());
     }
 
     public void addInterceptors(Collection<EzyKafkaMessageInterceptor> interceptors) {
         this.interceptors.addAll(interceptors);
+        this.interceptors.sort(EzyKafkaInterceptorComparator.getInstance());
     }
 
     @Override

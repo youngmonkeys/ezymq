@@ -12,11 +12,15 @@ public class EzyMQRequestInterceptors<I extends EzyMQRequestInterceptor>
 
     public void addInterceptor(I interceptor) {
         this.interceptors.add(interceptor);
+        this.sortInterceptors();
     }
 
     public void addInterceptors(Collection<I> interceptors) {
         this.interceptors.addAll(interceptors);
+        this.sortInterceptors();
     }
+
+    protected void sortInterceptors() {}
 
     @Override
     public void preHandle(String cmd, Object message) {

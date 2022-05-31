@@ -6,6 +6,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface EzyRabbitInterceptor {
-    
-    int priority();
+
+    int priority() default 0;
 }
