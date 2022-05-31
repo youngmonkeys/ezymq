@@ -5,6 +5,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyThreads;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,19 +16,18 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeoutException;
 
+import static com.tvd12.ezyfox.util.EzyProcessor.processWithLogException;
+
 public class EzyRabbitConnectionFactory
     extends ConnectionFactory
     implements EzyCloseable {
 
+    @Setter
     protected int maxConnectionAttempts;
     protected ExecutorService copyExecutorService;
     protected final List<Connection> createdConnections =
         Collections.synchronizedList(new ArrayList<>());
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-
-    public void setMaxConnectionAttempts(int maxConnectionAttempts) {
-        this.maxConnectionAttempts = maxConnectionAttempts;
-    }
 
     @Override
     public void setSharedExecutor(ExecutorService executor) {
@@ -57,7 +57,7 @@ public class EzyRabbitConnectionFactory
                 }
                 logger.error(
                     "can not get redis client, retry count: {}",
-                    (++retryCount),
+                    ++retryCount,
                     e
                 );
                 EzyThreads.sleep(3000);
@@ -73,7 +73,7 @@ public class EzyRabbitConnectionFactory
             closeConnection(connection);
         }
         if (copyExecutorService != null) {
-            copyExecutorService.shutdown();
+            processWithLogException(copyExecutorService::shutdown);
         }
     }
 

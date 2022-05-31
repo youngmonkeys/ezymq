@@ -10,27 +10,6 @@ public class EzyRabbitMQProxyMainTest {
     public static void main(String[] args) {
         EzyRabbitMQProxy proxy = EzyRabbitMQProxy.builder()
             .scan("com.tvd12.ezymq.rabbitmq.test")
-            .settingsBuilder()
-            .topicSettingBuilder("test")
-            .exchange("sum-topic-exchange")
-            .producerEnable(true)
-            .producerRoutingKey("sum-topic-routing-key")
-            .consumerEnable(true)
-            .consumerQueueName("sum-topic")
-            .parent()
-            .rpcProducerSettingBuilder("test")
-            .exchange("sum-rpc-exchange")
-            .requestQueueName("sum-rpc-queue")
-            .requestRoutingKey("sum-rpc-routing-key")
-            .replyQueueName("sum-rpc-client-queue")
-            .replyRoutingKey("sum-rpc-client-routing-key")
-            .parent()
-            .rpcConsumerSettingBuilder("fibonacci")
-            .requestQueueName("sum-rpc-queue")
-            .exchange("sum-rpc-exchange")
-            .replyRoutingKey("sum-rpc-client-routing-key")
-            .parent()
-            .parent()
             .build();
         EzyRabbitRpcProducer producer = proxy.getRpcProducer("test");
         SumResponse sumResponse = producer.call(

@@ -6,18 +6,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface EzyRabbitInterceptor {
-
-    /**
-     * command name.
-     *
-     * @return the event name
-     */
-    String value() default "";
-
-    /**
-     * command name.
-     *
-     * @return server event name
-     */
-    String command() default "";
+    
+    int priority();
 }

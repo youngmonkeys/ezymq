@@ -24,5 +24,5 @@ public @interface EzyRabbitHandler {
      *
      * @return server event name
      */
-    String cmd() default "";
+    String command() default "";
 }

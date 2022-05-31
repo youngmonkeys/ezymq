@@ -67,7 +67,9 @@ public class EzyRabbitRpcProducerSetting extends EzyRabbitEndpointSetting {
         }
 
         public Builder capacity(int capacity) {
-            this.capacity = capacity;
+            if (capacity > 0) {
+                this.capacity = capacity;
+            }
             return this;
         }
 

@@ -16,7 +16,7 @@ public final class EzyRabbitHandlerAnnotations {
     public static String getCommand(EzyRabbitHandler annotation) {
         String cmd = annotation.value();
         if (cmd.isEmpty()) {
-            cmd = annotation.cmd();
+            cmd = annotation.command();
         }
         return cmd;
     }
