@@ -1,30 +1,38 @@
 package com.tvd12.ezymq.rabbitmq.setting;
 
 import com.rabbitmq.client.Channel;
+import com.tvd12.ezymq.common.handler.EzyMQMessageConsumer;
 import lombok.Getter;
 
+import java.util.List;
+import java.util.Map;
+
 @Getter
+@SuppressWarnings("rawtypes")
 public class EzyRabbitTopicSetting extends EzyRabbitEndpointSetting {
 
     protected final boolean producerEnable;
-    protected final String clientRoutingKey;
+    protected final String producerRoutingKey;
     protected final boolean consumerEnable;
-    protected final String serverQueueName;
+    protected final String consumerQueueName;
+    protected final Map<String, List<EzyMQMessageConsumer>> messageConsumersByTopic;
 
     public EzyRabbitTopicSetting(
         Channel channel,
         String exchange,
         int prefetchCount,
         boolean producerEnable,
-        String clientRoutingKey,
+        String producerRoutingKey,
         boolean consumerEnable,
-        String serverQueueName
+        String consumerQueueName,
+        Map<String, List<EzyMQMessageConsumer>> messageConsumersByTopic
     ) {
         super(channel, exchange, prefetchCount);
         this.producerEnable = producerEnable;
-        this.clientRoutingKey = clientRoutingKey;
+        this.producerRoutingKey = producerRoutingKey;
         this.consumerEnable = consumerEnable;
-        this.serverQueueName = serverQueueName;
+        this.consumerQueueName = consumerQueueName;
+        this.messageConsumersByTopic = messageConsumersByTopic;
     }
 
     public static Builder builder() {
@@ -37,7 +45,8 @@ public class EzyRabbitTopicSetting extends EzyRabbitEndpointSetting {
         protected String producerRoutingKey;
         protected boolean consumerEnable;
         protected String consumerQueueName;
-        protected EzyRabbitSettings.Builder parent;
+        protected final EzyRabbitSettings.Builder parent;
+        protected Map<String, List<EzyMQMessageConsumer>> messageConsumersByTopic;
 
         public Builder() {
             this(null);
@@ -67,6 +76,13 @@ public class EzyRabbitTopicSetting extends EzyRabbitEndpointSetting {
             return this;
         }
 
+        public Builder messageConsumersByTopic(
+            Map<String, List<EzyMQMessageConsumer>> messageConsumersMap
+        ) {
+            this.messageConsumersByTopic = messageConsumersMap;
+            return this;
+        }
+
         public EzyRabbitSettings.Builder parent() {
             return parent;
         }
@@ -80,7 +96,8 @@ public class EzyRabbitTopicSetting extends EzyRabbitEndpointSetting {
                 producerEnable,
                 producerRoutingKey,
                 consumerEnable,
-                consumerQueueName
+                consumerQueueName,
+                messageConsumersByTopic
             );
         }
     }

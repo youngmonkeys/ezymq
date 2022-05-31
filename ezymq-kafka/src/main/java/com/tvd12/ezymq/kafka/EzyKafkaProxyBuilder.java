@@ -62,23 +62,23 @@ public class EzyKafkaProxyBuilder extends EzyMQProxyBuilder<
             .mapMessageTypes(messageTypesByTopic)
             .addConsumerInterceptors(
                 beanContext.getSingletons(
-                    getRequestInterceptorAnnotation()
+                    getRequestInterceptorAnnotationClass()
                 )
             )
             .addConsumerMessageHandlers(
                 beanContext.getSingletons(
-                    getRequestHandlerAnnotation()
+                    getRequestHandlerAnnotationClass()
                 )
             );
     }
 
     @Override
-    public Class<?> getRequestInterceptorAnnotation() {
+    public Class<?> getRequestInterceptorAnnotationClass() {
         return EzyKafkaInterceptor.class;
     }
 
     @Override
-    public Class<?> getRequestHandlerAnnotation() {
+    public Class<?> getRequestHandlerAnnotationClass() {
         return EzyKafkaHandler.class;
     }
 

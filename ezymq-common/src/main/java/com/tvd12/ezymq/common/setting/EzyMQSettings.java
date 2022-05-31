@@ -6,9 +6,8 @@ import com.tvd12.ezymq.common.EzyMQProxyBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 @Getter
 @AllArgsConstructor
@@ -17,9 +16,7 @@ public abstract class EzyMQSettings {
 
     protected final Properties properties;
 
-    public List<Class> getMessageTypeList() {
-        return Collections.emptyList();
-    }
+    public abstract Set<Class> getMessageTypes();
 
     public abstract static class Builder<
         S extends EzyMQSettings,

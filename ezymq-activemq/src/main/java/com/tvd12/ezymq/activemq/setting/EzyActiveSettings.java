@@ -3,12 +3,15 @@ package com.tvd12.ezymq.activemq.setting;
 import com.tvd12.ezymq.activemq.EzyActiveMQProxyBuilder;
 import com.tvd12.ezymq.activemq.handler.EzyActiveRequestHandler;
 import com.tvd12.ezymq.activemq.handler.EzyActiveRequestInterceptor;
+import com.tvd12.ezymq.activemq.util.EzyActiveConsumerAnnotations;
+import com.tvd12.ezymq.activemq.util.EzyActiveHandlerAnnotations;
+import com.tvd12.ezymq.common.annotation.EzyConsumerAnnotationProperties;
+import com.tvd12.ezymq.common.handler.EzyMQMessageConsumer;
 import com.tvd12.ezymq.common.setting.EzyMQRpcSettings;
 import lombok.Getter;
 
 import java.util.*;
 
-import static com.tvd12.ezymq.activemq.util.EzyActiveHandlerAnnotations.getCommand;
 import static com.tvd12.properties.file.util.PropertiesUtil.getFirstPropertyKeys;
 import static com.tvd12.properties.file.util.PropertiesUtil.getPropertiesByPrefix;
 
@@ -24,10 +27,12 @@ public class EzyActiveSettings extends EzyMQRpcSettings {
     public static final String KEY_USERNAME = "activemq.username";
     public static final String KEY_PASSWORD = "activemq.password";
     public static final String KEY_CAPACITY = "capacity";
-    public static final String KEY_CONSUMER_THREAD_POOL_SIZE = "consumer_thread_pool_size";
+    public static final String KEY_CONSUMER = "consumer";
     public static final String KEY_CONSUMERS = "activemq.consumers";
     public static final String KEY_DEFAULT_TIMEOUT = "default_timeout";
+    public static final String KEY_ENABLE = "enable";
     public static final String KEY_MAX_THREAD_POOL_SIZE = "activemq.max_thread_pool_size";
+    public static final String KEY_PRODUCER = "producer";
     public static final String KEY_PRODUCERS = "activemq.producers";
     public static final String KEY_REPLY_QUEUE_NAME = "reply_queue_name";
     public static final String KEY_REQUEST_QUEUE_NAME = "request_queue_name";
@@ -38,11 +43,12 @@ public class EzyActiveSettings extends EzyMQRpcSettings {
     public EzyActiveSettings(
         Properties properties,
         Map<String, Class> requestTypes,
+        Map<String, Map<String, Class>> messageTypeMapByTopic,
         Map<String, EzyActiveTopicSetting> topicSettings,
         Map<String, EzyActiveRpcProducerSetting> rpcProducerSettings,
         Map<String, EzyActiveRpcConsumerSetting> rpcConsumerSettings
     ) {
-        super(properties, requestTypes);
+        super(properties, requestTypes, messageTypeMapByTopic);
         this.topicSettings = Collections.unmodifiableMap(topicSettings);
         this.rpcProducerSettings = Collections.unmodifiableMap(rpcProducerSettings);
         this.rpcConsumerSettings = Collections.unmodifiableMap(rpcConsumerSettings);
@@ -133,7 +139,14 @@ public class EzyActiveSettings extends EzyMQRpcSettings {
 
         @Override
         protected String getRequestCommand(Object handler) {
-            return getCommand(handler);
+            return EzyActiveHandlerAnnotations.getCommand(handler);
+        }
+
+        @Override
+        protected EzyConsumerAnnotationProperties getConsumerAnnotationProperties(
+            EzyMQMessageConsumer messageConsumer
+        ) {
+            return EzyActiveConsumerAnnotations.getProperties(messageConsumer);
         }
 
         @Override
@@ -144,6 +157,7 @@ public class EzyActiveSettings extends EzyMQRpcSettings {
             return new EzyActiveSettings(
                 properties,
                 requestTypeByCommand,
+                messageTypeMapByTopic,
                 topicSettings,
                 rpcProducerSettings,
                 rpcConsumerSettings
@@ -161,21 +175,48 @@ public class EzyActiveSettings extends EzyMQRpcSettings {
                     topicsProperties,
                     name
                 );
-                EzyActiveTopicSetting topicSetting = topicSettingBuilders
+                EzyActiveTopicSetting.Builder builder = topicSettingBuilders
                     .computeIfAbsent(name, k ->
                         EzyActiveTopicSetting.builder()
                     )
                     .topicName(topicProperties.getProperty(KEY_TOPIC, name))
-                    .consumerThreadPoolSize(
-                        Integer.parseInt(
-                            topicProperties.getOrDefault(
-                                KEY_CONSUMER_THREAD_POOL_SIZE,
-                                0
+                    .messageConsumersByTopic(
+                        messageConsumersMapByTopic.getOrDefault(
+                            name,
+                            Collections.emptyMap()
+                        )
+                    );
+                if (topicProperties.containsKey(KEY_PRODUCER)) {
+                    Properties producerProperties = getPropertiesByPrefix(
+                        topicProperties,
+                        KEY_PRODUCER
+                    );
+                    builder.producerEnable(
+                        Boolean.parseBoolean(
+                            producerProperties.getOrDefault(
+                                KEY_ENABLE,
+                                true
                             ).toString()
                         )
-                    )
-                    .build();
-                topicSettings.put(name, topicSetting);
+                    );
+                }
+                if (topicProperties.containsKey(KEY_CONSUMER)) {
+                    Properties consumerProperties = getPropertiesByPrefix(
+                        topicProperties,
+                        KEY_CONSUMER
+                    );
+                    builder
+                        .consumerEnable(true)
+                        .consumerThreadPoolSize(
+                            Integer.parseInt(
+                                consumerProperties.getOrDefault(
+                                    KEY_THREAD_POOL_SIZE,
+                                    0
+                                ).toString()
+                            )
+                        );
+                }
+                topicSettings.put(name, builder.build());;
             }
         }
 

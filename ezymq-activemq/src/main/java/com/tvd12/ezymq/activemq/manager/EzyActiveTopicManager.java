@@ -53,13 +53,14 @@ public class EzyActiveTopicManager
         EzyActiveTopicSetting setting
     ) {
         try {
-            return createTopic(setting);
+            return doCreateTopic(name, setting);
         } catch (Exception e) {
             throw new IllegalStateException("can't create topic: " + name, e);
         }
     }
 
-    protected EzyActiveTopic createTopic(
+    protected EzyActiveTopic doCreateTopic(
+        String name,
         EzyActiveTopicSetting setting
     ) throws Exception {
         EzyActiveTopicClient client = null;
@@ -79,10 +80,14 @@ public class EzyActiveTopicManager
                 .topicName(setting.getTopicName())
                 .build();
         }
-        return EzyActiveTopic.builder()
+        EzyActiveTopic topic = EzyActiveTopic.builder()
+            .name(name)
             .dataCodec(dataCodec)
             .client(client)
-            .server(server).build();
+            .server(server)
+            .build();
+        topic.addConsumers(setting.getMessageConsumersByTopic());
+        return topic;
     }
 
     @Override

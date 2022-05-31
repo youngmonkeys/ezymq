@@ -48,12 +48,12 @@ public class EzyKafkaSettings extends EzyMQSettings {
     }
 
     @Override
-    public List<Class> getMessageTypeList() {
-        List<Class> list = new ArrayList<>();
+    public Set<Class> getMessageTypes() {
+        Set<Class> set = new HashSet<>();
         for (Map<String, Class> messageByCommand : messageTypesByTopic.values()) {
-            list.addAll(messageByCommand.values());
+            set.addAll(messageByCommand.values());
         }
-        return list;
+        return set;
     }
 
     public static class Builder

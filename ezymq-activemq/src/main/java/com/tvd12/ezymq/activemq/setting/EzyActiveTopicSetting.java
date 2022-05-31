@@ -1,9 +1,13 @@
 package com.tvd12.ezymq.activemq.setting;
 
+import com.tvd12.ezymq.common.handler.EzyMQMessageConsumer;
 import lombok.Getter;
 
 import javax.jms.Destination;
 import javax.jms.Session;
+
+import java.util.List;
+import java.util.Map;
 
 import static com.tvd12.ezyfox.io.EzyStrings.isEmpty;
 
@@ -15,6 +19,7 @@ public class EzyActiveTopicSetting extends EzyActiveEndpointSetting {
     protected final boolean producerEnable;
     protected final boolean consumerEnable;
     protected final int consumerThreadPoolSize;
+    protected final Map<String, List<EzyMQMessageConsumer>> messageConsumersByTopic;
 
     public EzyActiveTopicSetting(
         Session session,
@@ -22,7 +27,8 @@ public class EzyActiveTopicSetting extends EzyActiveEndpointSetting {
         Destination topic,
         boolean producerEnable,
         boolean consumerEnable,
-        int consumerThreadPoolSize
+        int consumerThreadPoolSize,
+        Map<String, List<EzyMQMessageConsumer>> messageConsumersByTopic
     ) {
         super(session);
         this.topic = topic;
@@ -30,6 +36,7 @@ public class EzyActiveTopicSetting extends EzyActiveEndpointSetting {
         this.producerEnable = producerEnable;
         this.consumerEnable = consumerEnable;
         this.consumerThreadPoolSize = consumerThreadPoolSize;
+        this.messageConsumersByTopic = messageConsumersByTopic;
     }
 
     public static Builder builder() {
@@ -44,6 +51,7 @@ public class EzyActiveTopicSetting extends EzyActiveEndpointSetting {
         protected boolean consumerEnable;
         protected int consumerThreadPoolSize = 1;
         protected EzyActiveSettings.Builder parent;
+        protected Map<String, List<EzyMQMessageConsumer>> messageConsumersByTopic;
 
         public Builder() {
             this(null);
@@ -82,6 +90,13 @@ public class EzyActiveTopicSetting extends EzyActiveEndpointSetting {
             return this;
         }
 
+        public Builder messageConsumersByTopic(
+            Map<String, List<EzyMQMessageConsumer>> messageConsumersMap
+        ) {
+            this.messageConsumersByTopic = messageConsumersMap;
+            return this;
+        }
+
         public EzyActiveSettings.Builder parent() {
             return parent;
         }
@@ -94,7 +109,8 @@ public class EzyActiveTopicSetting extends EzyActiveEndpointSetting {
                 topic,
                 producerEnable,
                 consumerEnable,
-                consumerThreadPoolSize
+                consumerThreadPoolSize,
+                messageConsumersByTopic
             );
         }
     }

@@ -11,6 +11,7 @@ import com.tvd12.ezyfox.binding.codec.EzyBindingEntityCodec;
 import com.tvd12.ezyfox.binding.impl.EzySimpleBindingContext;
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.codec.*;
+import com.tvd12.ezyfox.collect.Sets;
 import com.tvd12.ezyfox.entity.EzyData;
 import com.tvd12.ezyfox.message.annotation.EzyMessage;
 import com.tvd12.ezyfox.message.annotation.Message;
@@ -20,7 +21,6 @@ import com.tvd12.ezyfox.reflect.EzyTypes;
 import com.tvd12.ezyfox.util.EzyPropertiesKeeper;
 import com.tvd12.ezymq.common.setting.EzyMQSettings;
 
-import java.lang.annotation.Annotation;
 import java.util.*;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
@@ -245,20 +245,20 @@ public abstract class EzyMQProxyBuilder<
         return beanContextBuilder.build();
     }
 
-    private Class<? extends Annotation>[] getBeanAnnotationClasses() {
-        return new Class[] {
-            getRequestInterceptorAnnotation(),
-            getRequestHandlerAnnotation()
-        };
+    protected Set<Class<?>> getBeanAnnotationClasses() {
+        return Sets.newHashSet(
+            getRequestInterceptorAnnotationClass(),
+            getRequestHandlerAnnotationClass()
+        );
     }
 
-    public abstract Class<?> getRequestInterceptorAnnotation();
+    public abstract Class<?> getRequestInterceptorAnnotationClass();
 
-    public abstract Class<?> getRequestHandlerAnnotation();
+    public abstract Class<?> getRequestHandlerAnnotationClass();
 
     private EzyBindingContext newBindingContext() {
         EzyBindingContextBuilder builder = EzySimpleBindingContext.builder();
-        for (Class messageType : settings.getMessageTypeList()) {
+        for (Class messageType : settings.getMessageTypes()) {
             if (EzyTypes.ALL_TYPES.contains(messageType)
                 || EzyData.class.isAssignableFrom(messageType)
             ) {

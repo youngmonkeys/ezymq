@@ -20,9 +20,15 @@ public class EzyMQBytesDataCodec extends EzyMQAbstractDataCodec {
         EzyUnmarshaller unmarshaller,
         EzyMessageSerializer messageSerializer,
         EzyMessageDeserializer messageDeserializer,
-        Map<String, Class> requestTypeMap
+        Map<String, Class> requestTypeMap,
+        Map<String, Map<String, Class>> messageTypeMapByTopic
     ) {
-        super(marshaller, unmarshaller, requestTypeMap);
+        super(
+            marshaller,
+            unmarshaller,
+            requestTypeMap,
+            messageTypeMapByTopic
+        );
         this.messageSerializer = messageSerializer;
         this.messageDeserializer = messageDeserializer;
     }
@@ -32,15 +38,25 @@ public class EzyMQBytesDataCodec extends EzyMQAbstractDataCodec {
     }
 
     @Override
+    public byte[] serialize(Object response) {
+        Object data = marshallEntity(response);
+        return messageSerializer.serialize(data);
+    }
+
+    @Override
     public Object deserialize(String cmd, byte[] request) {
         Object data = messageDeserializer.deserialize(request);
         return unmarshallData(cmd, data);
     }
 
     @Override
-    public byte[] serialize(Object response) {
-        Object data = marshallEntity(response);
-        return messageSerializer.serialize(data);
+    public Object deserializeTopicMessage(
+        String topic,
+        String cmd,
+        byte[] message
+    ) {
+        Object data = messageDeserializer.deserialize(message);
+        return unmarshallTopicData(topic, cmd, data);
     }
 
     public static class Builder extends EzyMQAbstractDataCodec.Builder<Builder> {
@@ -65,7 +81,8 @@ public class EzyMQBytesDataCodec extends EzyMQAbstractDataCodec {
                 unmarshaller,
                 messageSerializer,
                 messageDeserializer,
-                requestTypeByCommand
+                requestTypeByCommand,
+                messageTypeMapByTopic
             );
         }
     }

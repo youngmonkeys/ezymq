@@ -1,14 +1,17 @@
 package com.tvd12.ezymq.rabbitmq.setting;
 
+import com.tvd12.ezymq.common.annotation.EzyConsumerAnnotationProperties;
+import com.tvd12.ezymq.common.handler.EzyMQMessageConsumer;
 import com.tvd12.ezymq.common.setting.EzyMQRpcSettings;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitMQProxyBuilder;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandler;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestInterceptor;
+import com.tvd12.ezymq.rabbitmq.util.EzyRabbitConsumerAnnotations;
+import com.tvd12.ezymq.rabbitmq.util.EzyRabbitHandlerAnnotations;
 import lombok.Getter;
 
 import java.util.*;
 
-import static com.tvd12.ezymq.rabbitmq.util.EzyRabbitHandlerAnnotations.getCommand;
 import static com.tvd12.properties.file.util.PropertiesUtil.getFirstPropertyKeys;
 import static com.tvd12.properties.file.util.PropertiesUtil.getPropertiesByPrefix;
 
@@ -53,12 +56,13 @@ public class EzyRabbitSettings extends EzyMQRpcSettings {
     public EzyRabbitSettings(
         Properties properties,
         Map<String, Class> requestTypes,
+        Map<String, Map<String, Class>> messageTypeMapByTopic,
         Map<String, Map<String, Object>> queueArguments,
         Map<String, EzyRabbitTopicSetting> topicSettings,
         Map<String, EzyRabbitRpcProducerSetting> rpcProducerSettings,
         Map<String, EzyRabbitRpcConsumerSetting> rpcConsumerSettings
     ) {
-        super(properties, requestTypes);
+        super(properties, requestTypes, messageTypeMapByTopic);
         this.queueArguments = Collections.unmodifiableMap(queueArguments);
         this.topicSettings = Collections.unmodifiableMap(topicSettings);
         this.rpcProducerSettings = Collections.unmodifiableMap(rpcProducerSettings);
@@ -154,7 +158,14 @@ public class EzyRabbitSettings extends EzyMQRpcSettings {
 
         @Override
         protected String getRequestCommand(Object handler) {
-            return getCommand(handler);
+            return EzyRabbitHandlerAnnotations.getCommand(handler);
+        }
+
+        @Override
+        protected EzyConsumerAnnotationProperties getConsumerAnnotationProperties(
+            EzyMQMessageConsumer messageConsumer
+        ) {
+            return EzyRabbitConsumerAnnotations.getProperties(messageConsumer);
         }
 
         @Override
@@ -165,6 +176,7 @@ public class EzyRabbitSettings extends EzyMQRpcSettings {
             return new EzyRabbitSettings(
                 properties,
                 requestTypeByCommand,
+                messageTypeMapByTopic,
                 queueArguments,
                 topicSettings,
                 rpcProducerSettings,
@@ -172,6 +184,7 @@ public class EzyRabbitSettings extends EzyMQRpcSettings {
             );
         }
 
+        @SuppressWarnings("MethodLength")
         private void buildTopicSettings() {
             Properties topicsProperties =
                 getPropertiesByPrefix(properties, KEY_TOPICS);
@@ -226,6 +239,12 @@ public class EzyRabbitSettings extends EzyMQRpcSettings {
                             consumerProperties.getProperty(
                                 KEY_QUEUE_NAME,
                                 "topic-" + name + "-queue"
+                            )
+                        )
+                        .messageConsumersByTopic(
+                            messageConsumersMapByTopic.getOrDefault(
+                                name,
+                                Collections.emptyMap()
                             )
                         );
                 }

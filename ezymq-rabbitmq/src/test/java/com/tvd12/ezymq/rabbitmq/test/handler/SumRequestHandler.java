@@ -6,7 +6,8 @@ import com.tvd12.ezymq.rabbitmq.test.request.SumRequest;
 import com.tvd12.ezymq.rabbitmq.test.response.SumResponse;
 
 @EzyRabbitHandler("sum")
-public class SumRequestHandler implements EzyRabbitRequestHandler<SumRequest> {
+public class SumRequestHandler
+    implements EzyRabbitRequestHandler<SumRequest> {
 
     @Override
     public Object handle(SumRequest request) {

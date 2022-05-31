@@ -55,13 +55,14 @@ public class EzyRabbitTopicManager extends EzyRabbitAbstractManager {
         EzyRabbitTopicSetting setting
     ) {
         try {
-            return createTopic(setting);
+            return doCreateTopic(name, setting);
         } catch (Exception e) {
             throw new IllegalStateException("can't create topic: " + name, e);
         }
     }
 
-    protected EzyRabbitTopic createTopic(
+    protected EzyRabbitTopic doCreateTopic(
+        String name,
         EzyRabbitTopicSetting setting
     ) throws Exception {
         EzyRabbitTopicClient client = null;
@@ -72,20 +73,24 @@ public class EzyRabbitTopicManager extends EzyRabbitAbstractManager {
             client = EzyRabbitTopicClient.builder()
                 .channel(channel)
                 .exchange(setting.getExchange())
-                .routingKey(setting.getClientRoutingKey())
+                .routingKey(setting.getProducerRoutingKey())
                 .build();
         }
         if (setting.isConsumerEnable()) {
             server = EzyRabbitTopicServer.builder()
                 .channel(channel)
                 .exchange(setting.getExchange())
-                .queueName(setting.getServerQueueName())
+                .queueName(setting.getConsumerQueueName())
                 .build();
         }
-        return EzyRabbitTopic.builder()
+        EzyRabbitTopic topic = EzyRabbitTopic.builder()
+            .name(name)
             .dataCodec(dataCodec)
             .client(client)
-            .server(server).build();
+            .server(server)
+            .build();
+        topic.addConsumers(setting.getMessageConsumersByTopic());
+        return topic;
     }
 
     protected void declareComponents(
@@ -97,22 +102,22 @@ public class EzyRabbitTopicManager extends EzyRabbitAbstractManager {
             setting.getExchange(),
             EzyRabbitExchangeTypes.FANOUT
         );
-        if (setting.getServerQueueName() == null) {
+        if (setting.getConsumerQueueName() == null) {
             return;
         }
         Map<String, Object> requestQueueArguments =
-            queueArguments.get(setting.getServerQueueName());
+            queueArguments.get(setting.getConsumerQueueName());
         channel.queueDeclare(
-            setting.getServerQueueName(),
+            setting.getConsumerQueueName(),
             false,
             false,
             false,
             requestQueueArguments
         );
         channel.queueBind(
-            setting.getServerQueueName(),
+            setting.getConsumerQueueName(),
             setting.getExchange(),
-            setting.getClientRoutingKey()
+            setting.getProducerRoutingKey()
         );
     }
 }

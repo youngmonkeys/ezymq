@@ -12,22 +12,29 @@ import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitTopicClient;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitTopicServer;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitMessageHandler;
 
+import java.util.List;
+import java.util.Map;
+
 public class EzyRabbitTopic<T> {
 
+    protected final String name;
+    protected volatile boolean consuming;
     protected final EzyRabbitTopicClient client;
     protected final EzyRabbitTopicServer server;
     protected final EzyMQDataCodec dataCodec;
-    protected volatile boolean consuming;
-    protected EzyMQMessageConsumers consumers;
+    protected final EzyMQMessageConsumers consumers;
 
     public EzyRabbitTopic(
+        String name,
         EzyMQDataCodec dataCodec,
         EzyRabbitTopicClient client,
         EzyRabbitTopicServer server
     ) {
+        this.name = name;
         this.client = client;
         this.server = server;
         this.dataCodec = dataCodec;
+        this.consumers = new EzyMQMessageConsumers();
     }
 
     public static Builder builder() {
@@ -45,7 +52,8 @@ public class EzyRabbitTopic<T> {
     public void publish(String cmd, Object data) {
         if (client == null) {
             throw new IllegalStateException(
-                "this topic is consuming only, set the client to publish"
+                "this topic is consuming only, " +
+                    "must enable producer (.producerEnable(true)) in the settings"
             );
         }
         BasicProperties requestProperties = new BasicProperties.Builder()
@@ -73,16 +81,28 @@ public class EzyRabbitTopic<T> {
     public void addConsumer(String cmd, EzyMQMessageConsumer<T> consumer) {
         if (server == null) {
             throw new IllegalStateException(
-                "this topic is publishing only, set the server to consume"
+                "this topic is publishing only, " +
+                    "must enable consumer (.consumerEnable(true)) in the settings"
             );
         }
         synchronized (this) {
             if (!consuming) {
                 this.consuming = true;
-                this.consumers = new EzyMQMessageConsumers();
                 this.startConsuming();
             }
             consumers.addConsumer(cmd, consumer);
+        }
+    }
+
+    public void addConsumers(
+        Map<String, List<EzyMQMessageConsumer<T>>> consumersMap
+    ) {
+        if (consumersMap != null) {
+            for (String cmd : consumersMap.keySet()) {
+                for (EzyMQMessageConsumer<T> consumer : consumersMap.get(cmd)) {
+                    addConsumer(cmd, consumer);
+                }
+            }
         }
     }
 
@@ -93,7 +113,7 @@ public class EzyRabbitTopic<T> {
             if (EzyStrings.isNoContent(cmd)) {
                 cmd = "";
             }
-            T message = (T) dataCodec.deserialize(cmd, requestBody);
+            T message = (T) dataCodec.deserializeTopicMessage(name, cmd, requestBody);
             consumers.consume(cmd, message);
         };
         server.setMessageHandler(messageHandler);
@@ -107,9 +127,15 @@ public class EzyRabbitTopic<T> {
     @SuppressWarnings("rawtypes")
     public static class Builder implements EzyBuilder<EzyRabbitTopic> {
 
+        protected String name;
+        protected EzyMQDataCodec dataCodec;
         protected EzyRabbitTopicClient client;
         protected EzyRabbitTopicServer server;
-        protected EzyMQDataCodec dataCodec;
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
 
         public Builder client(EzyRabbitTopicClient client) {
             this.client = client;
@@ -127,7 +153,7 @@ public class EzyRabbitTopic<T> {
         }
 
         public EzyRabbitTopic build() {
-            return new EzyRabbitTopic(dataCodec, client, server);
+            return new EzyRabbitTopic(name, dataCodec, client, server);
         }
     }
 }

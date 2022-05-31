@@ -1,5 +1,6 @@
 package com.tvd12.ezymq.activemq;
 
+import com.tvd12.ezymq.activemq.annotation.EzyActiveConsumer;
 import com.tvd12.ezymq.activemq.annotation.EzyActiveHandler;
 import com.tvd12.ezymq.activemq.annotation.EzyActiveInterceptor;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveConnectionFactoryBuilder;
@@ -32,13 +33,18 @@ public class EzyActiveMQProxyBuilder extends EzyMQRpcProxyBuilder<
     }
 
     @Override
-    public Class<?> getRequestInterceptorAnnotation() {
+    public Class<?> getRequestInterceptorAnnotationClass() {
         return EzyActiveInterceptor.class;
     }
 
     @Override
-    public Class<?> getRequestHandlerAnnotation() {
+    public Class<?> getRequestHandlerAnnotationClass() {
         return EzyActiveHandler.class;
+    }
+
+    @Override
+    protected Class<?> getMessageConsumerAnnotationClass() {
+        return EzyActiveConsumer.class;
     }
 
     @Override

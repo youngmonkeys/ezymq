@@ -1,6 +1,8 @@
 package com.tvd12.ezymq.common.setting;
 
 import com.tvd12.ezymq.common.EzyMQRpcProxyBuilder;
+import com.tvd12.ezymq.common.annotation.EzyConsumerAnnotationProperties;
+import com.tvd12.ezymq.common.handler.EzyMQMessageConsumer;
 import com.tvd12.ezymq.common.handler.EzyMQRequestHandler;
 import com.tvd12.ezymq.common.handler.EzyMQRequestInterceptor;
 import lombok.Getter;
@@ -11,19 +13,36 @@ import java.util.*;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class EzyMQRpcSettings extends EzyMQSettings {
 
-    protected final Map<String, Class> requestTypes;
+    protected final Map<String, Class> requestTypeByCommand;
+    protected final Map<String, Map<String, Class>> messageTypeMapByTopic;
 
     public EzyMQRpcSettings(
         Properties properties,
-        Map<String, Class> requestTypes
+        Map<String, Class> requestTypeByCommand,
+        Map<String, Map<String, Class>> messageTypeMapByTopic
     ) {
         super(properties);
-        this.requestTypes = Collections.unmodifiableMap(requestTypes);
+        this.requestTypeByCommand = Collections.unmodifiableMap(
+            requestTypeByCommand
+        );
+        this.messageTypeMapByTopic = Collections.unmodifiableMap(
+            messageTypeMapByTopic
+        );
     }
 
     @Override
-    public List<Class> getMessageTypeList() {
-        return new ArrayList<>(requestTypes.values());
+    public Set<Class> getMessageTypes() {
+        Set<Class> set = new HashSet<>(
+            requestTypeByCommand.values()
+        );
+        for (String topic : messageTypeMapByTopic.keySet()) {
+            set.addAll(
+                messageTypeMapByTopic
+                    .getOrDefault(topic, Collections.emptyMap())
+                    .values()
+            );
+        }
+        return set;
     }
 
     public abstract static class Builder<
@@ -40,6 +59,10 @@ public abstract class EzyMQRpcSettings extends EzyMQSettings {
             new HashMap<>();
         protected final Map<String, RH> requestHandlerByCommand =
             new HashMap<>();
+        protected final Map<String, Map<String, Class>> messageTypeMapByTopic =
+            new HashMap<>();
+        protected final Map<String, Map<String, List<EzyMQMessageConsumer>>> messageConsumersMapByTopic
+            = new HashMap<>();
 
         public Builder(EzyMQRpcProxyBuilder parent) {
             super(parent);
@@ -65,6 +88,41 @@ public abstract class EzyMQRpcSettings extends EzyMQSettings {
             return (B) this;
         }
 
+        public B mapTopicMessageType(
+            String topic,
+            String cmd,
+            Class<?> messageType
+        ) {
+            this.messageTypeMapByTopic.computeIfAbsent(
+                topic,
+                k -> new HashMap<>()
+            ).put(cmd, messageType);
+            return (B) this;
+        }
+
+        public B mapTopicMessageTypes(
+            String topic,
+            Map<String, Class<?>> messageTypes
+        ) {
+            this.messageTypeMapByTopic.computeIfAbsent(
+                topic,
+                k -> new HashMap<>()
+            ).putAll(messageTypes);
+            return (B) this;
+        }
+
+        public B mapTopicMessageTypes(
+            Map<String, Map<String, Class<?>>> messageTypesMap
+        ) {
+            for (String topic : messageTypesMap.keySet()) {
+                mapTopicMessageTypes(
+                    topic,
+                    messageTypesMap.get(topic)
+                );
+            }
+            return (B) this;
+        }
+
         public B addRequestInterceptor(
             RI requestInterceptor
         ) {
@@ -85,12 +143,51 @@ public abstract class EzyMQRpcSettings extends EzyMQSettings {
             for (RH handler : requestHandlers) {
                 String command = getRequestCommand(handler);
                 this.requestHandlerByCommand.put(command, handler);
-                this.requestTypeByCommand.put(command, handler.getRequestType());
+                this.mapRequestType(command, handler.getRequestType());
             }
             return (B) this;
         }
 
         protected abstract String getRequestCommand(Object handler);
+
+        public B addMessageConsumer(
+            String topic,
+            String cmd,
+            EzyMQMessageConsumer messageConsumer
+        ) {
+            this.messageConsumersMapByTopic.computeIfAbsent(
+                topic,
+                k -> new HashMap<>()
+            ).computeIfAbsent(
+                cmd, k -> new ArrayList<>()
+            ).add(messageConsumer);
+
+            this.mapTopicMessageType(
+                topic,
+                cmd,
+                messageConsumer.getMessageType()
+            );
+            return (B) this;
+        }
+
+        public B addMessageConsumers(
+            List<EzyMQMessageConsumer> messageConsumers
+        ) {
+            for (EzyMQMessageConsumer consumer : messageConsumers) {
+                EzyConsumerAnnotationProperties props =
+                    getConsumerAnnotationProperties(consumer);
+                addMessageConsumer(
+                    props.getTopic(),
+                    props.getCommand(),
+                    consumer
+                );
+            }
+            return (B) this;
+        }
+
+        protected abstract EzyConsumerAnnotationProperties getConsumerAnnotationProperties(
+            EzyMQMessageConsumer messageConsumer
+        );
 
         @Override
         public abstract S build();

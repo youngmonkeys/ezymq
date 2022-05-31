@@ -2,6 +2,7 @@ package com.tvd12.ezymq.rabbitmq;
 
 import com.rabbitmq.client.ConnectionFactory;
 import com.tvd12.ezymq.common.EzyMQRpcProxyBuilder;
+import com.tvd12.ezymq.rabbitmq.annotation.EzyRabbitConsumer;
 import com.tvd12.ezymq.rabbitmq.annotation.EzyRabbitHandler;
 import com.tvd12.ezymq.rabbitmq.annotation.EzyRabbitInterceptor;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitConnectionFactoryBuilder;
@@ -31,13 +32,18 @@ public class EzyRabbitMQProxyBuilder extends EzyMQRpcProxyBuilder<
     }
 
     @Override
-    public Class<?> getRequestInterceptorAnnotation() {
+    public Class<?> getRequestInterceptorAnnotationClass() {
         return EzyRabbitInterceptor.class;
     }
 
     @Override
-    public Class<?> getRequestHandlerAnnotation() {
+    public Class<?> getRequestHandlerAnnotationClass() {
         return EzyRabbitHandler.class;
+    }
+
+    @Override
+    protected Class<?> getMessageConsumerAnnotationClass() {
+        return EzyRabbitConsumer.class;
     }
 
     @Override

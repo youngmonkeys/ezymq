@@ -6,7 +6,9 @@ import com.tvd12.ezymq.common.setting.EzyMQRpcSettings;
 import com.tvd12.ezymq.common.setting.EzyMQSettings;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class EzyMQRpcProxyBuilder<
@@ -18,6 +20,8 @@ public abstract class EzyMQRpcProxyBuilder<
 
     protected final Map<String, Class> requestTypeByCommand =
         new HashMap<>();
+    protected final Map<String, Map<String, Class>> messageTypeMapByTopic =
+        new HashMap<>();
 
     @Override
     public EzyMQRpcSettings.Builder settingsBuilder() {
@@ -27,8 +31,8 @@ public abstract class EzyMQRpcProxyBuilder<
     @Override
     protected abstract EzyMQRpcSettings.Builder newSettingBuilder();
 
-    public PB mapRequestType(String cmd, Class<?> type) {
-        this.requestTypeByCommand.put(cmd, type);
+    public PB mapRequestType(String cmd, Class<?> requestType) {
+        this.requestTypeByCommand.put(cmd, requestType);
         return (PB) this;
     }
 
@@ -36,6 +40,44 @@ public abstract class EzyMQRpcProxyBuilder<
         this.requestTypeByCommand.putAll(requestTypes);
         return (PB) this;
     }
+
+    public PB mapTopicMessageType(
+        String topic,
+        String cmd,
+        Class<?> messageType
+    ) {
+        this.messageTypeMapByTopic.computeIfAbsent(
+            topic,
+            k -> new HashMap<>()
+        ).put(cmd, messageType);
+        return (PB) this;
+    }
+
+    public PB mapTopicMessageTypes(
+        String topic,
+        Map<String, Class<?>> messageTypes
+    ) {
+        this.messageTypeMapByTopic.computeIfAbsent(
+            topic,
+            k -> new HashMap<>()
+        ).putAll(messageTypes);
+        return (PB) this;
+    }
+
+    @Override
+    protected Set<Class<?>> getBeanAnnotationClasses() {
+        Set<Class<?>> annotationClasses = new HashSet<>(
+            super.getBeanAnnotationClasses()
+        );
+        Class<?> messageConsumerAnnotationClass =
+            getMessageConsumerAnnotationClass();
+        if (messageConsumerAnnotationClass != null) {
+            annotationClasses.add(messageConsumerAnnotationClass);
+        }
+        return annotationClasses;
+    }
+
+    protected abstract Class<?> getMessageConsumerAnnotationClass();
 
     @Override
     protected void decorateSettingBuilder(
@@ -45,14 +87,20 @@ public abstract class EzyMQRpcProxyBuilder<
             (EzyMQRpcSettings.Builder) settingsBuilder;
         builder
             .mapRequestTypes(requestTypeByCommand)
+            .mapTopicMessageTypes(messageTypeMapByTopic)
             .addRequestInterceptors(
                 beanContext.getSingletons(
-                    getRequestInterceptorAnnotation()
+                    getRequestInterceptorAnnotationClass()
                 )
             )
             .addRequestHandlers(
                 beanContext.getSingletons(
-                    getRequestHandlerAnnotation()
+                    getRequestHandlerAnnotationClass()
+                )
+            )
+            .addMessageConsumers(
+                beanContext.getSingletons(
+                    getMessageConsumerAnnotationClass()
                 )
             );
     }
@@ -64,7 +112,8 @@ public abstract class EzyMQRpcProxyBuilder<
             .unmarshaller(unmarshaller)
             .messageSerializer(messageSerializer)
             .messageDeserializer(messageDeserializer)
-            .mapRequestTypes(settings.getRequestTypes())
+            .mapRequestTypes(settings.getRequestTypeByCommand())
+            .mapTopicMessageTypes(settings.getMessageTypeMapByTopic())
             .build();
     }
 }
