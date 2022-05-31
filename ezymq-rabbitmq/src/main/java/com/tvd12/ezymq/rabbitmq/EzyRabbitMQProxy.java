@@ -42,7 +42,7 @@ public class EzyRabbitMQProxy extends EzyMQRpcProxy<EzyRabbitSettings> {
         return rpcProducerManager.getRpcProducer(name);
     }
 
-    public EzyRabbitRpcConsumer getRabbitRpcConsumer(String name) {
+    public EzyRabbitRpcConsumer getRpcConsumer(String name) {
         return rpcConsumerManager.getRpcConsumer(name);
     }
 

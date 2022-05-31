@@ -45,7 +45,7 @@ public class EzyActiveMQProxy extends EzyMQRpcProxy<EzyActiveSettings> {
         return rpcProducerManager.getRpcProducer(name);
     }
 
-    public EzyActiveRpcConsumer getActiveRpcConsumer(String name) {
+    public EzyActiveRpcConsumer getRpcConsumer(String name) {
         return rpcConsumerManager.getRpcConsumer(name);
     }
 

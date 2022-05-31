@@ -38,7 +38,7 @@ public abstract class EzyMQRpcProxyBuilder<
     }
 
     @Override
-    protected final void decorateSettingBuilder(
+    protected void decorateSettingBuilder(
         EzyMQSettings.Builder settingsBuilder
     ) {
         EzyMQRpcSettings.Builder builder =
@@ -55,12 +55,7 @@ public abstract class EzyMQRpcProxyBuilder<
                     getRequestHandlerAnnotation()
                 )
             );
-        decorateSettingBuilder(builder);
     }
-
-    protected void decorateSettingBuilder(
-        EzyMQRpcSettings.Builder settingsBuilder
-    ) {}
 
     @Override
     protected EzyMQDataCodec newDataCodec() {
