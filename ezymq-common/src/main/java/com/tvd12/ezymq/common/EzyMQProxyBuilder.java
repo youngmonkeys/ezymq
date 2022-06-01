@@ -224,10 +224,14 @@ public abstract class EzyMQProxyBuilder<
 
     protected EzyMessageDeserializer newTextMessageDeserializer() {
         try {
-            return new JacksonSimpleDeserializer(new ObjectMapper());
+            return newJacksonSimpleDeserializer();
         } catch (Throwable e) {
             return null;
         }
+    }
+
+    protected EzyMessageDeserializer newJacksonSimpleDeserializer() {
+        return new JacksonSimpleDeserializer(new ObjectMapper());
     }
 
     private EzyBeanContext newBeanContext() {

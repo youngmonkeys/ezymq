@@ -38,14 +38,14 @@ public class EzyMQBytesDataCodec extends EzyMQAbstractDataCodec {
     }
 
     @Override
-    public byte[] serialize(Object response) {
-        Object data = marshallEntity(response);
-        return messageSerializer.serialize(data);
+    public byte[] serialize(Object entity) {
+        Object value = marshallEntity(entity);
+        return messageSerializer.serialize(value);
     }
 
     @Override
-    public Object deserialize(String cmd, byte[] request) {
-        Object data = messageDeserializer.deserialize(request);
+    public Object deserialize(String cmd, byte[] bytes) {
+        Object data = messageDeserializer.deserialize(bytes);
         return unmarshallData(cmd, data);
     }
 

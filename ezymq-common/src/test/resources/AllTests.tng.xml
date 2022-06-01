@@ -4,6 +4,8 @@
     <test name="All">
         <packages>
             <package name="com.tvd12.ezymq.common.test"/>
+            <package name="com.tvd12.ezymq.common.test.annotation"/>
+            <package name="com.tvd12.ezymq.common.test.codec"/>
         </packages>
     </test>
 </suite>
