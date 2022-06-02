@@ -6,6 +6,7 @@
             <package name="com.tvd12.ezymq.common.test"/>
             <package name="com.tvd12.ezymq.common.test.annotation"/>
             <package name="com.tvd12.ezymq.common.test.codec"/>
+            <package name="com.tvd12.ezymq.common.test.handler"/>
         </packages>
     </test>
 </suite>
