@@ -263,17 +263,11 @@ public abstract class EzyMQProxyBuilder<
     private EzyBindingContext newBindingContext() {
         EzyBindingContextBuilder builder = EzySimpleBindingContext.builder();
         for (Class messageType : settings.getMessageTypes()) {
-            if (EzyTypes.ALL_TYPES.contains(messageType)
-                || EzyData.class.isAssignableFrom(messageType)
+            if (!EzyTypes.ALL_TYPES.contains(messageType)
+                && !EzyData.class.isAssignableFrom(messageType)
             ) {
                 builder.addClasses(messageType);
             }
-        }
-        try {
-            builder.build();
-        } catch (Throwable e) {
-            builder = EzySimpleBindingContext.builder();
-            logger.debug("can not create biding context, try again", e);
         }
         if (packagesToScan.size() > 0) {
             EzyReflection reflection = new EzyReflectionProxy(packagesToScan);

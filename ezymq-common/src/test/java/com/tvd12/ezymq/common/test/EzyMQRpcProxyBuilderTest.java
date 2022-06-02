@@ -12,7 +12,7 @@ import com.tvd12.ezyfox.codec.EzyMessageDeserializer;
 import com.tvd12.ezyfox.codec.EzyMessageSerializer;
 import com.tvd12.ezyfox.collect.Sets;
 import com.tvd12.ezyfox.util.EzyMapBuilder;
-import com.tvd12.ezymq.common.EzyMQProxy;
+import com.tvd12.ezymq.common.EzyMQRpcProxy;
 import com.tvd12.ezymq.common.EzyMQRpcProxyBuilder;
 import com.tvd12.ezymq.common.annotation.EzyConsumerAnnotationProperties;
 import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
@@ -21,6 +21,10 @@ import com.tvd12.ezymq.common.setting.EzyMQRpcSettings;
 import com.tvd12.ezymq.common.test.annotation.EzyTestConsumer;
 import com.tvd12.ezymq.common.test.annotation.EzyTestHandler;
 import com.tvd12.ezymq.common.test.annotation.EzyTestInterceptor;
+import com.tvd12.ezymq.common.test.bean_and_binding.HelloMessage;
+import com.tvd12.ezymq.common.test.bean_and_binding.HelloMessageConsumer;
+import com.tvd12.ezymq.common.test.bean_and_binding.HelloRequest;
+import com.tvd12.ezymq.common.test.bean_and_binding.HelloRequestHandler;
 import com.tvd12.ezymq.common.test.codec.EzyMQBytesDataCodecTest;
 import com.tvd12.ezymq.common.test.handler.EzyTestMQRequestHandler;
 import com.tvd12.ezymq.common.test.handler.EzyTestMQRequestInterceptor;
@@ -36,6 +40,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import static com.tvd12.ezyfox.io.EzySets.newHashSet;
 import static java.util.Collections.singletonMap;
 import static org.mockito.Mockito.*;
 
@@ -301,7 +306,7 @@ public class EzyMQRpcProxyBuilderTest extends BaseTest {
             .build();
 
         // when
-        InternalMQProxy sut = new InternalMQRpcProxyBuilder()
+        InternalMQProxy proxy = new InternalMQRpcProxyBuilder()
             .scan("com.tvd12.ezymq.common.test1")
             .scan(
                 "com.tvd12.ezymq.common.test2",
@@ -354,6 +359,156 @@ public class EzyMQRpcProxyBuilderTest extends BaseTest {
             .build();
 
         // then
+        Asserts.assertEquals(
+            FieldUtil.getFieldValue(
+                proxy,
+                "settings"
+            ),
+            settings
+        );
+        Asserts.assertEquals(
+            FieldUtil.getFieldValue(
+                proxy,
+                "entityCodec"
+            ),
+            entityCodec
+        );
+        Asserts.assertEquals(
+            FieldUtil.getFieldValue(
+                proxy,
+                "dataCodec"
+            ),
+            dataCodec
+        );
+    }
+
+    @Test
+    public void buildNullTest() {
+        // given
+        String command1 = RandomUtil.randomShortAlphabetString();
+        String topic1 = RandomUtil.randomShortAlphabetString();
+
+        Object singleton1 = new Singleton1();
+        boolean scanAndAddAllBeans = RandomUtil.randomBoolean();
+
+        // when
+        InternalMQProxy proxy = new InternalMQRpcProxyBuilder()
+            .mapRequestType(command1, HelloRequest.class)
+            .mapTopicMessageType(
+                topic1,
+                command1,
+                HelloMessage.class
+            )
+            .addSingleton(singleton1)
+            .scanAndAddAllBeans(scanAndAddAllBeans)
+            .build();
+
+        // then
+        EzyMQRpcSettings settings = FieldUtil.getFieldValue(
+            proxy,
+            "settings"
+        );
+        Map<String, Class> requestTypeByCommand = FieldUtil.getFieldValue(
+            settings,
+            "requestTypeByCommand"
+        );
+        Map<String, Map<String, Class>> messageTypeMapByTopic = FieldUtil.getFieldValue(
+            settings,
+            "messageTypeMapByTopic"
+        );
+        Asserts.assertEquals(
+            requestTypeByCommand,
+            EzyMapBuilder.mapBuilder()
+                .put(command1, HelloRequest.class)
+                .toMap(),
+            false
+        );
+        Asserts.assertEquals(
+            messageTypeMapByTopic,
+            EzyMapBuilder.mapBuilder()
+                .put(
+                    topic1,
+                    EzyMapBuilder.mapBuilder()
+                        .put(command1, HelloMessage.class)
+                        .build()
+                )
+                .toMap(),
+            false
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void buildNullWithPackagesToScanTest() {
+        // given
+        boolean scanAndAddAllBeans = RandomUtil.randomBoolean();
+
+        // when
+        InternalMQRpcProxyBuilder sut = new InternalMQRpcProxyBuilder()
+            .scanAndAddAllBeans(scanAndAddAllBeans)
+            .scan("com.tvd12.ezymq.common.test.bean_and_binding")
+            .settingsBuilder()
+            .parent();
+
+        InternalMQProxy proxy = sut.build();
+
+        // then
+        EzyMQRpcSettings settings = FieldUtil.getFieldValue(
+            proxy,
+            "settings"
+        );
+        Map<String, Class> requestTypeByCommand = FieldUtil.getFieldValue(
+            settings,
+            "requestTypeByCommand"
+        );
+        Map<String, Map<String, Class>> messageTypeMapByTopic = FieldUtil.getFieldValue(
+            settings,
+            "messageTypeMapByTopic"
+        );
+        Asserts.assertEquals(
+            requestTypeByCommand,
+            EzyMapBuilder.mapBuilder()
+                .put("test", HelloRequest.class)
+                .toMap(),
+            false
+        );
+        Asserts.assertEquals(
+            messageTypeMapByTopic,
+            EzyMapBuilder.mapBuilder()
+                .put(
+                    "hello",
+                    EzyMapBuilder.mapBuilder()
+                        .put("test", HelloMessage.class)
+                        .build()
+                )
+                .toMap(),
+            false
+        );
+
+        EzyBeanContext beanContext = FieldUtil.getFieldValue(
+            sut,
+            "beanContext"
+        );
+        EzySingletonFactory singletonFactory = FieldUtil.getFieldValue(
+            beanContext,
+            "singletonFactory"
+        );
+        Set<Object> singletonSet = FieldUtil.getFieldValue(
+            singletonFactory,
+            "singletonSet"
+        );
+        Set<Class> singletonClasses = newHashSet(
+            singletonSet,
+            Object::getClass
+        );
+        Asserts.assertTrue(
+            singletonClasses.containsAll(
+                Sets.newHashSet(
+                    HelloMessageConsumer.class,
+                    HelloRequestHandler.class
+                )
+            )
+        );
     }
 
     private static class InternalMQRpcProxyBuilder extends EzyMQRpcProxyBuilder<
@@ -397,9 +552,8 @@ public class EzyMQRpcProxyBuilderTest extends BaseTest {
         }
     }
 
-    private static class InternalMQProxy extends EzyMQProxy<
-        InternalMQRpcSettings,
-        EzyMQDataCodec
+    private static class InternalMQProxy extends EzyMQRpcProxy<
+        InternalMQRpcSettings
         > {
 
         public InternalMQProxy(
