@@ -1,5 +1,6 @@
 package com.tvd12.ezymq.common.handler;
 
+import com.tvd12.ezyfox.exception.EzyNotImplementedException;
 import com.tvd12.ezyfox.reflect.EzyGenerics;
 
 public interface EzyMQMessageConsumer<T> {
@@ -16,7 +17,7 @@ public interface EzyMQMessageConsumer<T> {
             );
             return args[0];
         } catch (Exception e) {
-            throw new IllegalStateException(
+            throw new EzyNotImplementedException(
                 "unknown message type of: " + getClass().getName() +
                     ", you must implement getMessageType method"
             );

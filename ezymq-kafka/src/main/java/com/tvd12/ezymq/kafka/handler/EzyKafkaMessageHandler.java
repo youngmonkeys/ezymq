@@ -1,5 +1,6 @@
 package com.tvd12.ezymq.kafka.handler;
 
+import com.tvd12.ezyfox.exception.EzyNotImplementedException;
 import com.tvd12.ezyfox.reflect.EzyGenerics;
 
 public interface EzyKafkaMessageHandler<T> {
@@ -21,7 +22,7 @@ public interface EzyKafkaMessageHandler<T> {
             );
             return args[0];
         } catch (Exception e) {
-            throw new IllegalStateException(
+            throw new EzyNotImplementedException(
                 "unknown message type of: " + getClass().getName() +
                     ", you must implement getMessageType method"
             );

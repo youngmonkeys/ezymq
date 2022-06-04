@@ -69,11 +69,7 @@ public abstract class EzyMQRpcProxyBuilder<
         Set<Class<?>> annotationClasses = new HashSet<>(
             super.getBeanAnnotationClasses()
         );
-        Class<?> messageConsumerAnnotationClass =
-            getMessageConsumerAnnotationClass();
-        if (messageConsumerAnnotationClass != null) {
-            annotationClasses.add(messageConsumerAnnotationClass);
-        }
+        annotationClasses.add(getMessageConsumerAnnotationClass());
         return annotationClasses;
     }
 

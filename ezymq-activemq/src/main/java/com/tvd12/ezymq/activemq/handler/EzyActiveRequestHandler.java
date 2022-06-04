@@ -1,5 +1,6 @@
 package com.tvd12.ezymq.activemq.handler;
 
+import com.tvd12.ezyfox.exception.EzyNotImplementedException;
 import com.tvd12.ezyfox.reflect.EzyGenerics;
 import com.tvd12.ezymq.common.handler.EzyMQRequestHandler;
 
@@ -16,7 +17,7 @@ public interface EzyActiveRequestHandler<R>
             );
             return args[0];
         } catch (Exception e) {
-            throw new IllegalStateException(
+            throw new EzyNotImplementedException(
                 "unknown request type of: " + getClass().getName() +
                     ", you must implement getRequestType method"
             );
