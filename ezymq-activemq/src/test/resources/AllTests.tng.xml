@@ -4,6 +4,7 @@
     <test name="All">
         <packages>
             <package name="com.tvd12.ezymq.activemq.test"/>
+            <package name="com.tvd12.ezymq.activemq.test.setting"/>
         </packages>
     </test>
 </suite>
