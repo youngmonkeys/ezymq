@@ -11,6 +11,7 @@ import com.tvd12.ezymq.kafka.handler.EzyKafkaRecordsHandler;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 @SuppressWarnings("rawtypes")
@@ -54,23 +55,26 @@ public class EzyKafkaConsumer
         String topic = record.topic();
         Object key = record.key();
         if (key != null) {
-            cmd = new String((byte[]) key);
+            cmd = key instanceof byte[]
+                ? new String((byte[]) key)
+                : key.toString();
         }
         Header contentTypeHeader = record.headers().lastHeader("c");
 
         Object message = null;
         Object result;
         try {
-            byte[] requestBody = (byte[]) record.value();
+            Object recordValue = record.value();
+            byte[] requestBody = recordValue instanceof byte[]
+                ? (byte[]) recordValue
+                : recordValue.toString().getBytes(StandardCharsets.UTF_8);
             if (contentTypeHeader == null) {
                 message = dataCodec.deserialize(topic, cmd, requestBody);
             } else {
                 byte[] contentTypeBytes = contentTypeHeader.value();
-                if (Arrays.equals(contentTypeBytes, BINARY_TYPE)) {
-                    message = dataCodec.deserialize(topic, cmd, requestBody);
-                } else {
-                    message = dataCodec.deserializeText(topic, cmd, requestBody);
-                }
+                message = Arrays.equals(contentTypeBytes, BINARY_TYPE)
+                    ? dataCodec.deserialize(topic, cmd, requestBody)
+                    : dataCodec.deserializeText(topic, cmd, requestBody);
             }
             messageInterceptors.preHandle(topic, cmd, message);
             result = messageHandlers.handle(cmd, message);
