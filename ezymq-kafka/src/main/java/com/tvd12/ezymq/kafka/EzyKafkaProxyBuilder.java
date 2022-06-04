@@ -49,7 +49,9 @@ public class EzyKafkaProxyBuilder extends EzyMQProxyBuilder<
     }
 
     public EzyKafkaProxyBuilder mapMessageTypes(Map<String, Map<String, Class>> messageTypesByTopic) {
-        this.messageTypesByTopic.putAll(messageTypesByTopic);
+        for (String topic : messageTypesByTopic.keySet()) {
+            mapMessageTypes(topic, messageTypesByTopic.get(topic));
+        }
         return this;
     }
 

@@ -7,8 +7,6 @@ import com.tvd12.ezymq.kafka.manager.EzyKafkaConsumerManager;
 import com.tvd12.ezymq.kafka.manager.EzyKafkaProducerManager;
 import com.tvd12.ezymq.kafka.setting.EzyKafkaSettings;
 
-import java.util.Map;
-
 public class EzyKafkaProxy
     extends EzyMQProxy<EzyKafkaSettings, EzyKafkaDataCodec> {
 
@@ -36,10 +34,6 @@ public class EzyKafkaProxy
 
     public EzyKafkaConsumer getConsumer(String name) {
         return consumerManager.getConsumer(name);
-    }
-
-    public Map<String, EzyKafkaConsumer> getConsumers() {
-        return consumerManager.getConsumers();
     }
 
     @Override
