@@ -4,6 +4,7 @@
     <test name="All">
         <packages>
             <package name="com.tvd12.ezymq.kafka.test"/>
+            <package name="com.tvd12.ezymq.kafka.test.setting"/>
         </packages>
     </test>
 </suite>

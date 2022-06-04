@@ -170,7 +170,9 @@ public class EzyKafkaSettings extends EzyMQSettings {
         public Builder mapMessageTypes(
             Map<String, Map<String, Class>> messageTypesByTopic
         ) {
-            this.messageTypesByTopic.putAll(messageTypesByTopic);
+            for (String topic : messageTypesByTopic.keySet()) {
+                mapMessageTypes(topic, messageTypesByTopic.get(topic));
+            }
             return this;
         }
 
@@ -181,11 +183,9 @@ public class EzyKafkaSettings extends EzyMQSettings {
         @Override
         public EzyKafkaSettings build() {
             String bootstrapServers = properties.getProperty(
-                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG
+                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                "localhost:9092"
             );
-            if (bootstrapServers == null) {
-                bootstrapServers = "localhost:9092";
-            }
             buildProducerSettings(bootstrapServers);
             buildConsumerSettings(bootstrapServers);
 
@@ -225,7 +225,7 @@ public class EzyKafkaSettings extends EzyMQSettings {
                     .properties(producerProperties)
                     .build();
                 producerSettings.put(name, producerSetting);
-                extractAndMapMessageTypes(name, topic, producerProperties);
+                extractAndMapMessageTypes(topic, producerProperties);
             }
         }
 
@@ -269,18 +269,17 @@ public class EzyKafkaSettings extends EzyMQSettings {
                     )
                     .build();
                 consumerSettings.put(name, consumerSetting);
-                extractAndMapMessageTypes(name, topic, consumerProperties);
+                extractAndMapMessageTypes(topic, consumerProperties);
             }
         }
 
         private void extractAndMapMessageTypes(
-            String endpointName,
             String topic,
             Properties settingProperties
         ) {
             String messageType = settingProperties.getProperty(KEY_MESSAGE_TYPE);
             if (messageType != null) {
-                mapMessageType(endpointName, EzyClasses.getClass(messageType));
+                mapMessageType(topic, EzyClasses.getClass(messageType));
             }
             Properties messageTypes = getPropertiesByPrefix(
                 settingProperties,

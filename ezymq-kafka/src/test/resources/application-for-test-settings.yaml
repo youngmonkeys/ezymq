@@ -1,0 +1,15 @@
+kafka:
+  producers:
+    producer1:
+      topic: test
+      bootstrap.servers: 127.0.0.1:9091
+      client.id: KafkaProducerExample
+      message_type: java.lang.String
+      message_types:
+        command1: java.lang.Boolean
+        command2: java.lang.Byte
+  consumers:
+    consumer1:
+      topic: test
+      bootstrap.servers: 127.0.0.1:9091
+      group.id: KafkaConsumerExample
