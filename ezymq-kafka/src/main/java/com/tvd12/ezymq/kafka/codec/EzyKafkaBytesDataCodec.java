@@ -4,29 +4,15 @@ import com.tvd12.ezyfox.binding.EzyMarshaller;
 import com.tvd12.ezyfox.binding.EzyUnmarshaller;
 import com.tvd12.ezyfox.codec.EzyMessageDeserializer;
 import com.tvd12.ezyfox.codec.EzyMessageSerializer;
-import lombok.Setter;
 
 import java.util.Map;
 
-@Setter
 @SuppressWarnings("rawtypes")
 public class EzyKafkaBytesDataCodec extends EzyKafkaAbstractDataCodec {
 
     protected EzyMessageSerializer messageSerializer;
     protected EzyMessageDeserializer messageDeserializer;
     protected EzyMessageDeserializer textMessageDeserializer;
-
-    public EzyKafkaBytesDataCodec() {}
-
-    public EzyKafkaBytesDataCodec(
-        EzyMessageSerializer messageSerializer,
-        EzyMessageDeserializer messageDeserializer,
-        EzyMessageDeserializer textMessageDeserializer
-    ) {
-        this.messageSerializer = messageSerializer;
-        this.messageDeserializer = messageDeserializer;
-        this.textMessageDeserializer = textMessageDeserializer;
-    }
 
     public EzyKafkaBytesDataCodec(
         EzyMarshaller marshaller,
@@ -71,7 +57,7 @@ public class EzyKafkaBytesDataCodec extends EzyKafkaAbstractDataCodec {
         return unmarshallData(topic, cmd, data);
     }
 
-    public static class Builder extends EzyKafkaAbstractDataCodecBuilder<Builder> {
+    public static class Builder extends EzyKafkaAbstractDataCodec.Builder<Builder> {
         protected EzyMessageSerializer messageSerializer;
         protected EzyMessageDeserializer messageDeserializer;
         protected EzyMessageDeserializer textMessageDeserializer;
@@ -92,8 +78,15 @@ public class EzyKafkaBytesDataCodec extends EzyKafkaAbstractDataCodec {
         }
 
         @Override
-        protected EzyKafkaAbstractDataCodec newProduct() {
-            return new EzyKafkaBytesDataCodec(messageSerializer, messageDeserializer, textMessageDeserializer);
+        public EzyKafkaDataCodec build() {
+            return new EzyKafkaBytesDataCodec(
+                marshaller,
+                unmarshaller,
+                messageSerializer,
+                messageDeserializer,
+                textMessageDeserializer,
+                messageTypesByTopic
+            );
         }
     }
 }
