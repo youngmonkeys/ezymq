@@ -5,6 +5,10 @@
         <packages>
             <package name="com.tvd12.ezymq.kafka.test"/>
             <package name="com.tvd12.ezymq.kafka.test.codec"/>
+            <package name="com.tvd12.ezymq.kafka.test.endpoint"/>
+            <package name="com.tvd12.ezymq.kafka.test.handler"/>
+            <package name="com.tvd12.ezymq.kafka.test.manager"/>
+            <package name="com.tvd12.ezymq.kafka.test.serialization"/>
             <package name="com.tvd12.ezymq.kafka.test.setting"/>
         </packages>
     </test>

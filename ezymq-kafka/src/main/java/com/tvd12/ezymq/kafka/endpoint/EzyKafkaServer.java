@@ -143,10 +143,9 @@ public class EzyKafkaServer
     public static class Builder extends EzyKafkaEndpoint.Builder<Builder> {
 
         protected Consumer consumer;
-        protected int threadPoolSize;
+        protected int threadPoolSize = 1;
         protected long pollTimeOut = 100;
         protected Deserializer deserializer;
-        protected EzyKafkaRecordsHandler recordsHandler;
 
         public Builder pollTimeOut(long pollTimeOut) {
             this.pollTimeOut = pollTimeOut;
@@ -165,11 +164,6 @@ public class EzyKafkaServer
 
         public Builder deserializer(Deserializer deserializer) {
             this.deserializer = deserializer;
-            return this;
-        }
-
-        public Builder recordsHandler(EzyKafkaRecordsHandler recordsHandler) {
-            this.recordsHandler = recordsHandler;
             return this;
         }
 

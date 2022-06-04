@@ -11,10 +11,10 @@ public class EzyDefaultSerializer implements Serializer<Object> {
 
     @Override
     public byte[] serialize(String topic, Object object) {
-        if (object instanceof String) {
-            return ((String) object).getBytes();
+        if (object instanceof byte[]) {
+            return (byte[]) object;
         }
-        return (byte[]) object;
+        return object.toString().getBytes();
     }
 
     @Override

@@ -5,7 +5,6 @@ import com.tvd12.ezymq.kafka.EzyKafkaConsumer;
 import com.tvd12.ezymq.kafka.codec.EzyKafkaDataCodec;
 import com.tvd12.ezymq.kafka.endpoint.EzyKafkaServer;
 import com.tvd12.ezymq.kafka.setting.EzyKafkaConsumerSetting;
-import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +13,6 @@ public class EzyKafkaConsumerManager
     extends EzyKafkaAbstractManager implements EzyCloseable {
 
     protected final EzyKafkaDataCodec dataCodec;
-    @Getter
     protected final Map<String, EzyKafkaConsumer> consumers;
     protected final Map<String, EzyKafkaConsumerSetting> consumerSettings;
 

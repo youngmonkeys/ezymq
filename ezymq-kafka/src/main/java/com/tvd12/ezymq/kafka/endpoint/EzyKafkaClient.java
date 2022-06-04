@@ -23,12 +23,9 @@ public class EzyKafkaClient
     }
 
     public void send(String cmd, byte[] message) {
-        ProducerRecord record;
-        if (topic == null) {
-            record = new ProducerRecord<>(cmd, message);
-        } else {
-            record = new ProducerRecord<>(topic, cmd, message);
-        }
+        ProducerRecord record = topic == null
+            ? new ProducerRecord<>(cmd, message)
+            : new ProducerRecord<>(topic, cmd, message);
         producer.send(record);
     }
 
