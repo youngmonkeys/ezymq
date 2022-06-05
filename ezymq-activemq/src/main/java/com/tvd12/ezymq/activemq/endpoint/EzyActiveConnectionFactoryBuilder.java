@@ -83,11 +83,7 @@ public class EzyActiveConnectionFactoryBuilder implements EzyBuilder<ConnectionF
     }
 
     private void setConnectionURI(ActiveMQConnectionFactory connectionFactory) {
-        try {
-            connectionFactory.setBrokerURL(uri);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("uri: " + uri + " is invalid", e);
-        }
+        connectionFactory.setBrokerURL(uri);
     }
 
     protected ExceptionListener newExceptionListener() {
