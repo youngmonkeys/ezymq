@@ -11,6 +11,7 @@ import com.tvd12.ezyfox.codec.EzyEntityCodec;
 import com.tvd12.ezyfox.codec.EzyMessageDeserializer;
 import com.tvd12.ezyfox.codec.EzyMessageSerializer;
 import com.tvd12.ezyfox.collect.Sets;
+import com.tvd12.ezyfox.entity.EzyData;
 import com.tvd12.ezyfox.util.EzyMapBuilder;
 import com.tvd12.ezymq.common.EzyMQRpcProxy;
 import com.tvd12.ezymq.common.EzyMQRpcProxyBuilder;
@@ -31,7 +32,9 @@ import com.tvd12.ezymq.common.test.handler.EzyTestMQRequestInterceptor;
 import com.tvd12.test.assertion.Asserts;
 import com.tvd12.test.base.BaseTest;
 import com.tvd12.test.reflect.FieldUtil;
+import com.tvd12.test.reflect.ReflectMethodUtil;
 import com.tvd12.test.util.RandomUtil;
+import lombok.AllArgsConstructor;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -447,6 +450,8 @@ public class EzyMQRpcProxyBuilderTest extends BaseTest {
         InternalMQRpcProxyBuilder sut = new InternalMQRpcProxyBuilder()
             .scanAndAddAllBeans(scanAndAddAllBeans)
             .scan("com.tvd12.ezymq.common.test.bean_and_binding")
+            .mapRequestType("command1", String.class)
+            .mapRequestType("command2", EzyData.class)
             .settingsBuilder()
             .parent();
 
@@ -469,6 +474,8 @@ public class EzyMQRpcProxyBuilderTest extends BaseTest {
             requestTypeByCommand,
             EzyMapBuilder.mapBuilder()
                 .put("test", HelloRequest.class)
+                .put("command1", String.class)
+                .put("command2", EzyData.class)
                 .toMap(),
             false
         );
@@ -511,11 +518,41 @@ public class EzyMQRpcProxyBuilderTest extends BaseTest {
         );
     }
 
+    @Test
+    public void newTextMessageDeserializerReturnNullTest() {
+        // given
+        InternalMQRpcProxyBuilder sut = new InternalMQRpcProxyBuilder(true);
+
+        // when
+        Object actual = ReflectMethodUtil.invokeMethod(
+            "newTextMessageDeserializer",
+            sut
+        );
+
+        // then
+        Asserts.assertNull(actual);
+    }
+
+    @AllArgsConstructor
     private static class InternalMQRpcProxyBuilder extends EzyMQRpcProxyBuilder<
         InternalMQRpcSettings,
         InternalMQProxy,
         InternalMQRpcProxyBuilder
         > {
+
+        private final boolean nonTextMessageDeserializer;
+
+        public InternalMQRpcProxyBuilder() {
+            this(false);
+        }
+
+        @Override
+        protected EzyMessageDeserializer newJacksonSimpleDeserializer() {
+            if (nonTextMessageDeserializer) {
+                throw new RuntimeException("no text for test");
+            }
+            return super.newJacksonSimpleDeserializer();
+        }
 
         @Override
         public InternalMQRpcSettings.Builder settingsBuilder() {

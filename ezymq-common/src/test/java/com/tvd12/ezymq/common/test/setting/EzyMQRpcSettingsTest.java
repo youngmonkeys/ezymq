@@ -26,10 +26,14 @@ public class EzyMQRpcSettingsTest extends BaseTest {
         EzyTestMQRequestInterceptor interceptor1 = mock(EzyTestMQRequestInterceptor.class);
         EzyTestMQRequestInterceptor interceptor2 = mock(EzyTestMQRequestInterceptor.class);
 
+        Properties properties = new Properties();
+
         // when
         InternalSettings.Builder builder = new InternalSettings.Builder(null)
+            .properties(properties)
             .addRequestInterceptor(interceptor1)
             .addRequestInterceptor(interceptor2);
+        EzyMQRpcSettings sut = builder.build();
 
         // then
         Asserts.assertEquals(
@@ -37,6 +41,7 @@ public class EzyMQRpcSettingsTest extends BaseTest {
             Arrays.asList(interceptor1, interceptor2),
             false
         );
+        Asserts.assertEquals(sut.getProperties(), properties);
     }
 
     public static class InternalSettings extends EzyMQRpcSettings {

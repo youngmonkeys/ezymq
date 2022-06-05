@@ -8,6 +8,7 @@
             <package name="com.tvd12.ezymq.common.test.codec"/>
             <package name="com.tvd12.ezymq.common.test.handler"/>
             <package name="com.tvd12.ezymq.common.test.setting"/>
+            <package name="com.tvd12.ezymq.common.test.util"/>
         </packages>
     </test>
 </suite>
