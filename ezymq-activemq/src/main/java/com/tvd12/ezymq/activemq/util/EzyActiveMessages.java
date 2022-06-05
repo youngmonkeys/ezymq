@@ -27,9 +27,20 @@ public final class EzyActiveMessages {
             Object value = props.getValue(key);
             if (value instanceof Integer) {
                 message.setIntProperty(key, (Integer) value);
-            }
-            if (value instanceof String) {
+            } else if (value instanceof String) {
                 message.setStringProperty(key, (String) value);
+            } else if (value instanceof Boolean) {
+                message.setBooleanProperty(key, (Boolean) value);
+            } else if (value instanceof Byte) {
+                message.setByteProperty(key, (Byte) value);
+            } else if (value instanceof Double) {
+                message.setDoubleProperty(key, (Double) value);
+            } else if (value instanceof Float) {
+                message.setFloatProperty(key, (Float) value);
+            } else if (value instanceof Long) {
+                message.setLongProperty(key, (Long) value);
+            } else if (value instanceof Short) {
+                message.setShortProperty(key, (Short) value);
             } else {
                 message.setObjectProperty(key, value);
             }
