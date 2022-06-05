@@ -14,7 +14,8 @@ import java.util.Map;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class EzyActiveTopicManager
-    extends EzyActiveAbstractManager implements EzyCloseable {
+    extends EzyActiveAbstractManager
+    implements EzyCloseable {
 
     protected final EzyMQDataCodec dataCodec;
     protected final Map<String, EzyActiveTopic> topics;
@@ -78,6 +79,7 @@ public class EzyActiveTopicManager
                 .session(session)
                 .topic(setting.getTopic())
                 .topicName(setting.getTopicName())
+                .threadPoolSize(setting.getConsumerThreadPoolSize())
                 .build();
         }
         EzyActiveTopic topic = EzyActiveTopic.builder()

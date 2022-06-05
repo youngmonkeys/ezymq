@@ -57,7 +57,7 @@ public class EzyActiveTopicServer
                 messageHandler.handle(props, body);
             } catch (JMSException e) {
                 logger.warn("receive topic message error", e);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 logger.warn("process message: {} error", message, e);
             }
         }

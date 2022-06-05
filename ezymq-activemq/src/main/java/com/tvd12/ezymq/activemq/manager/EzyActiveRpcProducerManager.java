@@ -73,7 +73,8 @@ public class EzyActiveRpcProducerManager extends EzyActiveAbstractManager {
             .build();
         return EzyActiveRpcProducer.builder()
             .entityCodec(entityCodec)
-            .client(client).build();
+            .client(client)
+            .build();
     }
 
     public void close() {

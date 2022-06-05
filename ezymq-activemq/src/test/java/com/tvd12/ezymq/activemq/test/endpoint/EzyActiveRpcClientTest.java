@@ -30,7 +30,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
         Destination replyQueue = mock(Destination.class);
         int capacity = RandomUtil.randomInt(10, 10000);
         int threadPoolSize = 1;
-        int defaultTimeout = 15 * 1000;
+        int defaultTimeout = 3 * 1000;
 
         EzyActiveResponseConsumer unconsumedResponseConsumer =
             mock(EzyActiveResponseConsumer.class);
@@ -80,7 +80,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
         Destination replyQueue = mock(Destination.class);
         int capacity = RandomUtil.randomInt(10, 10000);
         int threadPoolSize = 1;
-        int defaultTimeout = 15 * 1000;
+        int defaultTimeout = 3 * 1000;
 
         EzyActiveResponseConsumer unconsumedResponseConsumer =
             mock(EzyActiveResponseConsumer.class);
@@ -129,7 +129,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
         Destination replyQueue = mock(Destination.class);
         int capacity = RandomUtil.randomInt(10, 10000);
         int threadPoolSize = 1;
-        int defaultTimeout = 15 * 1000;
+        int defaultTimeout = 3 * 1000;
 
         EzyActiveResponseConsumer unconsumedResponseConsumer =
             mock(EzyActiveResponseConsumer.class);
@@ -221,7 +221,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
         Destination replyQueue = mock(Destination.class);
         int capacity = RandomUtil.randomInt(10, 10000);
         int threadPoolSize = 1;
-        int defaultTimeout = 15 * 1000;
+        int defaultTimeout = 3 * 1000;
 
         Session session = mock(Session.class);
         MessageProducer messageProducer = mock(MessageProducer.class);
@@ -307,7 +307,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
         Destination replyQueue = mock(Destination.class);
         int capacity = RandomUtil.randomInt(10, 10000);
         int threadPoolSize = 1;
-        int defaultTimeout = 15 * 1000;
+        int defaultTimeout = 3 * 1000;
 
         Session session = mock(Session.class);
         MessageProducer messageProducer = mock(MessageProducer.class);
@@ -386,7 +386,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
         Destination replyQueue = mock(Destination.class);
         int capacity = RandomUtil.randomInt(10, 10000);
         int threadPoolSize = 1;
-        int defaultTimeout = 15 * 1000;
+        int defaultTimeout = 3 * 1000;
 
         Session session = mock(Session.class);
         MessageProducer messageProducer = mock(MessageProducer.class);
@@ -464,7 +464,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
         Destination replyQueue = mock(Destination.class);
         int capacity = 1;
         int threadPoolSize = 1;
-        int defaultTimeout = 15 * 1000;
+        int defaultTimeout = 3 * 1000;
 
         Session session = mock(Session.class);
         MessageProducer messageProducer = mock(MessageProducer.class);
@@ -549,7 +549,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
         Destination replyQueue = mock(Destination.class);
         int capacity = RandomUtil.randomInt(10, 10000);
         int threadPoolSize = 1;
-        int defaultTimeout = 15 * 1000;
+        int defaultTimeout = 3 * 1000;
 
         Session session = mock(Session.class);
         MessageProducer messageProducer = mock(MessageProducer.class);
