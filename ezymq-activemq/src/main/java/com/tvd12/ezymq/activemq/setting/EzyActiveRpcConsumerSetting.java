@@ -45,9 +45,9 @@ public class EzyActiveRpcConsumerSetting extends EzyActiveRpcEndpointSetting {
 
     public static class Builder extends EzyActiveRpcEndpointSetting.Builder<Builder> {
 
-        protected EzyActiveSettings.Builder parent;
-        protected EzyActiveRequestHandlers requestHandlers;
-        protected EzyActiveRequestInterceptors requestInterceptors;
+        protected final EzyActiveSettings.Builder parent;
+        protected final EzyActiveRequestHandlers requestHandlers;
+        protected final EzyActiveRequestInterceptors requestInterceptors;
 
         public Builder() {
             this(null);
@@ -96,9 +96,6 @@ public class EzyActiveRpcConsumerSetting extends EzyActiveRpcEndpointSetting {
 
         @Override
         public EzyActiveRpcConsumerSetting build() {
-            if (requestHandlers == null) {
-                throw new NullPointerException("requestHandlers can not be null");
-            }
             return new EzyActiveRpcConsumerSetting(
                 session,
                 requestQueueName,

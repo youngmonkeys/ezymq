@@ -5,13 +5,13 @@ import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.management.JMSStatsImpl;
 import org.apache.activemq.transport.Transport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.jms.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static com.tvd12.ezyfox.util.EzyProcessor.processWithLogException;
 
 public class EzyActiveConnectionFactory
     extends ActiveMQConnectionFactory
@@ -19,7 +19,6 @@ public class EzyActiveConnectionFactory
 
     protected final List<Connection> createdConnections =
         Collections.synchronizedList(new ArrayList<>());
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
     protected ActiveMQConnection createActiveMQConnection(
@@ -37,15 +36,7 @@ public class EzyActiveConnectionFactory
     @Override
     public void close() {
         for (Connection connection : createdConnections) {
-            closeConnection(connection);
-        }
-    }
-
-    protected void closeConnection(Connection connection) {
-        try {
-            connection.close();
-        } catch (Exception e) {
-            logger.warn("close connection: {}, failed", connection, e);
+            processWithLogException(connection::close);
         }
     }
 }
