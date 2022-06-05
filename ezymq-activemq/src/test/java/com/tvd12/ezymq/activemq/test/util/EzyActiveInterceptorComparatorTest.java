@@ -2,6 +2,7 @@ package com.tvd12.ezymq.activemq.test.util;
 
 import com.tvd12.ezymq.activemq.annotation.EzyActiveInterceptor;
 import com.tvd12.ezymq.activemq.util.EzyActiveInterceptorComparator;
+import com.tvd12.ezymq.common.handler.EzyMQRequestLogInterceptor;
 import com.tvd12.test.assertion.Asserts;
 import com.tvd12.test.base.BaseTest;
 import org.testng.annotations.Test;
@@ -31,8 +32,8 @@ public class EzyActiveInterceptorComparatorTest extends BaseTest {
     }
 
     @EzyActiveInterceptor(priority = 1)
-    public static class Interceptor1 {}
+    public static class Interceptor1 extends EzyMQRequestLogInterceptor {}
 
     @EzyActiveInterceptor(priority = 2)
-    public static class Interceptor2 {}
+    public static class Interceptor2 extends EzyMQRequestLogInterceptor {}
 }
