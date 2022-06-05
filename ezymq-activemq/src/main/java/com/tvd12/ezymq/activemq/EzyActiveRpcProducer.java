@@ -55,6 +55,17 @@ public class EzyActiveRpcProducer
         rawFire(requestProperties, requestMessage);
     }
 
+    protected void rawFire(
+        EzyActiveProperties requestProperties,
+        byte[] requestMessage
+    ) {
+        try {
+            client.doFire(requestProperties, requestMessage);
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage(), e);
+        }
+    }
+
     public <T> T call(Object data, Class<T> returnType) {
         if (!(data instanceof EzyMessageTypeFetcher)) {
             throw new IllegalArgumentException("data class must implement 'EzyMessageTypeFetcher'");
@@ -73,17 +84,6 @@ public class EzyActiveRpcProducer
         responseHeadersToException(responseProperties.getProperties());
         byte[] responseBody = responseData.getBody();
         return entityCodec.deserialize(responseBody, returnType);
-    }
-
-    protected void rawFire(
-        EzyActiveProperties requestProperties,
-        byte[] requestMessage
-    ) {
-        try {
-            client.doFire(requestProperties, requestMessage);
-        } catch (Exception e) {
-            throw new InternalServerErrorException(e.getMessage(), e);
-        }
     }
 
     protected EzyActiveMessage rawCall(
