@@ -1,54 +1,244 @@
 package com.tvd12.ezymq.rabbitmq.test;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.AMQP;
+import com.tvd12.ezyfox.exception.InternalServerErrorException;
+import com.tvd12.ezyfox.message.EzyMessageTypeFetcher;
+import com.tvd12.ezyfox.util.EzyMapBuilder;
+import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
+import com.tvd12.ezymq.common.handler.EzyMQMessageConsumer;
+import com.tvd12.ezymq.common.handler.EzyMQMessageConsumers;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitTopic;
-import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitExchangeTypes;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitTopicClient;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitTopicServer;
+import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitMessageHandler;
+import com.tvd12.test.assertion.Asserts;
+import com.tvd12.test.base.BaseTest;
+import com.tvd12.test.util.RandomUtil;
+import org.testng.annotations.Test;
 
-public class EzyRabbitTopicTest extends RabbitBaseTest {
+import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 
-    public static void main(String[] args) throws Exception {
-        new EzyRabbitTopicTest().test();
+import static org.mockito.Mockito.*;
+
+public class EzyRabbitTopicTest extends BaseTest {
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void test() throws Exception {
+        // given
+        String name = RandomUtil.randomShortAlphabetString();
+        EzyMQDataCodec dataCodec = mock(EzyMQDataCodec.class);
+        EzyRabbitTopicClient client = mock(EzyRabbitTopicClient.class);
+        EzyRabbitTopicServer server = mock(EzyRabbitTopicServer.class);
+
+        EzyRabbitTopic<String> sut = EzyRabbitTopic.builder()
+            .name(name)
+            .dataCodec(dataCodec)
+            .client(client)
+            .server(server)
+            .build();
+        AtomicReference<EzyRabbitMessageHandler> messageHandlerRef = new AtomicReference<>();
+        doAnswer(it -> {
+            messageHandlerRef.set(
+                it.getArgumentAt(0, EzyRabbitMessageHandler.class)
+            );
+            return null;
+        }).when(server).setMessageHandler(any(EzyRabbitMessageHandler.class));
+
+        AMQP.BasicProperties messageProperties = new AMQP.BasicProperties.Builder()
+            .build();
+        byte[] messageBody = RandomUtil.randomShortByteArray();
+        doAnswer(it -> {
+            messageHandlerRef.get().handle(
+                messageProperties,
+                messageBody
+            );
+            return null;
+        }).when(server).start();
+
+        EzyMQMessageConsumer<String> consumer1 = mock(EzyMQMessageConsumer.class);
+        sut.addConsumer(consumer1);
+
+        String command2 = RandomUtil.randomShortAlphabetString();
+        EzyMQMessageConsumer<String> consumer2 = mock(EzyMQMessageConsumer.class);
+        sut.addConsumer(command2, consumer2);
+
+        String command3 = RandomUtil.randomShortAlphabetString();
+        EzyMQMessageConsumer<String> consumer3 = mock(EzyMQMessageConsumer.class);
+        sut.addConsumers(null);
+        sut.addConsumers(
+            EzyMapBuilder.mapBuilder()
+                .put(command3, Collections.singletonList(consumer3))
+                .build()
+        );
+
+        String data = RandomUtil.randomShortAlphabetString();
+        byte[] requestMessage = RandomUtil.randomShortByteArray();
+        when(dataCodec.serialize(data)).thenReturn(requestMessage);
+
+        // when
+        sut.publish(data);
+
+        // then
+        EzyMQMessageConsumers expectedConsumers = new EzyMQMessageConsumers();
+        expectedConsumers.addConsumer("", consumer1);
+        expectedConsumers.addConsumer(command2, consumer2);
+        expectedConsumers.addConsumer(command3, consumer3);
+
+        sut.close();
+        verify(client, times(1)).close();
+        verify(client, times(1)).publish(
+            any(AMQP.BasicProperties.class),
+            any(byte[].class)
+        );
+        verify(server, times(1)).start();
+        verify(server, times(1)).close();
+        verify(dataCodec, times(1)).serialize(data);
     }
 
     @SuppressWarnings("unchecked")
-    public void test() throws Exception {
-        String exchange = "test-topic-exchange";
-        String routingKey1 = "test-topic-routing-key-1";
-        String queue1 = "test-topic-queue-1";
-        String queue2 = "test-topic-queue-2";
-        Connection connection = connectionFactory.newConnection();
-        Channel channel = connection.createChannel();
-        channel.basicQos(1);
-        channel.exchangeDeclare(exchange, EzyRabbitExchangeTypes.FANOUT);
-        channel.queueDeclare(queue1, false, false, false, null);
-        channel.queueDeclare(queue2, false, false, false, null);
-        channel.queueBind(queue1, exchange, routingKey1);
-        channel.queueBind(queue2, exchange, routingKey1);
-        EzyRabbitTopicServer server = EzyRabbitTopicServer.builder()
-            .channel(channel)
-            .exchange(exchange)
-            .queueName(queue1)
-            .build();
-        EzyRabbitTopicClient client = EzyRabbitTopicClient.builder()
-            .channel(channel)
-            .exchange(exchange)
-            .routingKey(routingKey1)
-            .build();
-        EzyRabbitTopic<String> topic = EzyRabbitTopic.builder()
-            .client(client)
-            .server(server)
+    @Test
+    public void publishFailedTest() throws Exception {
+        // given
+        String name = RandomUtil.randomShortAlphabetString();
+        EzyMQDataCodec dataCodec = mock(EzyMQDataCodec.class);
+        EzyRabbitTopicClient client = mock(EzyRabbitTopicClient.class);
+
+        EzyRabbitTopic<InternalMessage> sut = EzyRabbitTopic.builder()
+            .name(name)
             .dataCodec(dataCodec)
+            .client(client)
             .build();
-        topic.addConsumer("test", msg -> {
-            System.out.println("received: " + msg);
-        });
-        System.out.println("start consumer ok");
-        Thread.sleep(100);
-        topic.publish("test", "I'm a monkey");
-        System.out.println("publish ok");
+
+        InternalMessage data = new InternalMessage();
+        byte[] requestMessage = RandomUtil.randomShortByteArray();
+        when(dataCodec.serialize(data)).thenReturn(requestMessage);
+
+        RuntimeException exception = new RuntimeException("test");
+        doThrow(exception)
+            .when(client)
+            .publish(
+                any(AMQP.BasicProperties.class),
+                any(byte[].class)
+            );
+
+        // when
+        Throwable e = Asserts.assertThrows(() ->
+            sut.publish(data)
+        );
+
+        // then
+        Asserts.assertEqualsType(e, InternalServerErrorException.class);
+        EzyMQMessageConsumer<InternalMessage> consumer1 = mock(EzyMQMessageConsumer.class);
+        Asserts.assertThatThrows(() ->
+            sut.addConsumer(consumer1)
+        ).isEqualsType(IllegalStateException.class);
+        sut.close();
+        verify(client, times(1)).close();
+        verify(client, times(1)).publish(
+            any(AMQP.BasicProperties.class),
+            any(byte[].class)
+        );
+        verify(dataCodec, times(1)).serialize(data);
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void startConsumingTest() throws Exception {
+        // given
+        String name = RandomUtil.randomShortAlphabetString();
+        EzyMQDataCodec dataCodec = mock(EzyMQDataCodec.class);
+        EzyRabbitTopicServer server = mock(EzyRabbitTopicServer.class);
+
+        EzyRabbitTopic<String> sut = EzyRabbitTopic.builder()
+            .name(name)
+            .dataCodec(dataCodec)
+            .server(server)
+            .build();
+        AtomicReference<EzyRabbitMessageHandler> messageHandlerRef = new AtomicReference<>();
+        doAnswer(it -> {
+            messageHandlerRef.set(
+                it.getArgumentAt(0, EzyRabbitMessageHandler.class)
+            );
+            return null;
+        }).when(server).setMessageHandler(any(EzyRabbitMessageHandler.class));
+
+        String command = RandomUtil.randomShortAlphabetString();
+        AMQP.BasicProperties messageProperties = new AMQP.BasicProperties.Builder()
+            .type(command)
+            .build();
+        byte[] messageBody = RandomUtil.randomShortByteArray();
+        doAnswer(it -> {
+            messageHandlerRef.get().handle(
+                messageProperties,
+                messageBody
+            );
+            return null;
+        }).when(server).start();
+
+        String data = RandomUtil.randomShortAlphabetString();
+        byte[] requestMessage = RandomUtil.randomShortByteArray();
+        when(dataCodec.serialize(data)).thenReturn(requestMessage);
+
+        // when
+        EzyMQMessageConsumer<String> consumer1 = mock(EzyMQMessageConsumer.class);
+        sut.addConsumer(consumer1);
+
+        // then
+        Asserts.assertThatThrows(() ->
+            sut.publish(data)
+        ).isEqualsType(IllegalStateException.class);
+        EzyMQMessageConsumers expectedConsumers = new EzyMQMessageConsumers();
+        expectedConsumers.addConsumer("", consumer1);
+
+        sut.close();
+        verify(server, times(1)).start();
+        verify(server, times(1)).close();
+        verify(dataCodec, times(1)).deserializeTopicMessage(
+            name,
+            command,
+            messageBody
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void startConsumingFailedTest() throws Exception {
+        // given
+        String name = RandomUtil.randomShortAlphabetString();
+        EzyMQDataCodec dataCodec = mock(EzyMQDataCodec.class);
+        EzyRabbitTopicServer server = mock(EzyRabbitTopicServer.class);
+
+        EzyRabbitTopic<String> sut = EzyRabbitTopic.builder()
+            .name(name)
+            .dataCodec(dataCodec)
+            .server(server)
+            .build();
+
+        RuntimeException exception = new RuntimeException("test");
+        doThrow(exception).when(server).start();
+
+        // when
+        EzyMQMessageConsumer<String> consumer1 = mock(EzyMQMessageConsumer.class);
+        Throwable e = Asserts.assertThrows(() ->
+            sut.addConsumer(consumer1)
+        );
+
+        // then
+        Asserts.assertEqualsType(e, IllegalStateException.class);
+        EzyMQMessageConsumers expectedConsumers = new EzyMQMessageConsumers();
+        expectedConsumers.addConsumer("", consumer1);
+
+        sut.close();
+        verify(server, times(1)).start();
+        verify(server, times(1)).close();
+    }
+
+    private static class InternalMessage implements EzyMessageTypeFetcher {
+        @Override
+        public String getMessageType() {
+            return "test";
+        }
+    }
 }

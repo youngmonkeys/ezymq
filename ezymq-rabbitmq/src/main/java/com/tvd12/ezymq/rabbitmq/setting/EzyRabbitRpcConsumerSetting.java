@@ -46,9 +46,9 @@ public class EzyRabbitRpcConsumerSetting extends EzyRabbitEndpointSetting {
         protected int threadPoolSize = 1;
         protected String replyRoutingKey = "";
         protected String requestQueueName = null;
-        protected EzyRabbitSettings.Builder parent;
-        protected EzyRabbitRequestHandlers requestHandlers;
-        protected EzyRabbitRequestInterceptors requestInterceptors;
+        protected final EzyRabbitSettings.Builder parent;
+        protected final EzyRabbitRequestHandlers requestHandlers;
+        protected final EzyRabbitRequestInterceptors requestInterceptors;
 
         public Builder() {
             this(null);
@@ -91,9 +91,6 @@ public class EzyRabbitRpcConsumerSetting extends EzyRabbitEndpointSetting {
 
         @SuppressWarnings("rawtypes")
         public Builder addRequestHandler(String cmd, EzyRabbitRequestHandler handler) {
-            if (requestHandlers == null) {
-                requestHandlers = new EzyRabbitRequestHandlers();
-            }
             requestHandlers.addHandler(cmd, handler);
             return this;
         }
@@ -115,9 +112,6 @@ public class EzyRabbitRpcConsumerSetting extends EzyRabbitEndpointSetting {
 
         @Override
         public EzyRabbitRpcConsumerSetting build() {
-            if (requestHandlers == null) {
-                throw new NullPointerException("requestHandlers can not be null");
-            }
             return new EzyRabbitRpcConsumerSetting(
                 channel,
                 exchange,

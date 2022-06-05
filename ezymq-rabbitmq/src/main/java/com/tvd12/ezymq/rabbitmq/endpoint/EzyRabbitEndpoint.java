@@ -2,9 +2,12 @@ package com.tvd12.ezymq.rabbitmq.endpoint;
 
 import com.rabbitmq.client.Channel;
 import com.tvd12.ezyfox.builder.EzyBuilder;
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyLoggable;
 
-public class EzyRabbitEndpoint extends EzyLoggable {
+public class EzyRabbitEndpoint
+    extends EzyLoggable
+    implements EzyCloseable {
 
     protected final Channel channel;
     protected final String exchange;
@@ -13,6 +16,9 @@ public class EzyRabbitEndpoint extends EzyLoggable {
         this.channel = channel;
         this.exchange = exchange;
     }
+
+    @Override
+    public void close() {}
 
     @SuppressWarnings("unchecked")
     public abstract static class Builder<B extends Builder<B>>

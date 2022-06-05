@@ -5,6 +5,7 @@ import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.exception.InternalServerErrorException;
 import com.tvd12.ezyfox.io.EzyStrings;
 import com.tvd12.ezyfox.message.EzyMessageTypeFetcher;
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 import com.tvd12.ezymq.common.handler.EzyMQMessageConsumer;
 import com.tvd12.ezymq.common.handler.EzyMQMessageConsumers;
@@ -15,7 +16,7 @@ import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitMessageHandler;
 import java.util.List;
 import java.util.Map;
 
-public class EzyRabbitTopic<T> {
+public class EzyRabbitTopic<T> implements EzyCloseable {
 
     protected final String name;
     protected volatile boolean consuming;
@@ -121,6 +122,16 @@ public class EzyRabbitTopic<T> {
             server.start();
         } catch (Exception e) {
             throw new IllegalStateException("can't start topic server", e);
+        }
+    }
+
+    @Override
+    public void close() {
+        if (client != null) {
+            client.close();
+        }
+        if (server != null) {
+            server.close();
         }
     }
 
