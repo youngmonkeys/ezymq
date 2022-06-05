@@ -60,7 +60,7 @@ public class EzyActiveRpcEndpointSetting extends EzyActiveEndpointSetting {
         }
 
         public B requestQueueName(String requestQueueName) {
-            if (isEmpty(this.replyQueueName)) {
+            if (isEmpty(this.requestQueueName)) {
                 this.requestQueueName = requestQueueName;
             }
             return (B) this;

@@ -4,7 +4,9 @@
     <test name="All">
         <packages>
             <package name="com.tvd12.ezymq.activemq.test"/>
+            <package name="com.tvd12.ezymq.activemq.test.constant"/>
             <package name="com.tvd12.ezymq.activemq.test.endpoint"/>
+            <package name="com.tvd12.ezymq.activemq.test.handler"/>
             <package name="com.tvd12.ezymq.activemq.test.manager"/>
             <package name="com.tvd12.ezymq.activemq.test.setting"/>
             <package name="com.tvd12.ezymq.activemq.test.util"/>
