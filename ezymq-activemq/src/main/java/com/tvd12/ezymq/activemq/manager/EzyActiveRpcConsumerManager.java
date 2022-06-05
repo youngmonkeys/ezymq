@@ -29,18 +29,20 @@ public class EzyActiveRpcConsumerManager
         super(connectionFactory);
         this.dataCodec = dataCodec;
         this.rpcConsumerSettings = rpcConsumerSettings;
-        this.rpcConsumers = createRpcProducers();
+        this.rpcConsumers = createRpcConsumers();
     }
 
     public EzyActiveRpcConsumer getRpcConsumer(String name) {
         EzyActiveRpcConsumer consumer = rpcConsumers.get(name);
         if (consumer == null) {
-            throw new IllegalArgumentException("has no rpc handler with name: " + name);
+            throw new IllegalArgumentException(
+                "has no rpc consumer with name: " + name
+            );
         }
         return consumer;
     }
 
-    protected Map<String, EzyActiveRpcConsumer> createRpcProducers() {
+    protected Map<String, EzyActiveRpcConsumer> createRpcConsumers() {
         Map<String, EzyActiveRpcConsumer> map = new HashMap<>();
         for (String name : rpcConsumerSettings.keySet()) {
             EzyActiveRpcConsumerSetting setting = rpcConsumerSettings.get(name);
@@ -56,7 +58,10 @@ public class EzyActiveRpcConsumerManager
         try {
             return createRpcConsumer(setting);
         } catch (Exception e) {
-            throw new IllegalStateException("can't create handler: " + name, e);
+            throw new IllegalStateException(
+                "can't create rpc consumer: " + name,
+                e
+            );
         }
     }
 
@@ -64,7 +69,7 @@ public class EzyActiveRpcConsumerManager
         EzyActiveRpcConsumerSetting setting
     ) throws Exception {
         Session session = getSession(setting);
-        EzyActiveRpcServer client = EzyActiveRpcServer.builder()
+        EzyActiveRpcServer server = EzyActiveRpcServer.builder()
             .session(session)
             .threadPoolSize(setting.getThreadPoolSize())
             .requestQueueName(setting.getRequestQueueName())
@@ -76,7 +81,7 @@ public class EzyActiveRpcConsumerManager
             .dataCodec(dataCodec)
             .requestInterceptors(setting.getRequestInterceptors())
             .requestHandlers(setting.getRequestHandlers())
-            .server(client)
+            .server(server)
             .build();
     }
 

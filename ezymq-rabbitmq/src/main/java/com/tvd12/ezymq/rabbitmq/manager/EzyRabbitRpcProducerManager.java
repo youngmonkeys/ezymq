@@ -37,7 +37,9 @@ public class EzyRabbitRpcProducerManager
     public EzyRabbitRpcProducer getRpcProducer(String name) {
         EzyRabbitRpcProducer consumer = rpProducers.get(name);
         if (consumer == null) {
-            throw new IllegalArgumentException("has no rpc consumer with name: " + name);
+            throw new IllegalArgumentException(
+                "has no rpc producer with name: " + name
+            );
         }
         return consumer;
     }
@@ -58,7 +60,10 @@ public class EzyRabbitRpcProducerManager
         try {
             return createRpcProducer(setting);
         } catch (Exception e) {
-            throw new IllegalStateException("create rpc consumer: " + name + " error", e);
+            throw new IllegalStateException(
+                "create rpc producer: " + name + " error",
+                e
+            );
         }
     }
 

@@ -30,7 +30,9 @@ public class EzyActiveRpcProducerManager extends EzyActiveAbstractManager {
     public EzyActiveRpcProducer getRpcProducer(String name) {
         EzyActiveRpcProducer consumer = rpcProducers.get(name);
         if (consumer == null) {
-            throw new IllegalArgumentException("has no rpc consumer with name: " + name);
+            throw new IllegalArgumentException(
+                "has no rpc producer with name: " + name
+            );
         }
         return consumer;
     }
@@ -51,7 +53,10 @@ public class EzyActiveRpcProducerManager extends EzyActiveAbstractManager {
         try {
             return createRpcProducer(setting);
         } catch (Exception e) {
-            throw new IllegalStateException("create rpc consumer: " + name + " error", e);
+            throw new IllegalStateException(
+                "create rpc producer: " + name + " error",
+                e
+            );
         }
     }
 
