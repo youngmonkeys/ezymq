@@ -70,18 +70,10 @@ public class EzyRabbitConnectionFactory
     @Override
     public void close() {
         for (Connection connection : createdConnections) {
-            closeConnection(connection);
+            processWithLogException(connection::close);
         }
         if (copyExecutorService != null) {
             processWithLogException(copyExecutorService::shutdown);
-        }
-    }
-
-    protected void closeConnection(Connection connection) {
-        try {
-            connection.close();
-        } catch (Exception e) {
-            logger.warn("close connection: {}, failed", connection, e);
         }
     }
 }
