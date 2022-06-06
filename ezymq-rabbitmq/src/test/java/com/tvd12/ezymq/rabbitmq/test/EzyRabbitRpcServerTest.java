@@ -22,17 +22,6 @@ public class EzyRabbitRpcServerTest extends BaseTest {
             .exchange("EzyRabbitRpcServerTest.exchange")
             .replyRoutingKey("EzyRabbitRpcServerTest.replyRoutingKey")
             .queueName("EzyRabbitRpcServerTest.queueName")
-            .callHandler(new EzyRabbitRpcCallHandler() {
-                @Override
-                public void handleFire(BasicProperties requestProperties, byte[] requestBody) {
-
-                }
-
-                @Override
-                public byte[] handleCall(BasicProperties requestProperties, byte[] requestBody, Builder replyPropertiesBuilder) {
-                    return new byte[0];
-                }
-            })
             .build();
         channel.basicPublish(
             "EzyRabbitRpcServerTest.exchange",

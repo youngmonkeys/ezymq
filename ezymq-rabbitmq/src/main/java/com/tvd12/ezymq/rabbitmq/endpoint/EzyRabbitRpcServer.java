@@ -7,6 +7,7 @@ import com.rabbitmq.client.Delivery;
 import com.rabbitmq.client.ShutdownSignalException;
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.util.EzyCloseable;
+import com.tvd12.ezyfox.util.EzyReturner;
 import com.tvd12.ezyfox.util.EzyStartable;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRpcCallHandler;
 import lombok.Setter;
@@ -134,7 +135,6 @@ public class EzyRabbitRpcServer
         protected String exchange = "";
         protected String replyRoutingKey = "";
         protected String queueName;
-        protected EzyRabbitRpcCallHandler callHandler;
 
         public Builder channel(Channel channel) {
             this.channel = channel;
@@ -156,25 +156,16 @@ public class EzyRabbitRpcServer
             return this;
         }
 
-        public Builder callHandler(EzyRabbitRpcCallHandler callHandler) {
-            this.callHandler = callHandler;
-            return this;
-        }
-
         @Override
         public EzyRabbitRpcServer build() {
-            try {
-                EzyRabbitRpcServer server = new EzyRabbitRpcServer(
+            return EzyReturner.returnWithException(() ->
+                new EzyRabbitRpcServer(
                     channel,
                     exchange,
                     replyRoutingKey,
                     queueName
-                );
-                server.setCallHandler(callHandler);
-                return server;
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
-            }
+                )
+            );
         }
     }
 }
