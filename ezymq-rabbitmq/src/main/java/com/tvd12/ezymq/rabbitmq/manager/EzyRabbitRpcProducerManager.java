@@ -35,13 +35,13 @@ public class EzyRabbitRpcProducerManager
     }
 
     public EzyRabbitRpcProducer getRpcProducer(String name) {
-        EzyRabbitRpcProducer consumer = rpProducers.get(name);
-        if (consumer == null) {
+        EzyRabbitRpcProducer producer = rpProducers.get(name);
+        if (producer == null) {
             throw new IllegalArgumentException(
                 "has no rpc producer with name: " + name
             );
         }
-        return consumer;
+        return producer;
     }
 
     protected Map<String, EzyRabbitRpcProducer> createRpcProducers() {

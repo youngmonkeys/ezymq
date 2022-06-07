@@ -28,13 +28,13 @@ public class EzyActiveRpcProducerManager extends EzyActiveAbstractManager {
     }
 
     public EzyActiveRpcProducer getRpcProducer(String name) {
-        EzyActiveRpcProducer consumer = rpcProducers.get(name);
-        if (consumer == null) {
+        EzyActiveRpcProducer producer = rpcProducers.get(name);
+        if (producer == null) {
             throw new IllegalArgumentException(
                 "has no rpc producer with name: " + name
             );
         }
-        return consumer;
+        return producer;
     }
 
     protected Map<String, EzyActiveRpcProducer> createRpcProducers() {
