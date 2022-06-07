@@ -1,0 +1,4 @@
+kafka:
+  consumers:
+    hello:
+      topic: hello

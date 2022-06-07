@@ -245,8 +245,12 @@ public class EzyKafkaSettings extends EzyMQSettings {
                     globalBootstrapServers
                 );
                 consumerProperties.putIfAbsent(
-                    ConsumerConfig.GROUP_ID_CONFIG,
+                    ProducerConfig.CLIENT_ID_CONFIG,
                     name
+                );
+                consumerProperties.computeIfAbsent(
+                    ConsumerConfig.GROUP_ID_CONFIG,
+                    k -> UUID.randomUUID().toString()
                 );
                 String topic = consumerProperties.getProperty(KEY_TOPIC, name);
                 EzyKafkaConsumerSetting consumerSetting = consumerSettingBuilders

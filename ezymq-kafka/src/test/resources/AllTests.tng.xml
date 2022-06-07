@@ -10,6 +10,7 @@
             <package name="com.tvd12.ezymq.kafka.test.manager"/>
             <package name="com.tvd12.ezymq.kafka.test.serialization"/>
             <package name="com.tvd12.ezymq.kafka.test.setting"/>
+            <package name="com.tvd12.ezymq.kafka.test.util"/>
         </packages>
     </test>
 </suite>
