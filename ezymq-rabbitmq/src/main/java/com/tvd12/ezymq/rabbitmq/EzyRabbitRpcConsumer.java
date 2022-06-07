@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadFactory;
 
+import static com.tvd12.ezymq.common.util.EzyRpcExceptionTranslators.getExceptionMessage;
+
 public class EzyRabbitRpcConsumer
     extends EzyLoggable
     implements EzyRabbitRpcCallHandler, EzyCloseable {
@@ -31,21 +33,6 @@ public class EzyRabbitRpcConsumer
     protected final EzyThreadList executorService;
     protected final EzyRabbitRequestHandlers requestHandlers;
     protected final EzyRabbitRequestInterceptors requestInterceptors;
-
-    public EzyRabbitRpcConsumer(
-        EzyMQDataCodec dataCodec,
-        EzyRabbitRpcServer server,
-        EzyRabbitRequestHandlers requestHandlers,
-        EzyRabbitRequestInterceptors requestInterceptors
-    ) {
-        this(
-            0,
-            dataCodec,
-            server,
-            requestHandlers,
-            requestInterceptors
-        );
-    }
 
     public EzyRabbitRpcConsumer(
         int threadPoolSize,
@@ -59,7 +46,7 @@ public class EzyRabbitRpcConsumer
         this.dataCodec = dataCodec;
         this.requestHandlers = requestHandlers;
         this.requestInterceptors = requestInterceptors;
-        this.threadPoolSize = threadPoolSize > 0 ? threadPoolSize : 1;
+        this.threadPoolSize = threadPoolSize;
         this.executorService = newExecutorService();
         this.executorService.execute();
     }
@@ -139,10 +126,7 @@ public class EzyRabbitRpcConsumer
                 responseHeaders.put(EzyRabbitKeys.STATUS, EzyRabbitStatusCodes.INTERNAL_SERVER_ERROR);
             }
 
-            String errorMessage = e.getMessage();
-            if (errorMessage == null) {
-                errorMessage = e.toString();
-            }
+            String errorMessage = getExceptionMessage(e);
             responseHeaders.put(EzyRabbitKeys.MESSAGE, errorMessage);
             replyPropertiesBuilder.headers(responseHeaders);
             requestInterceptors.postHandle(cmd, requestEntity, e);
@@ -155,14 +139,16 @@ public class EzyRabbitRpcConsumer
     }
 
     public static class Builder implements EzyBuilder<EzyRabbitRpcConsumer> {
-        protected int threadPoolSize;
+        protected int threadPoolSize = 1;
         protected EzyRabbitRpcServer server;
         protected EzyMQDataCodec dataCodec;
         protected EzyRabbitRequestHandlers requestHandlers;
         protected EzyRabbitRequestInterceptors requestInterceptors;
 
         public Builder threadPoolSize(int threadPoolSize) {
-            this.threadPoolSize = threadPoolSize;
+            if (threadPoolSize > 0) {
+                this.threadPoolSize = threadPoolSize;
+            }
             return this;
         }
 

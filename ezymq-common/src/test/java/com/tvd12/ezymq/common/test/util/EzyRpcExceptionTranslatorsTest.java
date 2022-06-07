@@ -15,10 +15,33 @@ import org.testng.annotations.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.tvd12.ezymq.common.util.EzyRpcExceptionTranslators.exceptionToResponseHeaders;
-import static com.tvd12.ezymq.common.util.EzyRpcExceptionTranslators.responseHeadersToException;
+import static com.tvd12.ezymq.common.util.EzyRpcExceptionTranslators.*;
 
 public class EzyRpcExceptionTranslatorsTest extends BaseTest {
+
+    @Test
+    public void getExceptionMessageNullTest() {
+        // given
+        Exception e = new Exception();
+
+        // when
+        String actual = getExceptionMessage(e);
+
+        // then
+        Asserts.assertEquals(actual, "java.lang.Exception");
+    }
+
+    @Test
+    public void getExceptionMessageTest() {
+        // given
+        Exception e = new Exception("test");
+
+        // when
+        String actual = getExceptionMessage(e);
+
+        // then
+        Asserts.assertEquals(actual, "test");
+    }
 
     @Test
     public void exceptionToResponseHeadersWithNotFoundExceptionTest() {

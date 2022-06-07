@@ -16,6 +16,14 @@ public final class EzyRpcExceptionTranslators {
 
     private EzyRpcExceptionTranslators() {}
 
+    public static String getExceptionMessage(Throwable exception) {
+        String message = exception.getMessage();
+        if (message == null) {
+            message = exception.toString();
+        }
+        return message;
+    }
+
     public static Map<String, Object> exceptionToResponseHeaders(Throwable e) {
         Map<String, Object> responseHeaders = new HashMap<>();
         if (e instanceof NotFoundException) {

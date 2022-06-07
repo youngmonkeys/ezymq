@@ -47,6 +47,7 @@ public class RabbitRpcAllRunner3 extends RabbitBaseTest {
                 System.out.println("thread-" + Thread.currentThread().getName() + ": start server");
                 EzyRabbitRpcServer server = newServer();
                 new EzyRabbitRpcConsumer(
+                    1,
                     dataCodec,
                     server,
                     requestHandlers,
