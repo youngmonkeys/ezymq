@@ -30,8 +30,8 @@ public class EzyRabbitSettings extends EzyMQRpcSettings {
     public static final String KEY_USERNAME = "rabbitmq.username";
     public static final String KEY_PASSWORD = "rabbitmq.password";
     public static final String KEY_VHOST = "rabbitmq.vhost";
-    public static final String KEY_MAX_CONNECTION_ATTEMPTS = "rabbitmq.requested_heart_beat";
-    public static final String KEY_REQUESTED_HEART_BEAT = "rabbitmq.max_connection_attempts";
+    public static final String KEY_MAX_CONNECTION_ATTEMPTS = "rabbitmq.max_connection_attempts";
+    public static final String KEY_REQUESTED_HEART_BEAT = "rabbitmq.requested_heart_beat";
     public static final String KEY_SHARED_THREAD_POOL_SIZE = "rabbitmq.shared_thread_pool_size";
     public static final String KEY_CAPACITY = "capacity";
     public static final String KEY_CONSUMER = "consumer";

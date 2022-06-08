@@ -56,7 +56,7 @@ public class EzyRabbitConnectionFactory
                     throw e;
                 }
                 logger.error(
-                    "can not get redis client, retry count: {}",
+                    "can not connect to the broker, retry count: {}",
                     ++retryCount,
                     e
                 );

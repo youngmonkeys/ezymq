@@ -1,13 +1,13 @@
 package com.tvd12.ezymq.rabbitmq.test;
 
-import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcClient;
-import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitResponseConsumer;
+import com.tvd12.ezymq.rabbitmq.factory.EzyRabbitSimpleCorrelationIdFactory;
 import com.tvd12.ezymq.rabbitmq.test.mockup.ChannelMockup;
 import com.tvd12.test.base.BaseTest;
 import org.testng.annotations.Test;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeoutException;
 
 public class EzyRabbitRpcClientTest extends BaseTest {
@@ -33,8 +33,8 @@ public class EzyRabbitRpcClientTest extends BaseTest {
                 }
             });
         }
-        for (int i = 0; i < threads.length; ++i) {
-            threads[i].start();
+        for (Thread value : threads) {
+            value.start();
         }
         Thread.sleep(500);
 
@@ -54,8 +54,8 @@ public class EzyRabbitRpcClientTest extends BaseTest {
                 }
             });
         }
-        for (int i = 0; i < threads.length; ++i) {
-            threads[i].start();
+        for (Thread thread : threads) {
+            thread.start();
         }
         Thread.sleep(500);
         channel.basicCancel("shutdown_EzyRabbitRpcClientTest-replyQueueName");
@@ -71,13 +71,13 @@ public class EzyRabbitRpcClientTest extends BaseTest {
             "EzyRabbitRpcClientTest-replyRoutingKey",
             3,
             timeout,
-            new EzyRabbitResponseConsumer() {
-
-                @Override
-                public void consume(BasicProperties properties, byte[] responseBody) {
-                    System.out.println("EzyRabbitResponseConsumer: " + properties + ", " + responseBody);
-                }
-            });
+            new EzyRabbitSimpleCorrelationIdFactory(),
+            (properties, responseBody) ->
+                System.out.println(
+                    "EzyRabbitResponseConsumer: " +
+                    properties + ", " + Arrays.toString(responseBody)
+                )
+        );
     }
 
 }

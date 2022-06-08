@@ -6,6 +6,7 @@ import com.tvd12.ezyfox.concurrent.EzyFuture;
 import com.tvd12.ezyfox.concurrent.EzyFutureConcurrentHashMap;
 import com.tvd12.ezyfox.concurrent.EzyFutureMap;
 import com.tvd12.ezyfox.util.EzyCloseable;
+import com.tvd12.ezyfox.util.EzyReturner;
 import com.tvd12.ezymq.rabbitmq.exception.EzyRabbitMaxCapacity;
 import com.tvd12.ezymq.rabbitmq.factory.EzyRabbitCorrelationIdFactory;
 import com.tvd12.ezymq.rabbitmq.factory.EzyRabbitSimpleCorrelationIdFactory;
@@ -28,29 +29,6 @@ public class EzyRabbitRpcClient
     protected final EzyFutureMap<String> futureMap;
     protected final EzyRabbitCorrelationIdFactory correlationIdFactory;
     protected final EzyRabbitResponseConsumer unconsumedResponseConsumer;
-
-    public EzyRabbitRpcClient(
-        Channel channel,
-        String exchange,
-        String routingKey,
-        String replyQueueName,
-        String replyRoutingKey,
-        int capacity,
-        int defaultTimeout,
-        EzyRabbitResponseConsumer unconsumedResponseConsumer
-    ) throws IOException {
-        this(
-            channel,
-            exchange,
-            routingKey,
-            replyQueueName,
-            replyRoutingKey,
-            capacity,
-            defaultTimeout,
-            new EzyRabbitSimpleCorrelationIdFactory(),
-            unconsumedResponseConsumer
-        );
-    }
 
     public EzyRabbitRpcClient(
         Channel channel,
@@ -233,11 +211,11 @@ public class EzyRabbitRpcClient
 
         @Override
         public EzyRabbitRpcClient build() {
-            try {
-                if (correlationIdFactory == null) {
-                    correlationIdFactory = new EzyRabbitSimpleCorrelationIdFactory();
-                }
-                return new EzyRabbitRpcClient(
+            if (correlationIdFactory == null) {
+                correlationIdFactory = new EzyRabbitSimpleCorrelationIdFactory();
+            }
+            return EzyReturner.returnWithException(() ->
+                new EzyRabbitRpcClient(
                     channel,
                     exchange,
                     routingKey,
@@ -247,10 +225,8 @@ public class EzyRabbitRpcClient
                     defaultTimeout,
                     correlationIdFactory,
                     unconsumedResponseConsumer
-                );
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+                )
+            );
         }
     }
 }
