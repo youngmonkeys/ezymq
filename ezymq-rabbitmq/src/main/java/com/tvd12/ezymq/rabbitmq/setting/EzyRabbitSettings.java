@@ -238,7 +238,7 @@ public class EzyRabbitSettings extends EzyMQRpcSettings {
                         .consumerQueueName(
                             consumerProperties.getProperty(
                                 KEY_QUEUE_NAME,
-                                "topic-" + name + "-queue"
+                                UUID.randomUUID().toString()
                             )
                         )
                         .messageConsumersByTopic(
