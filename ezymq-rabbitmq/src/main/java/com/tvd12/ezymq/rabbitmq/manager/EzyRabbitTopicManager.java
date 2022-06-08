@@ -103,7 +103,7 @@ public class EzyRabbitTopicManager
         channel.basicQos(setting.getPrefetchCount());
         channel.exchangeDeclare(
             setting.getExchange(),
-            EzyRabbitExchangeTypes.FANOUT
+            EzyRabbitExchangeTypes.TOPIC
         );
         if (setting.getConsumerQueueName() == null) {
             return;

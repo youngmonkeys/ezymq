@@ -87,11 +87,15 @@ public class EzyRabbitTopic<T> implements EzyCloseable {
             );
         }
         synchronized (this) {
+            boolean needStartConsuming = false;
             if (!consuming) {
                 this.consuming = true;
-                this.startConsuming();
+                needStartConsuming = true;
             }
             consumers.addConsumer(cmd, consumer);
+            if (needStartConsuming) {
+                this.startConsuming();
+            }
         }
     }
 

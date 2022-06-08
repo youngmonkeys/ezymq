@@ -1,0 +1,5 @@
+rabbitmq:
+  topics:
+    hello:
+      consumer:
+        queue_name: topic-hello-queue-1
