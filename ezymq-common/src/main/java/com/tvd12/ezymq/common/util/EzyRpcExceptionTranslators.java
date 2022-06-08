@@ -41,11 +41,7 @@ public final class EzyRpcExceptionTranslators {
         } else {
             responseHeaders.put(EzyRpcHeaderKeys.STATUS, EzyRpcStatusCodes.INTERNAL_SERVER_ERROR);
         }
-        String errorMessage = e.getMessage();
-        if (errorMessage == null) {
-            errorMessage = e.toString();
-        }
-        responseHeaders.put(EzyRpcHeaderKeys.MESSAGE, errorMessage);
+        responseHeaders.put(EzyRpcHeaderKeys.MESSAGE, getExceptionMessage(e));
         return responseHeaders;
     }
 

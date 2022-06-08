@@ -4,19 +4,17 @@ import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.RpcClient.Response;
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
-import com.tvd12.ezyfox.exception.BadRequestException;
 import com.tvd12.ezyfox.exception.EzyTimeoutException;
 import com.tvd12.ezyfox.exception.InternalServerErrorException;
-import com.tvd12.ezyfox.exception.NotFoundException;
 import com.tvd12.ezyfox.message.EzyMessageTypeFetcher;
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyLoggable;
-import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitKeys;
-import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitStatusCodes;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcClient;
 
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
+
+import static com.tvd12.ezymq.common.util.EzyRpcExceptionTranslators.responseHeadersToException;
 
 public class EzyRabbitRpcProducer
     extends EzyLoggable
@@ -74,30 +72,9 @@ public class EzyRabbitRpcProducer
         Response responseData = rawCall(requestProperties, requestMessage);
         BasicProperties responseProperties = responseData.getProperties();
         Map<String, Object> responseHeaders = responseProperties.getHeaders();
-        processResponseHeaders(responseHeaders);
+        responseHeadersToException(responseHeaders);
         byte[] responseBody = responseData.getBody();
         return entityCodec.deserialize(responseBody, returnType);
-    }
-
-    protected void processResponseHeaders(Map<String, Object> responseHeaders) {
-        if (responseHeaders == null) {
-            return;
-        }
-        Integer status = (Integer) responseHeaders.get(EzyRabbitKeys.STATUS);
-        if (status == null) {
-            return;
-        }
-        String message = responseHeaders.get(EzyRabbitKeys.MESSAGE).toString();
-        Integer code = (Integer) responseHeaders.get(EzyRabbitKeys.ERROR_CODE);
-        if (status.equals(EzyRabbitStatusCodes.NOT_FOUND)) {
-            throw new NotFoundException(message);
-        }
-        if (status.equals(EzyRabbitStatusCodes.BAD_REQUEST)) {
-            throw new BadRequestException(code, message);
-        }
-        if (status.equals(EzyRabbitStatusCodes.INTERNAL_SERVER_ERROR)) {
-            throw new InternalServerErrorException(message);
-        }
     }
 
     protected void rawFire(

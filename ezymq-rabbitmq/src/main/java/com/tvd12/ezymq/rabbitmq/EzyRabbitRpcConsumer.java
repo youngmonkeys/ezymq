@@ -3,25 +3,18 @@ package com.tvd12.ezymq.rabbitmq;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.concurrent.EzyThreadList;
-import com.tvd12.ezyfox.exception.BadRequestException;
-import com.tvd12.ezyfox.exception.NotFoundException;
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 import com.tvd12.ezymq.rabbitmq.concurrent.EzyRabbitThreadFactory;
-import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitErrorCodes;
-import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitKeys;
-import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitStatusCodes;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcServer;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestHandlers;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRequestInterceptors;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitRpcCallHandler;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ThreadFactory;
 
-import static com.tvd12.ezymq.common.util.EzyRpcExceptionTranslators.getExceptionMessage;
+import static com.tvd12.ezymq.common.util.EzyRpcExceptionTranslators.exceptionToResponseHeaders;
 
 public class EzyRabbitRpcConsumer
     extends EzyLoggable
@@ -109,26 +102,7 @@ public class EzyRabbitRpcConsumer
             requestInterceptors.postHandle(cmd, requestEntity, responseEntity);
         } catch (Exception e) {
             responseBytes = new byte[0];
-            Map<String, Object> responseHeaders = new HashMap<>();
-            if (e instanceof NotFoundException) {
-                responseHeaders.put(EzyRabbitKeys.STATUS, EzyRabbitStatusCodes.NOT_FOUND);
-            } else if (e instanceof BadRequestException) {
-                BadRequestException badEx = (BadRequestException) e;
-                responseHeaders.put(EzyRabbitKeys.STATUS, EzyRabbitStatusCodes.BAD_REQUEST);
-                responseHeaders.put(EzyRabbitKeys.ERROR_CODE, badEx.getCode());
-            } else if (e instanceof IllegalArgumentException) {
-                responseHeaders.put(EzyRabbitKeys.STATUS, EzyRabbitStatusCodes.BAD_REQUEST);
-                responseHeaders.put(EzyRabbitKeys.ERROR_CODE, EzyRabbitErrorCodes.INVALID_ARGUMENT);
-            } else if (e instanceof UnsupportedOperationException) {
-                responseHeaders.put(EzyRabbitKeys.STATUS, EzyRabbitStatusCodes.BAD_REQUEST);
-                responseHeaders.put(EzyRabbitKeys.ERROR_CODE, EzyRabbitErrorCodes.UNSUPPORTED_OPERATION);
-            } else {
-                responseHeaders.put(EzyRabbitKeys.STATUS, EzyRabbitStatusCodes.INTERNAL_SERVER_ERROR);
-            }
-
-            String errorMessage = getExceptionMessage(e);
-            responseHeaders.put(EzyRabbitKeys.MESSAGE, errorMessage);
-            replyPropertiesBuilder.headers(responseHeaders);
+            replyPropertiesBuilder.headers(exceptionToResponseHeaders(e));
             requestInterceptors.postHandle(cmd, requestEntity, e);
         }
         return responseBytes;
