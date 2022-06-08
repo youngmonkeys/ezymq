@@ -3,6 +3,7 @@ package com.tvd12.ezymq.rabbitmq.endpoint;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.*;
 import com.tvd12.ezyfox.io.EzyStrings;
+import com.tvd12.ezyfox.util.EzyReturner;
 import com.tvd12.ezyfox.util.EzyStartable;
 import com.tvd12.ezymq.rabbitmq.handler.EzyRabbitMessageHandler;
 import lombok.Setter;
@@ -70,15 +71,13 @@ public class EzyRabbitTopicServer
 
         @Override
         public EzyRabbitTopicServer build() {
-            try {
-                return new EzyRabbitTopicServer(
+            return EzyReturner.returnWithException(() ->
+                new EzyRabbitTopicServer(
                     channel,
                     exchange,
                     queueName
-                );
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+                )
+            );
         }
     }
 }

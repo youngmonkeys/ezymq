@@ -2,6 +2,7 @@ package com.tvd12.ezymq.rabbitmq.manager;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
+import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitTopic;
 import com.tvd12.ezymq.rabbitmq.constant.EzyRabbitExchangeTypes;
@@ -13,7 +14,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class EzyRabbitTopicManager extends EzyRabbitAbstractManager {
+public class EzyRabbitTopicManager
+    extends EzyRabbitAbstractManager
+    implements EzyCloseable {
 
     protected final EzyMQDataCodec dataCodec;
     protected final Map<String, EzyRabbitTopic> topics;
@@ -119,5 +122,12 @@ public class EzyRabbitTopicManager extends EzyRabbitAbstractManager {
             setting.getExchange(),
             setting.getProducerRoutingKey()
         );
+    }
+
+    @Override
+    public void close() {
+        for (EzyRabbitTopic topic : topics.values()) {
+            topic.close();
+        }
     }
 }

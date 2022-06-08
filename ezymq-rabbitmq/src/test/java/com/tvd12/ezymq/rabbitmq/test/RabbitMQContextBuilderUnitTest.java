@@ -98,65 +98,65 @@ public class RabbitMQContextBuilderUnitTest extends BaseTest {
         EzyRabbitTopic<String> topic = context.getTopic("test");
         topic.addConsumer(message -> System.out.println("topic message: " + message));
         topic.publish("hello topic");
-        EzyRabbitRpcProducer consumer = context.getRpcProducer("fibonacci");
+        EzyRabbitRpcProducer producer = context.getRpcProducer("fibonacci");
         long start = System.currentTimeMillis();
         for (int i = 0; i < 1; ++i) {
             System.out.println("rabbit rpc start call: " + i);
             try {
-                consumer.fire("fibonacci", 50);
-                consumer.fire("fibonacci", 0);
+                producer.fire("fibonacci", 50);
+                producer.fire("fibonacci", 0);
             } catch (Exception e) {
                 e.printStackTrace();
             }
             try {
-                int result = consumer.call("fibonacci", 100, int.class);
+                int result = producer.call("fibonacci", 100, int.class);
                 System.out.println("i = " + i + ", result = " + result);
             } catch (Exception e) {
                 e.printStackTrace();
             }
             try {
-                consumer.call("fibonacci", 0, int.class);
+                producer.call("fibonacci", 0, int.class);
             } catch (Exception e) {
                 e.printStackTrace();
             }
             try {
-                consumer.call("fibonacci", -1, int.class);
+                producer.call("fibonacci", -1, int.class);
             } catch (Exception e) {
                 e.printStackTrace();
             }
             try {
-                consumer.call("fibonacci", -2, int.class);
+                producer.call("fibonacci", -2, int.class);
             } catch (Exception e) {
                 e.printStackTrace();
             }
             try {
-                consumer.call("fibonacci", -3, int.class);
+                producer.call("fibonacci", -3, int.class);
             } catch (Exception e) {
                 e.printStackTrace();
             }
             try {
-                consumer.call("fibonacci", -4, int.class);
+                producer.call("fibonacci", -4, int.class);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         try {
-            consumer.call(new Object(), int.class);
+            producer.call(new Object(), int.class);
         } catch (Exception e) {
             assert e instanceof IllegalArgumentException;
         }
         try {
-            consumer.call(new FiboRequest2(), int.class);
+            producer.call(new FiboRequest2(), int.class);
         } catch (Exception e) {
             e.printStackTrace();
         }
         try {
-            consumer.fire(new Object());
+            producer.fire(new Object());
         } catch (Exception e) {
             assert e instanceof IllegalArgumentException;
         }
         try {
-            consumer.fire(new FiboRequest2());
+            producer.fire(new FiboRequest2());
         } catch (Exception e) {
             e.printStackTrace();
         }

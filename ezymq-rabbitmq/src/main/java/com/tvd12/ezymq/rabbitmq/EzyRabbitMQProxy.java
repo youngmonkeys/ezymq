@@ -48,6 +48,7 @@ public class EzyRabbitMQProxy extends EzyMQRpcProxy<EzyRabbitSettings> {
 
     @Override
     public void close() {
+        topicManager.close();
         rpcConsumerManager.close();
         rpcProducerManager.close();
         if (connectionFactory instanceof EzyRabbitConnectionFactory) {
