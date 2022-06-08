@@ -10,7 +10,7 @@ EzyMQ is a library in EzyFox ecosystem, It support to interact to Message Queue
 
 # Code Example
 
-[https://github.com/tvd12/ezyfox-examples][https://github.com/tvd12/ezyfox-examples]
+[https://github.com/tvd12/ezyfox-examples](https://github.com/tvd12/ezyfox-examples)
 
 # Motivation
 
