@@ -46,7 +46,7 @@ public class EzyRabbitSettings extends EzyMQRpcSettings {
     public static final String KEY_PRODUCER = "producer";
     public static final String KEY_QUEUE_NAME = "queue_name";
     public static final String KEY_REPLY_QUEUE_NAME = "reply_queue_name";
-    public static final String KEY_REPLY_ROUTING_KEY = "reply_queue_name";
+    public static final String KEY_REPLY_ROUTING_KEY = "reply_routing_key";
     public static final String KEY_REQUEST_QUEUE_NAME = "request_queue_name";
     public static final String KEY_REQUEST_ROUTING_KEY = "request_routing_key";
     public static final String KEY_ROUTING_KEY = "routing_key";
@@ -220,7 +220,14 @@ public class EzyRabbitSettings extends EzyMQRpcSettings {
                         KEY_PRODUCER
                     );
                     builder
-                        .producerEnable(true)
+                        .producerEnable(
+                            Boolean.parseBoolean(
+                                producerProperties.getOrDefault(
+                                    KEY_ENABLE,
+                                    true
+                                ).toString()
+                            )
+                        )
                         .producerRoutingKey(
                             producerProperties.getProperty(
                                 KEY_ROUTING_KEY,
@@ -234,7 +241,14 @@ public class EzyRabbitSettings extends EzyMQRpcSettings {
                         KEY_CONSUMER
                     );
                     builder
-                        .consumerEnable(true)
+                        .consumerEnable(
+                            Boolean.parseBoolean(
+                                consumerProperties.getOrDefault(
+                                    KEY_ENABLE,
+                                    true
+                                ).toString()
+                            )
+                        )
                         .consumerQueueName(
                             consumerProperties.getProperty(
                                 KEY_QUEUE_NAME,

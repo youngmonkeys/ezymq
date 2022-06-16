@@ -164,6 +164,7 @@ public class EzyActiveSettings extends EzyMQRpcSettings {
             );
         }
 
+        @SuppressWarnings("MethodLength")
         private void buildTopicSettings() {
             Properties topicsProperties =
                 getPropertiesByPrefix(properties, KEY_TOPICS);
@@ -206,7 +207,14 @@ public class EzyActiveSettings extends EzyMQRpcSettings {
                         KEY_CONSUMER
                     );
                     builder
-                        .consumerEnable(true)
+                        .consumerEnable(
+                            Boolean.parseBoolean(
+                                consumerProperties.getOrDefault(
+                                    KEY_ENABLE,
+                                    true
+                                ).toString()
+                            )
+                        )
                         .consumerThreadPoolSize(
                             Integer.parseInt(
                                 consumerProperties.getOrDefault(
@@ -216,7 +224,7 @@ public class EzyActiveSettings extends EzyMQRpcSettings {
                             )
                         );
                 }
-                topicSettings.put(name, builder.build());;
+                topicSettings.put(name, builder.build());
             }
         }
 
