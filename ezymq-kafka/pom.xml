@@ -10,10 +10,6 @@
     <name>ezymq-kafka</name>
     <url>http://maven.apache.org</url>
 
-    <properties>
-        <kafka.version>2.8.1</kafka.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.tvd12</groupId>

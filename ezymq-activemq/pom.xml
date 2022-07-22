@@ -11,10 +11,6 @@
     <name>ezymq-activemq</name>
     <url>http://maven.apache.org</url>
 
-    <properties>
-        <activemq.version>5.16.5</activemq.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.tvd12</groupId>
