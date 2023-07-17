@@ -66,6 +66,7 @@
 		<activemq.version>5.16.6</activemq.version>
 		<kafka.version>2.8.2</kafka.version>
 		<rabbitmq.version>5.16.0</rabbitmq.version>
+		<paho.version>1.2.5</paho.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -109,9 +110,10 @@
 	</build>
 
 	<modules>
+		<module>ezymq-common</module>
 		<module>ezymq-kafka</module>
 		<module>ezymq-rabbitmq</module>
 		<module>ezymq-activemq</module>
-        <module>ezymq-common</module>
+		<module>ezymq-mosquitto</module>
     </modules>
 </project>
