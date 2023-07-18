@@ -1,16 +1,14 @@
 package com.tvd12.ezymq.mosquitto.manager;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.eclipse.paho.client.mqttv3.MqttClient;
-
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.mosquitto.EzyMosquittoRpcProducer;
 import com.tvd12.ezymq.mosquitto.endpoint.EzyMosquittoRpcClient;
-import com.tvd12.ezymq.mosquitto.endpoint.EzyMqttCallbackProxy;
+import com.tvd12.ezymq.mosquitto.endpoint.EzyMqttClientProxy;
 import com.tvd12.ezymq.mosquitto.setting.EzyMosquittoRpcProducerSetting;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class EzyMosquittoRpcProducerManager
     extends EzyMosquittoAbstractManager
@@ -21,15 +19,14 @@ public class EzyMosquittoRpcProducerManager
     protected final Map<String, EzyMosquittoRpcProducerSetting> rpcProducerSettings;
 
     public EzyMosquittoRpcProducerManager(
-        MqttClient mqttClient,
-        EzyMqttCallbackProxy mqttCallbackProxy,
+        EzyMqttClientProxy mqttClient,
         EzyEntityCodec entityCodec,
         Map<String, EzyMosquittoRpcProducerSetting> rpcProducerSettings
     ) {
         super(mqttClient);
         this.entityCodec = entityCodec;
         this.rpcProducerSettings = rpcProducerSettings;
-        this.rpProducers = createRpcProducers(mqttCallbackProxy);
+        this.rpProducers = createRpcProducers();
     }
 
     public EzyMosquittoRpcProducer getRpcProducer(String name) {
@@ -42,19 +39,13 @@ public class EzyMosquittoRpcProducerManager
         return producer;
     }
 
-    protected Map<String, EzyMosquittoRpcProducer> createRpcProducers(
-        EzyMqttCallbackProxy mqttCallbackProxy
-    ) {
+    protected Map<String, EzyMosquittoRpcProducer> createRpcProducers() {
         Map<String, EzyMosquittoRpcProducer> map = new HashMap<>();
         for (String name : rpcProducerSettings.keySet()) {
             EzyMosquittoRpcProducerSetting setting = rpcProducerSettings.get(name);
             map.put(
                 name,
-                createRpcProducer(
-                    name,
-                    setting,
-                    mqttCallbackProxy
-                )
+                createRpcProducer(name, setting)
             );
         }
         return map;
@@ -62,14 +53,10 @@ public class EzyMosquittoRpcProducerManager
 
     protected EzyMosquittoRpcProducer createRpcProducer(
         String name,
-        EzyMosquittoRpcProducerSetting setting,
-        EzyMqttCallbackProxy mqttCallbackProxy
+        EzyMosquittoRpcProducerSetting setting
     ) {
         try {
-            return createRpcProducer(
-                setting,
-                mqttCallbackProxy
-            );
+            return createRpcProducer(setting);
         } catch (Exception e) {
             throw new IllegalStateException(
                 "create rpc producer: " + name + " error",
@@ -79,23 +66,25 @@ public class EzyMosquittoRpcProducerManager
     }
 
     protected EzyMosquittoRpcProducer createRpcProducer(
-        EzyMosquittoRpcProducerSetting setting,
-        EzyMqttCallbackProxy mqttCallbackProxy
-    ) {
+        EzyMosquittoRpcProducerSetting setting
+    ) throws Exception {
+        String topic = setting.getTopic();
         EzyMosquittoRpcClient client = EzyMosquittoRpcClient
             .builder()
-            .topic(setting.getTopic())
+            .topic(topic)
             .mqttClient(mqttClient)
-            .mqttCallbackProxy(mqttCallbackProxy)
             .capacity(setting.getCapacity())
             .defaultTimeout(setting.getDefaultTimeout())
             .messageIdFactory(setting.getMessageIdFactory())
             .unconsumedResponseConsumer(setting.getUnconsumedResponseConsumer())
             .build();
-        return EzyMosquittoRpcProducer
+        EzyMosquittoRpcProducer producer = EzyMosquittoRpcProducer
             .builder()
             .entityCodec(entityCodec)
-            .client(client).build();
+            .client(client)
+            .build();
+        mqttClient.subscribe(topic);
+        return producer;
     }
 
     public void close() {

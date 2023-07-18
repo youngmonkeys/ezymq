@@ -181,15 +181,14 @@ public class EzyMosquittoSettings extends EzyMQRpcSettings {
                         topicProperties,
                         KEY_PRODUCER
                     );
-                    builder
-                        .producerEnable(
-                            Boolean.parseBoolean(
-                                producerProperties.getOrDefault(
-                                    KEY_ENABLE,
-                                    true
-                                ).toString()
-                            )
-                        );
+                    builder.producerEnable(
+                        Boolean.parseBoolean(
+                            producerProperties.getOrDefault(
+                                KEY_ENABLE,
+                                true
+                            ).toString()
+                        )
+                    );
                 }
                 if (topicProperties.containsKey(KEY_CONSUMER)) {
                     Properties consumerProperties = getPropertiesByPrefix(

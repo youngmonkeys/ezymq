@@ -1,15 +1,13 @@
 package com.tvd12.ezymq.mosquitto.endpoint;
 
-import static com.tvd12.ezymq.mosquitto.util.EzyMqttMessages.toMqttMessage;
-
-import org.eclipse.paho.client.mqttv3.MqttClient;
-
 import com.tvd12.ezymq.mosquitto.util.EzyMosquittoProperties;
+
+import static com.tvd12.ezymq.mosquitto.util.EzyMqttMessages.toMqttMqMessage;
 
 public class EzyMosquittoTopicClient extends EzyMosquittoEndpoint {
 
     public EzyMosquittoTopicClient(
-        MqttClient mqttClient,
+        EzyMqttClientProxy mqttClient,
         String topic
     ) {
         super(mqttClient, topic);
@@ -25,7 +23,7 @@ public class EzyMosquittoTopicClient extends EzyMosquittoEndpoint {
     ) throws Exception {
         mqttClient.publish(
             topic,
-            toMqttMessage(rpcTopic, props, message)
+            toMqttMqMessage(props, message)
         );
     }
 

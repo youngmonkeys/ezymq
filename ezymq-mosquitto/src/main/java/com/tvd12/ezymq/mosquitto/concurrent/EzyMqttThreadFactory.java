@@ -2,9 +2,9 @@ package com.tvd12.ezymq.mosquitto.concurrent;
 
 import com.tvd12.ezyfox.concurrent.EzyThreadFactory;
 
-public class EzyRabbitThreadFactory extends EzyThreadFactory {
+public class EzyMqttThreadFactory extends EzyThreadFactory {
 
-    protected EzyRabbitThreadFactory(Builder builder) {
+    protected EzyMqttThreadFactory(Builder builder) {
         super(builder);
     }
 
@@ -20,12 +20,12 @@ public class EzyRabbitThreadFactory extends EzyThreadFactory {
 
         protected Builder() {
             super();
-            this.prefix = "ezymq-rabbitmq";
+            this.prefix = "ezymq-mosquitto";
         }
 
         @Override
         public EzyThreadFactory build() {
-            return new EzyRabbitThreadFactory(this);
+            return new EzyMqttThreadFactory(this);
         }
     }
 }

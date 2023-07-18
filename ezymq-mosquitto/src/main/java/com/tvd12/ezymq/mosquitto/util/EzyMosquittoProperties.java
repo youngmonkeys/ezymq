@@ -1,13 +1,9 @@
 package com.tvd12.ezymq.mosquitto.util;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import com.tvd12.ezyfox.builder.EzyBuilder;
-
 import lombok.Getter;
+
+import java.util.Map;
 
 @Getter
 public class EzyMosquittoProperties {
@@ -53,7 +49,7 @@ public class EzyMosquittoProperties {
         protected String messageType = "";
         protected int qos = 1;
         protected boolean retained;
-        protected final Map<String, Object> headers = new HashMap<>();
+        protected Map<String, Object> headers;
 
         public Builder qos(int qos) {
             this.qos = qos;
@@ -76,7 +72,7 @@ public class EzyMosquittoProperties {
         }
 
         public Builder headers(Map<String, Object> headers) {
-            this.headers.putAll(headers);
+            this.headers = headers;
             return this;
         }
 

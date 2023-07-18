@@ -1,24 +1,21 @@
 package com.tvd12.ezymq.mosquitto.endpoint;
 
-import static com.tvd12.ezymq.mosquitto.util.EzyMqttMessages.toMqttMessage;
-
-import java.util.Map;
-import java.util.concurrent.TimeoutException;
-
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-
 import com.tvd12.ezyfox.concurrent.EzyFuture;
 import com.tvd12.ezyfox.concurrent.EzyFutureConcurrentHashMap;
 import com.tvd12.ezyfox.concurrent.EzyFutureMap;
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyReturner;
-import com.tvd12.ezymq.mosquitto.exception.EzyMqttConnectionLostException;
 import com.tvd12.ezymq.mosquitto.exception.EzyMosquittoMaxCapacity;
+import com.tvd12.ezymq.mosquitto.exception.EzyMqttConnectionLostException;
 import com.tvd12.ezymq.mosquitto.factory.EzyMosquittoMessageIdFactory;
 import com.tvd12.ezymq.mosquitto.factory.EzyMosquittoSimpleMessageIdFactory;
 import com.tvd12.ezymq.mosquitto.handler.EzyMosquittoResponseConsumer;
 import com.tvd12.ezymq.mosquitto.util.EzyMosquittoProperties;
+
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
+
+import static com.tvd12.ezymq.mosquitto.util.EzyMqttMessages.toMqttMqMessage;
 
 public class EzyMosquittoRpcClient
     extends EzyMosquittoEndpoint
@@ -31,9 +28,8 @@ public class EzyMosquittoRpcClient
     protected final EzyMosquittoResponseConsumer unconsumedResponseConsumer;
 
     public EzyMosquittoRpcClient(
-        MqttClient mqttClient,
+        EzyMqttClientProxy mqttClient,
         String topic,
-        EzyMqttCallbackProxy mqttCallbackProxy,
         int capacity,
         int defaultTimeout,
         EzyMosquittoMessageIdFactory messageIdFactory,
@@ -45,7 +41,7 @@ public class EzyMosquittoRpcClient
         this.messageIdFactory = messageIdFactory;
         this.futureMap = new EzyFutureConcurrentHashMap<>();
         this.unconsumedResponseConsumer = unconsumedResponseConsumer;
-        mqttCallbackProxy.registerCallback(
+        this.mqttClient.registerCallback(
             topic,
             setupMqttCallback()
         );
@@ -130,8 +126,7 @@ public class EzyMosquittoRpcClient
         EzyMosquittoProperties props,
         byte[] message
     ) throws Exception {
-        MqttMessage mqttMessage = toMqttMessage(rpcTopic, props, message);
-        mqttClient.publish(topic, mqttMessage);
+        mqttClient.publish(topic, toMqttMqMessage(props, message));
     }
 
     public static Builder builder() {
@@ -142,7 +137,6 @@ public class EzyMosquittoRpcClient
 
         protected int capacity;
         protected int defaultTimeout;
-        protected EzyMqttCallbackProxy mqttCallbackProxy;
         protected EzyMosquittoMessageIdFactory messageIdFactory;
         protected EzyMosquittoResponseConsumer unconsumedResponseConsumer;
 
@@ -157,11 +151,6 @@ public class EzyMosquittoRpcClient
 
         public Builder defaultTimeout(int defaultTimeout) {
             this.defaultTimeout = defaultTimeout;
-            return this;
-        }
-
-        public Builder mqttCallbackProxy(EzyMqttCallbackProxy mqttCallbackProxy) {
-            this.mqttCallbackProxy = mqttCallbackProxy;
             return this;
         }
 
@@ -184,7 +173,6 @@ public class EzyMosquittoRpcClient
                 new EzyMosquittoRpcClient(
                     mqttClient,
                     topic,
-                    mqttCallbackProxy,
                     capacity,
                     defaultTimeout,
                     messageIdFactory,

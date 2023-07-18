@@ -1,21 +1,20 @@
 package com.tvd12.ezymq.mosquitto.endpoint;
 
-import static com.tvd12.ezyfox.io.EzyStrings.isNotEmpty;
-import static com.tvd12.ezyfox.util.EzyProcessor.processWithLogException;
+import com.tvd12.ezyfox.util.EzyCloseable;
+import com.tvd12.ezyfox.util.EzyLoggable;
+import com.tvd12.ezyfox.util.EzyThreads;
+import com.tvd12.ezymq.mosquitto.codec.EzyMqttMqMessageCodec;
+import lombok.AllArgsConstructor;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-
-import com.tvd12.ezyfox.util.EzyCloseable;
-import com.tvd12.ezyfox.util.EzyLoggable;
-import com.tvd12.ezyfox.util.EzyThreads;
-
-import lombok.AllArgsConstructor;
+import static com.tvd12.ezyfox.io.EzyStrings.isNotEmpty;
+import static com.tvd12.ezyfox.util.EzyProcessor.processWithLogException;
 
 @AllArgsConstructor
 public class EzyMqttClientFactory
@@ -27,19 +26,18 @@ public class EzyMqttClientFactory
     protected final String username;
     protected final String password;
     protected final int maxConnectionAttempts;
+    protected final EzyMqttMqMessageCodec mqttMqMessageCodec;
     protected final AtomicInteger clientIdGenerator =
         new AtomicInteger();
-    protected final List<MqttClient> createdMqttClients =
+    protected final List<EzyMqttClientProxy> createdMqttClients =
         Collections.synchronizedList(new ArrayList<>());
 
-    public MqttClient newMqttClient(
-        EzyMqttCallbackProxy mqttCallbackProxy
-    ) {
+    public EzyMqttClientProxy newMqttClient() {
         int retryCount = 0;
-        MqttClient mqttClient;
+        EzyMqttClientProxy mqttClientProxy;
         while (true) {
             try {
-                mqttClient = new MqttClient(
+                MqttClient mqttClient = new MqttClient(
                     serverUri,
                     clientIdPrefix + clientIdGenerator.incrementAndGet()
                 );
@@ -50,8 +48,11 @@ public class EzyMqttClientFactory
                 if (isNotEmpty(password)) {
                     options.setPassword(password.toCharArray());
                 }
-                mqttClient.connect();
-                mqttClient.setCallback(mqttCallbackProxy);
+                mqttClientProxy = new EzyMqttClientProxy(
+                    mqttClient,
+                    mqttMqMessageCodec
+                );
+                mqttClientProxy.connect();
                 break;
             } catch (Throwable e) {
                 if (retryCount >= maxConnectionAttempts) {
@@ -65,13 +66,13 @@ public class EzyMqttClientFactory
                 EzyThreads.sleep(3000);
             }
         }
-        createdMqttClients.add(mqttClient);
-        return mqttClient;
+        createdMqttClients.add(mqttClientProxy);
+        return mqttClientProxy;
     }
 
     @Override
     public void close() {
-        for (MqttClient mqttClient : createdMqttClients) {
+        for (EzyMqttClientProxy mqttClient : createdMqttClients) {
             processWithLogException(mqttClient::close);
         }
     }

@@ -1,17 +1,24 @@
 package com.tvd12.ezymq.mosquitto.endpoint;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
+import com.tvd12.ezyfox.util.EzyLoggable;
+import com.tvd12.ezymq.mosquitto.codec.EzyMqttMqMessageCodec;
+import com.tvd12.ezymq.mosquitto.exception.EzyMqttConnectionLostException;
+import com.tvd12.ezymq.mosquitto.message.EzyMqttMqMessage;
+import com.tvd12.ezymq.mosquitto.util.EzyMosquittoProperties;
+import lombok.AllArgsConstructor;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-import com.tvd12.ezymq.mosquitto.exception.EzyMqttConnectionLostException;
-import com.tvd12.ezymq.mosquitto.util.EzyMosquittoProperties;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class EzyMqttCallbackProxy implements MqttCallback {
+@AllArgsConstructor
+public class EzyMqttCallbackProxy
+    extends EzyLoggable
+    implements MqttCallback {
 
+    private final EzyMqttMqMessageCodec mqttMqMessageCodec;
     private final Map<String, EzyMqttCallback> callbackByTopic =
         new ConcurrentHashMap<>();
 
@@ -30,25 +37,40 @@ public class EzyMqttCallbackProxy implements MqttCallback {
     public void messageArrived(
         String topic,
         MqttMessage mqttMessage
-    ) throws Exception {
-        EzyMqttCallback callback = callbackByTopic.get(topic);
-        if (callback == null) {
-            return;
+    ) {
+        try {
+            EzyMqttCallback callback = callbackByTopic.get(topic);
+            if (callback == null) {
+                return;
+            }
+            emitMessage(callback, mqttMessage);
+        } catch (Exception e) {
+            logger.info("topic: {} process arrived message error", topic,  e);
         }
+    }
+
+    private void emitMessage(
+        EzyMqttCallback callback,
+        MqttMessage mqttMessage
+    ) throws Exception {
+        EzyMqttMqMessage mqttMqMessage =
+            mqttMqMessageCodec.decode(mqttMessage);
         EzyMosquittoProperties properties = EzyMosquittoProperties
             .builder()
             .messageId(mqttMessage.getId())
+            .messageType(mqttMqMessage.getType())
+            .headers(mqttMqMessage.getHeaders())
             .qos(mqttMessage.getQos())
             .retained(mqttMessage.isRetained())
             .build();
         callback.messageArrived(
             properties,
-            mqttMessage.getPayload()
+            mqttMqMessage.getBody()
         );
     }
 
     @Override
-    public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
+    public void deliveryComplete(IMqttDeliveryToken mqttDeliveryToken) {
         // do nothing
     }
 }

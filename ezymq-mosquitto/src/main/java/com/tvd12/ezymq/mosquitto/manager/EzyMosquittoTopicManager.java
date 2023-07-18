@@ -1,17 +1,15 @@
 package com.tvd12.ezymq.mosquitto.manager;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.eclipse.paho.client.mqttv3.MqttClient;
-
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 import com.tvd12.ezymq.mosquitto.EzyMosquittoTopic;
 import com.tvd12.ezymq.mosquitto.endpoint.EzyMosquittoTopicClient;
 import com.tvd12.ezymq.mosquitto.endpoint.EzyMosquittoTopicServer;
-import com.tvd12.ezymq.mosquitto.endpoint.EzyMqttCallbackProxy;
+import com.tvd12.ezymq.mosquitto.endpoint.EzyMqttClientProxy;
 import com.tvd12.ezymq.mosquitto.setting.EzyMosquittoTopicSetting;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class EzyMosquittoTopicManager
@@ -23,15 +21,14 @@ public class EzyMosquittoTopicManager
     protected final Map<String, EzyMosquittoTopicSetting> topicSettings;
 
     public EzyMosquittoTopicManager(
-        MqttClient mqttClient,
-        EzyMqttCallbackProxy mqttCallbackProxy,
+        EzyMqttClientProxy mqttClient,
         EzyMQDataCodec dataCodec,
         Map<String, EzyMosquittoTopicSetting> topicSettings
     ) {
         super(mqttClient);
         this.dataCodec = dataCodec;
         this.topicSettings = topicSettings;
-        this.topics = createTopics(mqttCallbackProxy);
+        this.topics = createTopics();
     }
 
     public <T> EzyMosquittoTopic<T> getTopic(String name) {
@@ -42,24 +39,21 @@ public class EzyMosquittoTopicManager
         return topic;
     }
 
-    protected Map<String, EzyMosquittoTopic> createTopics(
-        EzyMqttCallbackProxy mqttCallbackProxy
-    ) {
+    protected Map<String, EzyMosquittoTopic> createTopics() {
         Map<String, EzyMosquittoTopic> map = new HashMap<>();
         for (String name : topicSettings.keySet()) {
             EzyMosquittoTopicSetting setting = topicSettings.get(name);
-            map.put(name, createTopic(name, setting, mqttCallbackProxy));
+            map.put(name, createTopic(name, setting));
         }
         return map;
     }
 
     protected EzyMosquittoTopic createTopic(
         String name,
-        EzyMosquittoTopicSetting setting,
-        EzyMqttCallbackProxy mqttCallbackProxy
+        EzyMosquittoTopicSetting setting
     ) {
         try {
-            return doCreateTopic(name, setting, mqttCallbackProxy);
+            return doCreateTopic(name, setting);
         } catch (Exception e) {
             throw new IllegalStateException("can't create topic: " + name, e);
         }
@@ -67,9 +61,8 @@ public class EzyMosquittoTopicManager
 
     protected EzyMosquittoTopic doCreateTopic(
         String name,
-        EzyMosquittoTopicSetting setting,
-        EzyMqttCallbackProxy mqttCallbackProxy
-    ) {
+        EzyMosquittoTopicSetting setting
+    ) throws Exception {
         EzyMosquittoTopicClient client = null;
         EzyMosquittoTopicServer server = null;
         if (setting.isProducerEnable()) {
@@ -84,7 +77,6 @@ public class EzyMosquittoTopicManager
                 .builder()
                 .mqttClient(mqttClient)
                 .topic(name)
-                .mqttCallbackProxy(mqttCallbackProxy)
                 .build();
         }
         EzyMosquittoTopic topic = EzyMosquittoTopic
@@ -95,6 +87,7 @@ public class EzyMosquittoTopicManager
             .server(server)
             .build();
         topic.addConsumers(setting.getMessageConsumersByTopic());
+        mqttClient.subscribe(name);
         return topic;
     }
 

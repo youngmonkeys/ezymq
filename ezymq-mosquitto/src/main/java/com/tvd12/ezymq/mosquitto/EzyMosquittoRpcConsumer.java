@@ -8,7 +8,7 @@ import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 import com.tvd12.ezymq.mosquitto.handler.EzyMosquittoRequestHandlers;
 import com.tvd12.ezymq.mosquitto.handler.EzyMosquittoRequestInterceptors;
 import com.tvd12.ezymq.mosquitto.handler.EzyMosquittoRpcCallHandler;
-import com.tvd12.ezymq.mosquitto.concurrent.EzyRabbitThreadFactory;
+import com.tvd12.ezymq.mosquitto.concurrent.EzyMqttThreadFactory;
 import com.tvd12.ezymq.mosquitto.endpoint.EzyMosquittoRpcServer;
 import com.tvd12.ezymq.mosquitto.util.EzyMosquittoProperties;
 
@@ -46,7 +46,7 @@ public class EzyMosquittoRpcConsumer
 
     protected EzyThreadList newExecutorService() {
         ThreadFactory threadFactory
-            = EzyRabbitThreadFactory.create("rpc-handler");
+            = EzyMqttThreadFactory.create("rpc-handler");
         return new EzyThreadList(
             threadPoolSize,
             this::startLoop,

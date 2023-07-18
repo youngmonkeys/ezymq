@@ -1,9 +1,11 @@
 package com.tvd12.ezymq.mosquitto.endpoint;
 
-import java.util.Properties;
-
 import com.tvd12.ezyfox.builder.EzyBuilder;
+import com.tvd12.ezymq.mosquitto.codec.EzyMsgPackMqttMqMessageCodec;
+import com.tvd12.ezymq.mosquitto.codec.EzyMqttMqMessageCodec;
 import com.tvd12.ezymq.mosquitto.setting.EzyMosquittoSettings;
+
+import java.util.Properties;
 
 public class EzyMqttClientFactoryBuilder
         implements EzyBuilder<EzyMqttClientFactory> {
@@ -13,6 +15,7 @@ public class EzyMqttClientFactoryBuilder
     protected String username;
     protected String password;
     protected int maxConnectionAttempts;
+    protected EzyMqttMqMessageCodec mqttMqMessageCodec;
 
     public EzyMqttClientFactoryBuilder serverUri(String serverUri) {
         this.serverUri = serverUri;
@@ -41,6 +44,13 @@ public class EzyMqttClientFactoryBuilder
         return this;
     }
 
+    public EzyMqttClientFactoryBuilder mqttMqMessageCodec(
+        EzyMqttMqMessageCodec mqttMqMessageCodec
+    ) {
+        this.mqttMqMessageCodec = mqttMqMessageCodec;
+        return this;
+    }
+
     public EzyMqttClientFactoryBuilder properties(Properties properties) {
         this.maxConnectionAttempts = Integer.parseInt(
             properties
@@ -56,12 +66,16 @@ public class EzyMqttClientFactoryBuilder
 
     @Override
     public EzyMqttClientFactory build() {
+        if (mqttMqMessageCodec == null) {
+            mqttMqMessageCodec = new EzyMsgPackMqttMqMessageCodec();
+        }
         return new EzyMqttClientFactory(
             serverUri,
             clientIdPrefix,
             username,
             password,
-            maxConnectionAttempts
+            maxConnectionAttempts,
+            mqttMqMessageCodec
         );
     }
 }

@@ -1,15 +1,5 @@
 package com.tvd12.ezymq.mosquitto.endpoint;
 
-import static com.tvd12.ezymq.mosquitto.util.EzyMqttMessages.toMessage;
-import static com.tvd12.ezymq.mosquitto.util.EzyMqttMessages.toMqttMessage;
-
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezyfox.util.EzyReturner;
@@ -17,8 +7,13 @@ import com.tvd12.ezyfox.util.EzyStartable;
 import com.tvd12.ezymq.mosquitto.exception.EzyMqttConnectionLostException;
 import com.tvd12.ezymq.mosquitto.handler.EzyMosquittoRpcCallHandler;
 import com.tvd12.ezymq.mosquitto.util.EzyMosquittoProperties;
-
 import lombok.Setter;
+
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.tvd12.ezymq.mosquitto.util.EzyMqttMessages.toMqttMqMessage;
 
 public class EzyMosquittoRpcServer
     extends EzyMosquittoEndpoint
@@ -32,15 +27,14 @@ public class EzyMosquittoRpcServer
     protected EzyMosquittoRpcCallHandler callHandler;
 
     public EzyMosquittoRpcServer(
-        MqttClient mqttClient,
-        String topic,
-        EzyMqttCallbackProxy mqttCallbackProxy
+        EzyMqttClientProxy mqttClient,
+        String topic
     ) {
         super(mqttClient, topic);
         this.started = new AtomicBoolean();
         this.startCount = new AtomicInteger();
         this.consumer = new EzyMosquittoBufferConsumer();
-        mqttCallbackProxy.registerCallback(topic, setupMqttCallback());
+        this.mqttClient.registerCallback(topic, setupMqttCallback());
     }
 
     protected EzyMqttCallback setupMqttCallback() {
@@ -56,7 +50,10 @@ public class EzyMosquittoRpcServer
                 byte[] body
             ) {
                 consumer.handleDelivery(
-                    toMessage(rpcTopic, properties, body)
+                    new EzyMosquittoMessage(
+                        properties,
+                        body
+                    )
                 );
             }
         };
@@ -109,8 +106,7 @@ public class EzyMosquittoRpcServer
                 .messageId(messageId)
                 .messageType(requestProperties.getMessageType());
             EzyMosquittoProperties replyProperties = replyPropertiesBuilder.build();
-            MqttMessage mqttMessage = toMqttMessage(rpcTopic, replyProperties, replyBody);
-            mqttClient.publish(topic, mqttMessage);
+            mqttClient.publish(topic, toMqttMqMessage(replyProperties, replyBody));
         } else {
             handleFire(request);
         }
@@ -141,11 +137,10 @@ public class EzyMosquittoRpcServer
     }
 
     public static class Builder implements EzyBuilder<EzyMosquittoRpcServer> {
-        protected MqttClient mqttClient;
+        protected EzyMqttClientProxy mqttClient;
         protected String topic = "";
-        protected EzyMqttCallbackProxy mqttCallbackProxy;
 
-        public Builder mqttClient(MqttClient mqttClient) {
+        public Builder mqttClient(EzyMqttClientProxy mqttClient) {
             this.mqttClient = mqttClient;
             return this;
         }
@@ -155,18 +150,12 @@ public class EzyMosquittoRpcServer
             return this;
         }
 
-        public Builder mqttCallbackProxy(EzyMqttCallbackProxy mqttCallbackProxy) {
-            this.mqttCallbackProxy = mqttCallbackProxy;
-            return this;
-        }
-
         @Override
         public EzyMosquittoRpcServer build() {
             return EzyReturner.returnWithException(() ->
                 new EzyMosquittoRpcServer(
                     mqttClient,
-                    topic,
-                    mqttCallbackProxy
+                    topic
                 )
             );
         }

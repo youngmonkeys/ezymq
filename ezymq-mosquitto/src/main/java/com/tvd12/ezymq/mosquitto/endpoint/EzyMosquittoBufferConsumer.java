@@ -1,11 +1,10 @@
 package com.tvd12.ezymq.mosquitto.endpoint;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.mosquitto.exception.EzyMqttConnectionLostException;
-import com.tvd12.ezymq.mosquitto.util.EzyMosquittoProperties;
+
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class EzyMosquittoBufferConsumer implements EzyCloseable {
 
