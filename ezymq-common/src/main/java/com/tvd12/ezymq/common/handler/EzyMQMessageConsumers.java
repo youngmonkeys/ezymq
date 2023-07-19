@@ -31,7 +31,8 @@ public class EzyMQMessageConsumers extends EzyLoggable {
                 logger.warn(
                     "consume command: {} message: {} error",
                     cmd,
-                    message
+                    message,
+                    e
                 );
             }
         }
