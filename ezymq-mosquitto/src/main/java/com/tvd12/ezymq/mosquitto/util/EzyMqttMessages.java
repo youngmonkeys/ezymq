@@ -13,6 +13,7 @@ public final class EzyMqttMessages {
         return EzyMqttMqMessage.builder()
             .id(properties.getMessageId())
             .type(properties.getMessageType())
+            .correlationId(properties.correlationId)
             .headers(properties.getHeaders())
             .body(body)
             .qos(properties.getQos())

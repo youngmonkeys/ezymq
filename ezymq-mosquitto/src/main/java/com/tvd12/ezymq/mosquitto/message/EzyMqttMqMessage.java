@@ -8,6 +8,7 @@ import java.util.Map;
 public class EzyMqttMqMessage {
     private final int id;
     private final String type;
+    private final String correlationId;
     private final int qos;
     private final boolean retained;
     private final Map<String, Object> headers;
@@ -16,6 +17,7 @@ public class EzyMqttMqMessage {
     private EzyMqttMqMessage(Builder builder) {
         this.id = builder.id;
         this.type = builder.type;
+        this.correlationId = builder.correlationId;
         this.qos = builder.qos;
         this.retained = builder.retained;
         this.headers = builder.headers;
@@ -29,6 +31,7 @@ public class EzyMqttMqMessage {
     public static class Builder {
         private int id;
         private String type;
+        private String correlationId;
         private int qos = 1;
         private boolean retained;
         private Map<String, Object> headers;
@@ -41,6 +44,11 @@ public class EzyMqttMqMessage {
 
         public Builder type(String type) {
             this.type = type;
+            return this;
+        }
+
+        public Builder correlationId(String correlationId) {
+            this.correlationId = correlationId;
             return this;
         }
 

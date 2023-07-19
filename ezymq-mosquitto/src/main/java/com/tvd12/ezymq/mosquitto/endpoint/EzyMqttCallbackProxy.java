@@ -59,6 +59,7 @@ public class EzyMqttCallbackProxy
             .builder()
             .messageId(mqttMessage.getId())
             .messageType(mqttMqMessage.getType())
+            .correlationId(mqttMqMessage.getCorrelationId())
             .headers(mqttMqMessage.getHeaders())
             .qos(mqttMessage.getQos())
             .retained(mqttMessage.isRetained())

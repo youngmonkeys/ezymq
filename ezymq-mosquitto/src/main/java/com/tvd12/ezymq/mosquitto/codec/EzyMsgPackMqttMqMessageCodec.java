@@ -24,6 +24,7 @@ public class EzyMsgPackMqttMqMessageCodec
     public MqttMessage encode(EzyMqttMqMessage mqttMqMessage) {
         EzyObject payloadMap = EzyEntityFactory.newObject();
         payloadMap.put("type", mqttMqMessage.getType());
+        payloadMap.put("correlationId", mqttMqMessage.getCorrelationId());
         payloadMap.put("headers", mqttMqMessage.getHeaders());
         payloadMap.put("body", mqttMqMessage.getBody());
         byte[] payload = objectSerializer.serialize(payloadMap);
@@ -46,6 +47,7 @@ public class EzyMsgPackMqttMqMessageCodec
             .qos(mqttMessage.getQos())
             .retained(mqttMessage.isRetained())
             .type(payloadMap.getWithDefault("type", ""))
+            .correlationId(payloadMap.get("correlationId"))
             .headers(headers == null ? null : headers.toMap())
             .body(payloadMap.get("body", byte[].class))
             .build();

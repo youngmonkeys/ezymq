@@ -1,8 +1,7 @@
 package com.tvd12.ezymq.mosquitto.setting;
 
-import com.tvd12.ezymq.mosquitto.factory.EzyMosquittoMessageIdFactory;
+import com.tvd12.ezymq.mosquitto.factory.EzyMosquittoCorrelationIdFactory;
 import com.tvd12.ezymq.mosquitto.handler.EzyMosquittoResponseConsumer;
-
 import lombok.Getter;
 
 @Getter
@@ -10,20 +9,23 @@ public class EzyMosquittoRpcProducerSetting extends EzyMosquittoEndpointSetting 
 
     protected final int capacity;
     protected final int defaultTimeout;
-    protected final EzyMosquittoMessageIdFactory messageIdFactory;
+    protected final String replyTopic;
+    protected final EzyMosquittoCorrelationIdFactory correlationIdFactory;
     protected final EzyMosquittoResponseConsumer unconsumedResponseConsumer;
 
     public EzyMosquittoRpcProducerSetting(
         String topic,
+        String replyTopic,
         int capacity,
         int defaultTimeout,
-        EzyMosquittoMessageIdFactory messageIdFactory,
+        EzyMosquittoCorrelationIdFactory correlationIdFactory,
         EzyMosquittoResponseConsumer unconsumedResponseConsumer
     ) {
         super(topic);
         this.capacity = capacity;
         this.defaultTimeout = defaultTimeout;
-        this.messageIdFactory = messageIdFactory;
+        this.replyTopic = replyTopic;
+        this.correlationIdFactory = correlationIdFactory;
         this.unconsumedResponseConsumer = unconsumedResponseConsumer;
     }
 
@@ -35,7 +37,8 @@ public class EzyMosquittoRpcProducerSetting extends EzyMosquittoEndpointSetting 
 
         protected int capacity;
         protected int defaultTimeout;
-        protected EzyMosquittoMessageIdFactory messageIdFactory;
+        protected String replyTopic;
+        protected EzyMosquittoCorrelationIdFactory correlationIdFactory;
         protected EzyMosquittoResponseConsumer unconsumedResponseConsumer;
         protected EzyMosquittoSettings.Builder parent;
 
@@ -60,12 +63,21 @@ public class EzyMosquittoRpcProducerSetting extends EzyMosquittoEndpointSetting 
             return this;
         }
 
-        public Builder messageIdFactory(EzyMosquittoMessageIdFactory messageIdFactory) {
-            this.messageIdFactory = messageIdFactory;
+        public Builder replyTopic(String replyTopic) {
+            this.replyTopic = replyTopic;
             return this;
         }
 
-        public Builder unconsumedResponseConsumer(EzyMosquittoResponseConsumer unconsumedResponseConsumer) {
+        public Builder messageIdFactory(
+            EzyMosquittoCorrelationIdFactory correlationIdFactory
+        ) {
+            this.correlationIdFactory = correlationIdFactory;
+            return this;
+        }
+
+        public Builder unconsumedResponseConsumer(
+            EzyMosquittoResponseConsumer unconsumedResponseConsumer
+        ) {
             this.unconsumedResponseConsumer = unconsumedResponseConsumer;
             return this;
         }
@@ -78,9 +90,10 @@ public class EzyMosquittoRpcProducerSetting extends EzyMosquittoEndpointSetting 
         public EzyMosquittoRpcProducerSetting build() {
             return new EzyMosquittoRpcProducerSetting(
                 topic,
+                replyTopic,
                 capacity,
                 defaultTimeout,
-                messageIdFactory,
+                correlationIdFactory,
                 unconsumedResponseConsumer
             );
         }

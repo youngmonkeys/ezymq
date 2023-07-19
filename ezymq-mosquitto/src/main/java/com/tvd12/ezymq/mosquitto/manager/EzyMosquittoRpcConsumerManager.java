@@ -65,10 +65,12 @@ public class EzyMosquittoRpcConsumerManager extends EzyMosquittoAbstractManager 
         EzyMosquittoRpcConsumerSetting setting
     ) throws Exception {
         String topic = setting.getTopic();
+        String replyTopic = setting.getReplyTopic();
         EzyMosquittoRpcServer server = EzyMosquittoRpcServer
             .builder()
             .mqttClient(mqttClient)
             .topic(topic)
+            .replyTopic(replyTopic)
             .build();
         EzyMosquittoRpcConsumer consumer = EzyMosquittoRpcConsumer
             .builder()

@@ -10,6 +10,7 @@ public class EzyMosquittoProperties {
 
     protected final int messageId;
     protected final String messageType;
+    protected final String correlationId;
     protected final int qos;
     protected final boolean retained;
     protected final Map<String, Object> headers;
@@ -19,12 +20,15 @@ public class EzyMosquittoProperties {
         this.retained = builder.retained;
         this.messageId = builder.messageId;
         this.messageType = builder.messageType;
+        this.correlationId = builder.correlationId;
         this.headers = builder.headers;
     }
 
     public Builder toBuilder() {
         return builder()
             .messageId(messageId)
+            .messageType(messageType)
+            .correlationId(correlationId)
             .qos(qos)
             .retained(retained);
     }
@@ -37,8 +41,11 @@ public class EzyMosquittoProperties {
     public String toString() {
         return "(" +
             "messageId: " + messageId + ", " +
+            "messageType: " + messageType + ", " +
+            "correlationId: " + correlationId + ", " +
             "qos: " + qos + ", " +
-            "retained: " + retained +
+            "retained: " + retained + ", " +
+            "headers: " + headers + ", " +
             ")";
     }
 
@@ -46,6 +53,7 @@ public class EzyMosquittoProperties {
         implements EzyBuilder<EzyMosquittoProperties> {
 
         protected int messageId;
+        protected String correlationId;
         protected String messageType = "";
         protected int qos = 1;
         protected boolean retained;
@@ -68,6 +76,11 @@ public class EzyMosquittoProperties {
 
         public Builder messageType(String messageType) {
             this.messageType = messageType;
+            return this;
+        }
+
+        public Builder correlationId(String correlationId) {
+            this.correlationId = correlationId;
             return this;
         }
 

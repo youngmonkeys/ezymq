@@ -69,13 +69,15 @@ public class EzyMosquittoRpcProducerManager
         EzyMosquittoRpcProducerSetting setting
     ) throws Exception {
         String topic = setting.getTopic();
+        String replyTopic = setting.getReplyTopic();
         EzyMosquittoRpcClient client = EzyMosquittoRpcClient
             .builder()
             .topic(topic)
+            .replyTopic(replyTopic)
             .mqttClient(mqttClient)
             .capacity(setting.getCapacity())
             .defaultTimeout(setting.getDefaultTimeout())
-            .messageIdFactory(setting.getMessageIdFactory())
+            .correlationIdFactory(setting.getCorrelationIdFactory())
             .unconsumedResponseConsumer(setting.getUnconsumedResponseConsumer())
             .build();
         EzyMosquittoRpcProducer producer = EzyMosquittoRpcProducer
@@ -83,7 +85,7 @@ public class EzyMosquittoRpcProducerManager
             .entityCodec(entityCodec)
             .client(client)
             .build();
-        mqttClient.subscribe(topic);
+        mqttClient.subscribe(replyTopic);
         return producer;
     }
 

@@ -19,6 +19,7 @@ public class EzyMosquittoRpcServer
     extends EzyMosquittoEndpoint
     implements EzyStartable, EzyCloseable {
 
+    protected final String replyTopic;
     protected final AtomicBoolean started;
     protected final AtomicInteger startCount;
     protected final EzyMosquittoBufferConsumer consumer;
@@ -28,9 +29,11 @@ public class EzyMosquittoRpcServer
 
     public EzyMosquittoRpcServer(
         EzyMqttClientProxy mqttClient,
-        String topic
+        String topic,
+        String replyTopic
     ) {
         super(mqttClient, topic);
+        this.replyTopic = replyTopic;
         this.started = new AtomicBoolean();
         this.startCount = new AtomicInteger();
         this.consumer = new EzyMosquittoBufferConsumer();
@@ -94,19 +97,19 @@ public class EzyMosquittoRpcServer
         }
     }
 
-    public void processRequest(EzyMosquittoMessage request)
-        throws Exception {
+    public void processRequest(EzyMosquittoMessage request) throws Exception {
         EzyMosquittoProperties requestProperties = request.getProperties();
-        int messageId = requestProperties.getMessageId();
-        if (messageId > 0) {
+        String correlationId = requestProperties.getCorrelationId();
+        if (replyTopic != null && correlationId != null) {
             EzyMosquittoProperties.Builder replyPropertiesBuilder =
                 new EzyMosquittoProperties.Builder();
             byte[] replyBody = handleCall(request, replyPropertiesBuilder);
-            replyPropertiesBuilder
-                .messageId(messageId)
-                .messageType(requestProperties.getMessageType());
-            EzyMosquittoProperties replyProperties = replyPropertiesBuilder.build();
-            mqttClient.publish(topic, toMqttMqMessage(replyProperties, replyBody));
+            EzyMosquittoProperties replyProperties = replyPropertiesBuilder
+                .messageId(requestProperties.getMessageId())
+                .messageType(requestProperties.getMessageType())
+                .correlationId(correlationId)
+                .build();
+            mqttClient.publish(replyTopic, toMqttMqMessage(replyProperties, replyBody));
         } else {
             handleFire(request);
         }
@@ -139,6 +142,7 @@ public class EzyMosquittoRpcServer
     public static class Builder implements EzyBuilder<EzyMosquittoRpcServer> {
         protected EzyMqttClientProxy mqttClient;
         protected String topic = "";
+        protected String replyTopic;
 
         public Builder mqttClient(EzyMqttClientProxy mqttClient) {
             this.mqttClient = mqttClient;
@@ -150,12 +154,18 @@ public class EzyMosquittoRpcServer
             return this;
         }
 
+        public Builder replyTopic(String replyTopic) {
+            this.replyTopic = replyTopic;
+            return this;
+        }
+
         @Override
         public EzyMosquittoRpcServer build() {
             return EzyReturner.returnWithException(() ->
                 new EzyMosquittoRpcServer(
                     mqttClient,
-                    topic
+                    topic,
+                    replyTopic
                 )
             );
         }
