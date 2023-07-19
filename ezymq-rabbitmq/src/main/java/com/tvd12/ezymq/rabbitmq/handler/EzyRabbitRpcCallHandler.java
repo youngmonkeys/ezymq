@@ -29,6 +29,8 @@ public interface EzyRabbitRpcCallHandler {
     ) {
         return handleCall(
             request.getProperties(),
-            request.getBody(), replyPropertiesBuilder);
+            request.getBody(),
+            replyPropertiesBuilder
+        );
     }
 }

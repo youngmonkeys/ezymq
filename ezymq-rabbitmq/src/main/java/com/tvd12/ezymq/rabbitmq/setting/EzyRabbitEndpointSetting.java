@@ -15,7 +15,9 @@ public class EzyRabbitEndpointSetting {
 
     public EzyRabbitEndpointSetting(
         Channel channel,
-        String exchange, int prefetchCount) {
+        String exchange,
+        int prefetchCount
+    ) {
         this.channel = channel;
         this.exchange = exchange;
         this.prefetchCount = prefetchCount;

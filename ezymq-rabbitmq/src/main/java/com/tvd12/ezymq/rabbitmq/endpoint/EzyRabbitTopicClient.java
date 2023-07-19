@@ -22,8 +22,10 @@ public class EzyRabbitTopicClient extends EzyRabbitEndpoint {
         return new Builder();
     }
 
-    public void publish(AMQP.BasicProperties props, byte[] message)
-        throws IOException {
+    public void publish(
+        AMQP.BasicProperties props,
+        byte[] message
+    ) throws IOException {
         channel.basicPublish(exchange, routingKey, props, message);
     }
 

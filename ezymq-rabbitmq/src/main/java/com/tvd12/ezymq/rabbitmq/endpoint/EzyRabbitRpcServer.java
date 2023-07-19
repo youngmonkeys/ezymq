@@ -91,8 +91,7 @@ public class EzyRabbitRpcServer
         }
     }
 
-    public void processRequest(Delivery request)
-        throws IOException {
+    public void processRequest(Delivery request) throws IOException {
         AMQP.BasicProperties requestProperties = request.getProperties();
         String correlationId = requestProperties.getCorrelationId();
         String responseRoutingKey = requestProperties.getReplyTo();

@@ -94,13 +94,13 @@ public class EzyRabbitRpcClient
         return newConsumer;
     }
 
-    public void doFire(AMQP.BasicProperties props, byte[] message)
-        throws IOException {
-        AMQP.BasicProperties.Builder propertiesBuilder = (props != null)
-            ? props.builder()
-            : new AMQP.BasicProperties.Builder();
-        AMQP.BasicProperties newProperties = propertiesBuilder
-            .build();
+    public void doFire(
+        AMQP.BasicProperties props,
+        byte[] message
+    ) throws IOException {
+        AMQP.BasicProperties newProperties = props != null
+            ? props
+            : new AMQP.BasicProperties.Builder().build();
         publish(newProperties, message);
     }
 
@@ -156,9 +156,6 @@ public class EzyRabbitRpcClient
     ) throws IOException {
         channel.basicPublish(exchange, requestRoutingKey, props, message);
     }
-
-    @Override
-    public void close() {}
 
     public static class Builder extends EzyRabbitEndpoint.Builder<Builder> {
 
