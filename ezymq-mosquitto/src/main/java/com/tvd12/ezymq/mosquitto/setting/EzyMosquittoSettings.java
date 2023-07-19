@@ -1,15 +1,5 @@
 package com.tvd12.ezymq.mosquitto.setting;
 
-import static com.tvd12.properties.file.util.PropertiesUtil.getFirstPropertyKeys;
-import static com.tvd12.properties.file.util.PropertiesUtil.getPropertiesByPrefix;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
 import com.tvd12.ezymq.common.annotation.EzyConsumerAnnotationProperties;
 import com.tvd12.ezymq.common.handler.EzyMQMessageConsumer;
 import com.tvd12.ezymq.common.setting.EzyMQRpcSettings;
@@ -18,8 +8,12 @@ import com.tvd12.ezymq.mosquitto.handler.EzyMosquittoRequestHandler;
 import com.tvd12.ezymq.mosquitto.handler.EzyMosquittoRequestInterceptor;
 import com.tvd12.ezymq.mosquitto.util.EzyMosquittoConsumerAnnotations;
 import com.tvd12.ezymq.mosquitto.util.EzyMosquittoHandlerAnnotations;
-
 import lombok.Getter;
+
+import java.util.*;
+
+import static com.tvd12.properties.file.util.PropertiesUtil.getFirstPropertyKeys;
+import static com.tvd12.properties.file.util.PropertiesUtil.getPropertiesByPrefix;
 
 @Getter
 @SuppressWarnings("rawtypes")
@@ -43,6 +37,8 @@ public class EzyMosquittoSettings extends EzyMQRpcSettings {
     public static final String KEY_MAX_THREAD_POOL_SIZE = "mosquitto.max_thread_pool_size";
     public static final String KEY_PRODUCERS = "mosquitto.producers";
     public static final String KEY_PRODUCER = "producer";
+    public static final String KEY_TOPIC = "topic";
+    public static final String KEY_REPLY_TOPIC = "reply_topic";
     public static final String KEY_THREAD_POOL_SIZE = "thread_pool_size";
     public static final String KEY_TOPICS = "mosquitto.topics";
 
@@ -211,6 +207,12 @@ public class EzyMosquittoSettings extends EzyMQRpcSettings {
                             )
                         );
                 }
+                builder.topic(
+                    topicProperties.getProperty(
+                        KEY_TOPIC,
+                        name
+                    )
+                );
                 topicSettings.put(name, builder.build());
             }
         }
@@ -247,6 +249,18 @@ public class EzyMosquittoSettings extends EzyMQRpcSettings {
                             ).toString()
                         )
                     )
+                    .topic(
+                        producerProperties.getProperty(
+                            KEY_TOPIC,
+                            name + "-request"
+                        )
+                    )
+                    .replyTopic(
+                        producerProperties.getProperty(
+                            KEY_REPLY_TOPIC,
+                            name + "-reply"
+                        )
+                    )
                     .build();
                 rpcProducerSettings.put(name, producerSetting);
             }
@@ -273,6 +287,18 @@ public class EzyMosquittoSettings extends EzyMQRpcSettings {
                                 KEY_THREAD_POOL_SIZE,
                                 0
                             ).toString()
+                        )
+                    )
+                    .topic(
+                        consumerProperties.getProperty(
+                            KEY_TOPIC,
+                            name + "-request"
+                        )
+                    )
+                    .replyTopic(
+                        consumerProperties.getProperty(
+                            KEY_REPLY_TOPIC,
+                            name + "-reply"
                         )
                     )
                     .addRequestInterceptors(requestInterceptors)
