@@ -1,7 +1,7 @@
 package com.tvd12.ezymq.rabbitmq.manager;
 
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.Connection;
 import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitTopic;
@@ -24,12 +24,12 @@ public class EzyRabbitTopicManager
     protected final Map<String, EzyRabbitTopicSetting> topicSettings;
 
     public EzyRabbitTopicManager(
+        Connection connection,
         EzyMQDataCodec dataCodec,
-        ConnectionFactory connectionFactory,
         Map<String, Map<String, Object>> queueArguments,
         Map<String, EzyRabbitTopicSetting> topicSettings
     ) {
-        super(connectionFactory);
+        super(connection);
         this.dataCodec = dataCodec;
         this.topicSettings = topicSettings;
         this.queueArguments = queueArguments;

@@ -2,7 +2,6 @@ package com.tvd12.ezymq.rabbitmq.test.manager;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
 import com.tvd12.ezymq.rabbitmq.manager.EzyRabbitRpcProducerManager;
 import com.tvd12.ezymq.rabbitmq.setting.EzyRabbitRpcProducerSetting;
@@ -24,8 +23,8 @@ public class EzyRabbitRpcProducerManagerTest extends BaseTest {
     @Test
     public void createRpcProducerFailedTest() throws IOException, TimeoutException {
         // given
+        Connection connection = mock(Connection.class);
         EzyEntityCodec entityCodec = mock(EzyEntityCodec.class);
-        ConnectionFactory connectionFactory = mock(ConnectionFactory.class);
         Map<String, Map<String, Object>> queueArguments = new HashMap<>();
         String producerName = RandomUtil.randomShortAlphabetString();
         EzyRabbitRpcProducerSetting setting = EzyRabbitRpcProducerSetting.builder()
@@ -34,13 +33,13 @@ public class EzyRabbitRpcProducerManagerTest extends BaseTest {
             Collections.singletonMap(producerName, setting);
 
         RuntimeException exception = new RuntimeException("test");
-        when(connectionFactory.newConnection()).thenThrow(exception);
+        when(connection.createChannel()).thenThrow(exception);
 
         // when
         Throwable e = Asserts.assertThrows(() ->
             new EzyRabbitRpcProducerManager(
+                connection,
                 entityCodec,
-                connectionFactory,
                 queueArguments,
                 rpcProducerSettings
             )
@@ -48,14 +47,14 @@ public class EzyRabbitRpcProducerManagerTest extends BaseTest {
 
         // then
         Asserts.assertEquals(e.getCause(), exception);
-        verify(connectionFactory, times(1)).newConnection();
+        verify(connection, times(1)).createChannel();
     }
 
     @Test
     public void getRpcProducerFailedTest() throws IOException, TimeoutException {
         // given
+        Connection connection = mock(Connection.class);
         EzyEntityCodec entityCodec = mock(EzyEntityCodec.class);
-        ConnectionFactory connectionFactory = mock(ConnectionFactory.class);
         Map<String, Map<String, Object>> queueArguments = new HashMap<>();
         String producerName = RandomUtil.randomShortAlphabetString();
         EzyRabbitRpcProducerSetting setting = EzyRabbitRpcProducerSetting.builder()
@@ -63,16 +62,13 @@ public class EzyRabbitRpcProducerManagerTest extends BaseTest {
         Map<String, EzyRabbitRpcProducerSetting> rpcProducerSettings =
             Collections.singletonMap(producerName, setting);
 
-        Connection connection = mock(Connection.class);
-        when(connectionFactory.newConnection()).thenReturn(connection);
-
         Channel channel = mock(Channel.class);
         when(connection.createChannel()).thenReturn(channel);
 
         // when
         EzyRabbitRpcProducerManager sut = new EzyRabbitRpcProducerManager(
+            connection,
             entityCodec,
-            connectionFactory,
             queueArguments,
             rpcProducerSettings
         );
@@ -80,7 +76,6 @@ public class EzyRabbitRpcProducerManagerTest extends BaseTest {
         // then
         Asserts.assertThatThrows(() -> sut.getRpcProducer("not found"))
                 .isEqualsType(IllegalArgumentException.class);
-        verify(connectionFactory, times(1)).newConnection();
         verify(connection, times(1)).createChannel();
     }
 }

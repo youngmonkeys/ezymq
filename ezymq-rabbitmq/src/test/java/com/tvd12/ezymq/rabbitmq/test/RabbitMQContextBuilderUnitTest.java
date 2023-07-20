@@ -1,5 +1,7 @@
 package com.tvd12.ezymq.rabbitmq.test;
 
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import com.tvd12.ezyfox.binding.EzyBindingContext;
 import com.tvd12.ezyfox.binding.codec.EzyBindingEntityCodec;
 import com.tvd12.ezyfox.codec.*;
@@ -18,6 +20,9 @@ import com.tvd12.ezymq.rabbitmq.test.entity.FiboRequest2;
 import com.tvd12.ezymq.rabbitmq.test.mockup.ConnectionFactoryMockup;
 import com.tvd12.test.base.BaseTest;
 import org.testng.annotations.Test;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class RabbitMQContextBuilderUnitTest extends BaseTest {
 
@@ -167,7 +172,7 @@ public class RabbitMQContextBuilderUnitTest extends BaseTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testSetComponents() {
+    public void testSetComponents() throws Exception {
         EzyRabbitSettings settings = EzyRabbitSettings.builder()
             .build();
         EzyBindingContext bindingContext = EzyBindingContext.builder()
@@ -189,6 +194,11 @@ public class RabbitMQContextBuilderUnitTest extends BaseTest {
             .mapRequestType("fibonacci", int.class)
             .mapRequestType("test", String.class)
             .build();
+
+        ConnectionFactory connectionFactory = mock(ConnectionFactory.class);
+        Connection connection = mock(Connection.class);
+        when(connectionFactory.newConnection()).thenReturn(connection);
+
         EzyRabbitMQProxy proxy = EzyRabbitMQProxy.builder()
             .scan("com.tvd12.ezymq.rabbitmq.test.entity")
             .scan("com.tvd12.ezymq.rabbitmq.test.entity", "com.tvd12.ezymq.rabbitmq.test.entity")
@@ -204,6 +214,7 @@ public class RabbitMQContextBuilderUnitTest extends BaseTest {
             .mapRequestTypes(EzyMapBuilder.mapBuilder()
                 .put("a", int.class)
                 .build())
+            .connectionFactory(connectionFactory)
             .build();
         proxy.close();
     }

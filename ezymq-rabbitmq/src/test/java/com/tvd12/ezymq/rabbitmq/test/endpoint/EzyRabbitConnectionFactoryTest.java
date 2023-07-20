@@ -11,6 +11,7 @@ import com.rabbitmq.client.impl.FrameHandlerFactory;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitConnectionFactory;
 import com.tvd12.test.assertion.Asserts;
 import com.tvd12.test.base.BaseTest;
+import com.tvd12.test.reflect.FieldUtil;
 import com.tvd12.test.util.RandomUtil;
 import org.testng.annotations.Test;
 
@@ -21,8 +22,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class EzyRabbitConnectionFactoryTest extends BaseTest {
 
@@ -121,5 +121,24 @@ public class EzyRabbitConnectionFactoryTest extends BaseTest {
 
         // then
         Asserts.assertEquals(e, exception);
+    }
+
+    @Test
+    public void closeTest() throws Exception {
+        // given
+        EzyRabbitConnectionFactory instance = new EzyRabbitConnectionFactory();
+        List<Connection> createdConnections = FieldUtil.getFieldValue(
+            instance,
+            "createdConnections"
+        );
+        Connection connection = mock(Connection.class);
+        createdConnections.add(connection);
+
+        // when
+        instance.close();
+
+        // then
+        verify(connection, times(1)).close();
+        verifyNoMoreInteractions(connection);
     }
 }

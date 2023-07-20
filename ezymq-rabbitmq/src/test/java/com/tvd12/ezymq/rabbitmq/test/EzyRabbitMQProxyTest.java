@@ -1,13 +1,12 @@
 package com.tvd12.ezymq.rabbitmq.test;
 
-import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.Connection;
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
 import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitMQProxy;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcConsumer;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcProducer;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitTopic;
-import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitConnectionFactory;
 import com.tvd12.ezymq.rabbitmq.manager.EzyRabbitRpcConsumerManager;
 import com.tvd12.ezymq.rabbitmq.manager.EzyRabbitRpcProducerManager;
 import com.tvd12.ezymq.rabbitmq.manager.EzyRabbitTopicManager;
@@ -22,7 +21,7 @@ public class EzyRabbitMQProxyTest extends BaseTest {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Test
-    public void test() {
+    public void test() throws Exception {
         // given
         EzyRabbitSettings settings = EzyRabbitSettings.builder()
             .build();
@@ -41,14 +40,14 @@ public class EzyRabbitMQProxyTest extends BaseTest {
         EzyRabbitRpcConsumerManager consumerManagerTest = mock(EzyRabbitRpcConsumerManager.class);
         when(consumerManagerTest.getRpcConsumer("test")).thenReturn(consumer);
 
-        ConnectionFactory connectionFactory = mock(ConnectionFactory.class);
+        Connection connection = mock(Connection.class);
 
         // when
         EzyRabbitMQProxy sut = new EzyRabbitMQProxy(
+            connection,
             settings,
             dataCodec,
-            entityCodec,
-            connectionFactory
+            entityCodec
         ) {
             @Override
             protected EzyRabbitTopicManager newTopicManager() {
@@ -82,21 +81,21 @@ public class EzyRabbitMQProxyTest extends BaseTest {
     }
 
     @Test
-    public void closeConnectionFactoryTest() {
+    public void closeConnectionFactoryTest() throws Exception {
         // given
         EzyRabbitSettings settings = EzyRabbitSettings.builder()
             .build();
         EzyMQDataCodec dataCodec = mock(EzyMQDataCodec.class);
         EzyEntityCodec entityCodec = mock(EzyEntityCodec.class);
 
-        ConnectionFactory connectionFactory = new EzyRabbitConnectionFactory();
+        Connection connection = mock(Connection.class);
 
         // when
         EzyRabbitMQProxy sut = new EzyRabbitMQProxy(
+            connection,
             settings,
             dataCodec,
-            entityCodec,
-            connectionFactory
+            entityCodec
         );
 
         // then

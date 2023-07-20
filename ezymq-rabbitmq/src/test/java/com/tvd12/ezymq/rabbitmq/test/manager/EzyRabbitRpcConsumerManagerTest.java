@@ -1,7 +1,7 @@
 package com.tvd12.ezymq.rabbitmq.test.manager;
 
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.Connection;
 import com.tvd12.ezyfox.util.EzyMapBuilder;
 import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 import com.tvd12.ezymq.rabbitmq.manager.EzyRabbitRpcConsumerManager;
@@ -21,8 +21,8 @@ public class EzyRabbitRpcConsumerManagerTest extends BaseTest {
     @Test
     public void test() throws IOException {
         // given
+        Connection connection = mock(Connection.class);
         EzyMQDataCodec dataCodec = mock(EzyMQDataCodec.class);
-        ConnectionFactory connectionFactory = mock(ConnectionFactory.class);
 
         String exchange = RandomUtil.randomShortAlphabetString();
         String requestQueueName = RandomUtil.randomShortAlphabetString();
@@ -43,8 +43,8 @@ public class EzyRabbitRpcConsumerManagerTest extends BaseTest {
 
         // when
         EzyRabbitRpcConsumerManager sut = new EzyRabbitRpcConsumerManager(
+            connection,
             dataCodec,
-            connectionFactory,
             rpcConsumerSettings
         );
 
@@ -62,8 +62,8 @@ public class EzyRabbitRpcConsumerManagerTest extends BaseTest {
     @Test
     public void createRpcConsumerFailed() {
         // given
+        Connection connection = mock(Connection.class);
         EzyMQDataCodec dataCodec = mock(EzyMQDataCodec.class);
-        ConnectionFactory connectionFactory = mock(ConnectionFactory.class);
 
         String requestQueueName = RandomUtil.randomShortAlphabetString();
         String replyRoutingKey = RandomUtil.randomShortAlphabetString();
@@ -81,8 +81,8 @@ public class EzyRabbitRpcConsumerManagerTest extends BaseTest {
         // when
         Throwable e = Asserts.assertThrows(() ->
             new EzyRabbitRpcConsumerManager(
+                connection,
                 dataCodec,
-                connectionFactory,
                 rpcConsumerSettings
             )
         );

@@ -40,7 +40,6 @@ public class RabbitRpcAllRunner3 extends RabbitBaseTest {
         runner.rpc();
     }
 
-    @SuppressWarnings("resource")
     protected void startServer() {
         new Thread(() -> {
             try {
@@ -64,7 +63,6 @@ public class RabbitRpcAllRunner3 extends RabbitBaseTest {
         Thread.sleep(1000);
     }
 
-    @SuppressWarnings("resource")
     protected void rpc() throws Exception {
         EzyRabbitRpcClient client = newClient();
         EzyRabbitRpcProducer consumer = new EzyRabbitRpcProducer(client, entityCodec);
