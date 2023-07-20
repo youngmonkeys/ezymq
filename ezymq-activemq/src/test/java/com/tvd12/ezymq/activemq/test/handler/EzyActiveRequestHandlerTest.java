@@ -3,10 +3,11 @@ package com.tvd12.ezymq.activemq.test.handler;
 import com.tvd12.ezyfox.exception.EzyNotImplementedException;
 import com.tvd12.ezymq.activemq.handler.EzyActiveRequestHandler;
 import com.tvd12.test.assertion.Asserts;
+import com.tvd12.test.base.BaseTest;
 import com.tvd12.test.util.RandomUtil;
 import org.testng.annotations.Test;
 
-public class EzyActiveRequestHandlerTest {
+public class EzyActiveRequestHandlerTest extends BaseTest {
 
     @Test
     public void handleTest() throws Exception {

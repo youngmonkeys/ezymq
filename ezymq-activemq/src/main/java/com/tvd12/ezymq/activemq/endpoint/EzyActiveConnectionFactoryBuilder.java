@@ -17,6 +17,7 @@ public class EzyActiveConnectionFactoryBuilder implements EzyBuilder<ConnectionF
     protected String username;
     protected String password;
     protected int maxThreadPoolSize;
+    protected int maxConnectionAttempts;
     protected ExceptionListener exceptionListener;
 
     public EzyActiveConnectionFactoryBuilder uri(String uri) {
@@ -38,6 +39,13 @@ public class EzyActiveConnectionFactoryBuilder implements EzyBuilder<ConnectionF
         int maxThreadPoolSize
     ) {
         this.maxThreadPoolSize = maxThreadPoolSize;
+        return this;
+    }
+
+    public EzyActiveConnectionFactoryBuilder maxConnectionAttempts(
+        int maxConnectionAttempts
+    ) {
+        this.maxConnectionAttempts = maxConnectionAttempts;
         return this;
     }
 
@@ -65,7 +73,7 @@ public class EzyActiveConnectionFactoryBuilder implements EzyBuilder<ConnectionF
         if (exceptionListener == null) {
             exceptionListener = newExceptionListener();
         }
-        ActiveMQConnectionFactory factory = new EzyActiveConnectionFactory();
+        EzyActiveConnectionFactory factory = new EzyActiveConnectionFactory();
         if (!EzyStrings.isNoContent(uri)) {
             setConnectionURI(factory);
         }
@@ -77,6 +85,9 @@ public class EzyActiveConnectionFactoryBuilder implements EzyBuilder<ConnectionF
         }
         if (maxThreadPoolSize > 0) {
             factory.setMaxThreadPoolSize(maxThreadPoolSize);
+        }
+        if (maxConnectionAttempts > 0) {
+            factory.setMaxConnectionAttempts(maxConnectionAttempts);
         }
         factory.setExceptionListener(exceptionListener);
         return factory;

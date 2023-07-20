@@ -1,5 +1,6 @@
 package com.tvd12.ezymq.activemq.test.endpoint;
 
+import com.tvd12.ezyfox.util.EzyThreads;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveTopicServer;
 import com.tvd12.ezymq.activemq.handler.EzyActiveMessageHandler;
 import com.tvd12.ezymq.activemq.util.EzyActiveProperties;
@@ -31,7 +32,10 @@ public class EzyActiveTopicServerTest extends BaseTest {
             .build();
 
         BytesMessage bytesMessage = mock(BytesMessage.class);
-        when(consumer.receive()).thenReturn(bytesMessage);
+        when(consumer.receive()).thenAnswer(it -> {
+            EzyThreads.sleep(10);
+            return bytesMessage;
+        });
 
         Enumeration<String> propertyNames = mock(Enumeration.class);
         when(bytesMessage.getPropertyNames()).thenReturn(propertyNames);
