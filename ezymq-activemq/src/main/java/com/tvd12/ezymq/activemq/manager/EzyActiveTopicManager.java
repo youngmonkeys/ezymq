@@ -7,7 +7,7 @@ import com.tvd12.ezymq.activemq.endpoint.EzyActiveTopicServer;
 import com.tvd12.ezymq.activemq.setting.EzyActiveTopicSetting;
 import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 
-import javax.jms.ConnectionFactory;
+import javax.jms.Connection;
 import javax.jms.Session;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,11 +22,11 @@ public class EzyActiveTopicManager
     protected final Map<String, EzyActiveTopicSetting> topicSettings;
 
     public EzyActiveTopicManager(
+        Connection connection,
         EzyMQDataCodec dataCodec,
-        ConnectionFactory connectionFactory,
         Map<String, EzyActiveTopicSetting> topicSettings
     ) {
-        super(connectionFactory);
+        super(connection);
         this.dataCodec = dataCodec;
         this.topicSettings = topicSettings;
         this.topics = createTopics();

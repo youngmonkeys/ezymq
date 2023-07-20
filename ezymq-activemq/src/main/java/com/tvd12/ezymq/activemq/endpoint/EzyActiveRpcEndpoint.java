@@ -69,6 +69,7 @@ public abstract class EzyActiveRpcEndpoint
     @Override
     public void close() {
         this.active = false;
+        this.executorService.interrupt();
         processWithLogException(producer::close);
         processWithLogException(consumer::close);
     }

@@ -6,7 +6,7 @@ import com.tvd12.ezymq.activemq.endpoint.EzyActiveRpcServer;
 import com.tvd12.ezymq.activemq.setting.EzyActiveRpcConsumerSetting;
 import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 
-import javax.jms.ConnectionFactory;
+import javax.jms.Connection;
 import javax.jms.Session;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,11 +22,11 @@ public class EzyActiveRpcConsumerManager
     protected final Map<String, EzyActiveRpcConsumerSetting> rpcConsumerSettings;
 
     public EzyActiveRpcConsumerManager(
+        Connection connection,
         EzyMQDataCodec dataCodec,
-        ConnectionFactory connectionFactory,
         Map<String, EzyActiveRpcConsumerSetting> rpcConsumerSettings
     ) {
-        super(connectionFactory);
+        super(connection);
         this.dataCodec = dataCodec;
         this.rpcConsumerSettings = rpcConsumerSettings;
         this.rpcConsumers = createRpcConsumers();

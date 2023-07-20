@@ -12,6 +12,7 @@ import java.util.Map;
 import static com.tvd12.ezyfox.io.EzyStrings.isEmpty;
 
 @Getter
+@SuppressWarnings("rawtypes")
 public class EzyActiveTopicSetting extends EzyActiveEndpointSetting {
 
     protected final String topicName;

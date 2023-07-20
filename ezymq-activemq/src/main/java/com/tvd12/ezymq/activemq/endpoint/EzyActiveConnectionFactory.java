@@ -1,12 +1,14 @@
 package com.tvd12.ezymq.activemq.endpoint;
 
 import com.tvd12.ezyfox.util.EzyCloseable;
-import org.apache.activemq.ActiveMQConnection;
+import com.tvd12.ezyfox.util.EzyThreads;
+import lombok.Setter;
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.management.JMSStatsImpl;
-import org.apache.activemq.transport.Transport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.jms.Connection;
+import javax.jms.JMSException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,18 +19,38 @@ public class EzyActiveConnectionFactory
     extends ActiveMQConnectionFactory
     implements EzyCloseable {
 
+    @Setter
+    protected int maxConnectionAttempts;
+
+    @Setter
+    protected int connectionAttemptSleepTime = 3000;
+
     protected final List<Connection> createdConnections =
         Collections.synchronizedList(new ArrayList<>());
 
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
+
     @Override
-    protected ActiveMQConnection createActiveMQConnection(
-        Transport transport,
-        JMSStatsImpl stats
-    ) throws Exception {
-        ActiveMQConnection connection = super.createActiveMQConnection(
-            transport,
-            stats
-        );
+    public Connection createConnection() throws JMSException {
+        int retryCount = 0;
+        Connection connection;
+        while (true) {
+            try {
+                connection = super.createConnection();
+                connection.start();
+                break;
+            } catch (Throwable e) {
+                if (retryCount >= maxConnectionAttempts) {
+                    throw e;
+                }
+                logger.error(
+                    "can not connect to the broker, retry count: {}",
+                    ++retryCount,
+                    e
+                );
+                EzyThreads.sleep(connectionAttemptSleepTime);
+            }
+        }
         createdConnections.add(connection);
         return connection;
     }

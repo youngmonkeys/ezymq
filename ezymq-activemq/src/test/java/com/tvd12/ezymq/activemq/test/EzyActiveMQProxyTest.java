@@ -5,7 +5,6 @@ import com.tvd12.ezymq.activemq.EzyActiveMQProxy;
 import com.tvd12.ezymq.activemq.EzyActiveRpcConsumer;
 import com.tvd12.ezymq.activemq.EzyActiveRpcProducer;
 import com.tvd12.ezymq.activemq.EzyActiveTopic;
-import com.tvd12.ezymq.activemq.endpoint.EzyActiveConnectionFactory;
 import com.tvd12.ezymq.activemq.manager.EzyActiveRpcConsumerManager;
 import com.tvd12.ezymq.activemq.manager.EzyActiveRpcProducerManager;
 import com.tvd12.ezymq.activemq.manager.EzyActiveTopicManager;
@@ -15,7 +14,7 @@ import com.tvd12.test.assertion.Asserts;
 import com.tvd12.test.base.BaseTest;
 import org.testng.annotations.Test;
 
-import javax.jms.ConnectionFactory;
+import javax.jms.Connection;
 
 import static org.mockito.Mockito.*;
 
@@ -42,14 +41,14 @@ public class EzyActiveMQProxyTest extends BaseTest {
         EzyActiveRpcConsumerManager consumerManagerTest = mock(EzyActiveRpcConsumerManager.class);
         when(consumerManagerTest.getRpcConsumer("test")).thenReturn(consumer);
 
-        ConnectionFactory connectionFactory = mock(ConnectionFactory.class);
+        Connection connection = mock(Connection.class);
 
         // when
         EzyActiveMQProxy sut = new EzyActiveMQProxy(
+            connection,
             settings,
             dataCodec,
-            entityCodec,
-            connectionFactory
+            entityCodec
         ) {
             @Override
             protected EzyActiveTopicManager newTopicManager() {
@@ -90,14 +89,14 @@ public class EzyActiveMQProxyTest extends BaseTest {
         EzyMQDataCodec dataCodec = mock(EzyMQDataCodec.class);
         EzyEntityCodec entityCodec = mock(EzyEntityCodec.class);
 
-        ConnectionFactory connectionFactory = new EzyActiveConnectionFactory();
+        Connection connection = mock(Connection.class);
 
         // when
         EzyActiveMQProxy sut = new EzyActiveMQProxy(
+            connection,
             settings,
             dataCodec,
-            entityCodec,
-            connectionFactory
+            entityCodec
         );
 
         // then

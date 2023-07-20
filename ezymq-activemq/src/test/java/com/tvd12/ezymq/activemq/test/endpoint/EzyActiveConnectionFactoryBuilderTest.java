@@ -91,6 +91,7 @@ public class EzyActiveConnectionFactoryBuilderTest extends BaseTest {
         String username = RandomUtil.randomShortAlphabetString();
         String password = RandomUtil.randomShortAlphabetString();
         int maxThreadPoolSize = RandomUtil.randomInt(1, 3);
+        int maxConnectionAttempts = RandomUtil.randomSmallInt() + 1;
         ExceptionListener exceptionListener = mock(ExceptionListener.class);
 
         Properties properties = new Properties();
@@ -103,6 +104,7 @@ public class EzyActiveConnectionFactoryBuilderTest extends BaseTest {
         ConnectionFactory factory = new EzyActiveConnectionFactoryBuilder()
             .properties(properties)
             .exceptionListener(exceptionListener)
+            .maxConnectionAttempts(maxConnectionAttempts)
             .build();
 
         // then
@@ -125,6 +127,10 @@ public class EzyActiveConnectionFactoryBuilderTest extends BaseTest {
         Asserts.assertEquals(
             FieldUtil.getFieldValue(factory, "exceptionListener"),
             exceptionListener
+        );
+        Asserts.assertEquals(
+            FieldUtil.getFieldValue(factory, "maxConnectionAttempts"),
+            maxConnectionAttempts
         );
     }
 }

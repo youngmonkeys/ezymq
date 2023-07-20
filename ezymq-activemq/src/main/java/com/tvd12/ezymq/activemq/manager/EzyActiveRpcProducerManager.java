@@ -5,7 +5,7 @@ import com.tvd12.ezymq.activemq.EzyActiveRpcProducer;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveRpcClient;
 import com.tvd12.ezymq.activemq.setting.EzyActiveRpcProducerSetting;
 
-import javax.jms.ConnectionFactory;
+import javax.jms.Connection;
 import javax.jms.Session;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,11 +17,11 @@ public class EzyActiveRpcProducerManager extends EzyActiveAbstractManager {
     protected final Map<String, EzyActiveRpcProducerSetting> rpcProducerSettings;
 
     public EzyActiveRpcProducerManager(
+        Connection connection,
         EzyEntityCodec entityCodec,
-        ConnectionFactory connectionFactory,
         Map<String, EzyActiveRpcProducerSetting> rpcProducerSettings
     ) {
-        super(connectionFactory);
+        super(connection);
         this.entityCodec = entityCodec;
         this.rpcProducerSettings = rpcProducerSettings;
         this.rpcProducers = createRpcProducers();

@@ -7,7 +7,9 @@ import com.tvd12.ezymq.activemq.endpoint.EzyActiveConnectionFactoryBuilder;
 import com.tvd12.ezymq.activemq.setting.EzyActiveSettings;
 import com.tvd12.ezymq.common.EzyMQRpcProxyBuilder;
 
+import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
 
 public class EzyActiveMQProxyBuilder extends EzyMQRpcProxyBuilder<
     EzyActiveSettings,
@@ -58,11 +60,17 @@ public class EzyActiveMQProxyBuilder extends EzyMQRpcProxyBuilder<
 
     @Override
     protected EzyActiveMQProxy newProxy() {
+        Connection connection;
+        try {
+            connection = connectionFactory.createConnection();
+        } catch (JMSException e) {
+            throw new IllegalStateException(e);
+        }
         return new EzyActiveMQProxy(
+            connection,
             settings,
             dataCodec,
-            entityCodec,
-            connectionFactory
+            entityCodec
         );
     }
 }

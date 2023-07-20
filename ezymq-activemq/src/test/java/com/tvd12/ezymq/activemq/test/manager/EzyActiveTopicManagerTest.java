@@ -21,7 +21,6 @@ public class EzyActiveTopicManagerTest extends BaseTest {
     public void test() throws JMSException {
         // given
         EzyMQDataCodec dataCodec = mock(EzyMQDataCodec.class);
-        ConnectionFactory connectionFactory = mock(ConnectionFactory.class);
         String topicName = RandomUtil.randomShortAlphabetString();
         EzyActiveTopicSetting topicSetting = EzyActiveTopicSetting.builder()
             .topicName(topicName)
@@ -34,8 +33,6 @@ public class EzyActiveTopicManagerTest extends BaseTest {
             .build();
 
         Connection connection = mock(Connection.class);
-        when(connectionFactory.createConnection()).thenReturn(connection);
-
         Session session = mock(Session.class);
         when(
             connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
@@ -49,8 +46,8 @@ public class EzyActiveTopicManagerTest extends BaseTest {
 
         // when
         EzyActiveTopicManager sut = new EzyActiveTopicManager(
+            connection,
             dataCodec,
-            connectionFactory,
             topicSettings
         );
 
@@ -61,8 +58,6 @@ public class EzyActiveTopicManagerTest extends BaseTest {
         Asserts.assertThatThrows(() -> sut.getTopic("not found"))
             .isEqualsType(IllegalArgumentException.class);
 
-        verify(connectionFactory, times(1)).createConnection();
-        verify(connection, times(1)).start();
         verify(
             connection, times(1)
         ).createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -79,7 +74,6 @@ public class EzyActiveTopicManagerTest extends BaseTest {
     public void createTopicFailed() throws JMSException {
         // given
         EzyMQDataCodec dataCodec = mock(EzyMQDataCodec.class);
-        ConnectionFactory connectionFactory = mock(ConnectionFactory.class);
         String topicName = RandomUtil.randomShortAlphabetString();
         EzyActiveTopicSetting topicSetting = EzyActiveTopicSetting.builder()
             .topicName(topicName)
@@ -92,8 +86,6 @@ public class EzyActiveTopicManagerTest extends BaseTest {
             .build();
 
         Connection connection = mock(Connection.class);
-        when(connectionFactory.createConnection()).thenReturn(connection);
-
         Session session = mock(Session.class);
         when(
             connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
@@ -108,8 +100,8 @@ public class EzyActiveTopicManagerTest extends BaseTest {
         // when
         Throwable e = Asserts.assertThrows(() ->
             new EzyActiveTopicManager(
+                connection,
                 dataCodec,
-                connectionFactory,
                 topicSettings
             )
         );
@@ -117,8 +109,6 @@ public class EzyActiveTopicManagerTest extends BaseTest {
         // then
         Asserts.assertEqualsType(e, java.lang.IllegalStateException.class);
 
-        verify(connectionFactory, times(1)).createConnection();
-        verify(connection, times(1)).start();
         verify(
             connection, times(1)
         ).createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -131,7 +121,6 @@ public class EzyActiveTopicManagerTest extends BaseTest {
     public void buildWithDisableProducerAndConsumer() throws JMSException {
         // given
         EzyMQDataCodec dataCodec = mock(EzyMQDataCodec.class);
-        ConnectionFactory connectionFactory = mock(ConnectionFactory.class);
         String topicName = RandomUtil.randomShortAlphabetString();
         EzyActiveTopicSetting topicSetting = EzyActiveTopicSetting.builder()
             .topicName(topicName)
@@ -142,8 +131,6 @@ public class EzyActiveTopicManagerTest extends BaseTest {
             .build();
 
         Connection connection = mock(Connection.class);
-        when(connectionFactory.createConnection()).thenReturn(connection);
-
         Session session = mock(Session.class);
         when(
             connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
@@ -157,8 +144,8 @@ public class EzyActiveTopicManagerTest extends BaseTest {
 
         // when
         EzyActiveTopicManager sut = new EzyActiveTopicManager(
+            connection,
             dataCodec,
-            connectionFactory,
             topicSettings
         );
 
@@ -169,8 +156,6 @@ public class EzyActiveTopicManagerTest extends BaseTest {
         Asserts.assertThatThrows(() -> sut.getTopic("not found"))
             .isEqualsType(IllegalArgumentException.class);
 
-        verify(connectionFactory, times(1)).createConnection();
-        verify(connection, times(1)).start();
         verify(
             connection, times(1)
         ).createSession(false, Session.AUTO_ACKNOWLEDGE);

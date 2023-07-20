@@ -6,7 +6,7 @@ import com.tvd12.test.assertion.Asserts;
 import com.tvd12.test.base.BaseTest;
 import org.testng.annotations.Test;
 
-import javax.jms.ConnectionFactory;
+import javax.jms.Connection;
 import javax.jms.Session;
 
 import static org.mockito.Mockito.*;
@@ -16,9 +16,9 @@ public class EzyActiveAbstractManagerTest extends BaseTest {
     @Test
     public void getSessionTest() throws Exception {
         // given
-        ConnectionFactory connectionFactory = mock(ConnectionFactory.class);
+        Connection connection = mock(Connection.class);
         EzyActiveAbstractManager sut = new EzyActiveAbstractManager(
-            connectionFactory
+            connection
         );
 
         EzyActiveEndpointSetting setting = mock(EzyActiveEndpointSetting.class);

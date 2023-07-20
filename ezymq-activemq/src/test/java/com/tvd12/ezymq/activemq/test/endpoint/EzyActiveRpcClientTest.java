@@ -14,7 +14,6 @@ import com.tvd12.test.util.RandomUtil;
 import org.testng.annotations.Test;
 
 import javax.jms.*;
-
 import java.util.Enumeration;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -71,6 +70,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
         verify(session, times(1)).createBytesMessage();
         verify(bytesMessage, times(1)).writeBytes(message);
         verify(messageProducer, times(1)).send(bytesMessage);
+        sut.close();
     }
 
     @Test
@@ -119,6 +119,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
         verify(session, times(1)).createBytesMessage();
         verify(bytesMessage, times(1)).writeBytes(message);
         verify(messageProducer, times(1)).send(bytesMessage);
+        sut.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -129,7 +130,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
         Destination replyQueue = mock(Destination.class);
         int capacity = RandomUtil.randomInt(10, 10000);
         int threadPoolSize = 1;
-        int defaultTimeout = 3 * 1000;
+        int defaultTimeout = 100;
 
         EzyActiveResponseConsumer unconsumedResponseConsumer =
             mock(EzyActiveResponseConsumer.class);
@@ -147,7 +148,10 @@ public class EzyActiveRpcClientTest extends BaseTest {
         when(correlationIdFactory.newCorrelationId()).thenReturn(requestId);
 
         BytesMessage responseByteMessage = mock(BytesMessage.class);
-        when(messageConsumer.receive()).thenReturn(responseByteMessage);
+        when(messageConsumer.receive()).thenAnswer(it -> {
+            EzyThreads.sleep(10);
+            return responseByteMessage;
+        });
 
         AtomicReference<byte[]> responseBody = new AtomicReference<>();
         when(responseByteMessage.readBytes(any(byte[].class))).thenAnswer(it -> {
@@ -185,7 +189,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
 
         // when
         EzyActiveMessage result = sut.doCall(properties, message);
-        Thread.sleep(20);
+        Thread.sleep(50);
 
         // then
         EzyActiveMessage expectedMessage = new EzyActiveMessage(
@@ -211,6 +215,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
             any(),
             any()
         );
+        sut.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -236,7 +241,10 @@ public class EzyActiveRpcClientTest extends BaseTest {
         when(correlationIdFactory.newCorrelationId()).thenReturn(requestId);
 
         BytesMessage responseByteMessage = mock(BytesMessage.class);
-        when(messageConsumer.receive()).thenReturn(responseByteMessage);
+        when(messageConsumer.receive()).thenAnswer(it -> {
+            EzyThreads.sleep(10);
+            return responseByteMessage;
+        });
 
         AtomicReference<byte[]> responseBody = new AtomicReference<>();
         when(responseByteMessage.readBytes(any(byte[].class))).thenAnswer(it -> {
@@ -273,7 +281,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
 
         // when
         EzyActiveMessage result = sut.doCall(properties, message);
-        Thread.sleep(20);
+        Thread.sleep(50);
 
         // then
         Asserts.assertEquals(
@@ -297,6 +305,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
         verify(responseByteMessage, atLeast(1)).readBytes(any());
         verify(responseByteMessage, atLeast(1)).getJMSType();
         verify(correlationIdFactory, times(1)).newCorrelationId();
+        sut.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -322,7 +331,10 @@ public class EzyActiveRpcClientTest extends BaseTest {
         when(correlationIdFactory.newCorrelationId()).thenReturn(requestId);
 
         BytesMessage responseByteMessage = mock(BytesMessage.class);
-        when(messageConsumer.receive()).thenReturn(responseByteMessage);
+        when(messageConsumer.receive()).thenAnswer(it -> {
+            EzyThreads.sleep(10);
+            return responseByteMessage;
+        });
 
         RuntimeException exception = new RuntimeException("test");
         when(responseByteMessage.readBytes(any(byte[].class))).thenAnswer(it -> {
@@ -361,7 +373,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
         Throwable e = Asserts.assertThrows(() ->
             sut.doCall(properties, message)
         );
-        Thread.sleep(20);
+        Thread.sleep(50);
 
         // then
         Asserts.assertEquals(e, exception);
@@ -376,6 +388,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
         verify(responseByteMessage, atLeast(1)).readBytes(any());
         verify(responseByteMessage, atLeast(1)).getJMSType();
         verify(correlationIdFactory, times(1)).newCorrelationId();
+        sut.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -401,7 +414,10 @@ public class EzyActiveRpcClientTest extends BaseTest {
         when(correlationIdFactory.newCorrelationId()).thenReturn(requestId);
 
         BytesMessage responseByteMessage = mock(BytesMessage.class);
-        when(messageConsumer.receive()).thenReturn(responseByteMessage);
+        when(messageConsumer.receive()).thenAnswer(it -> {
+            EzyThreads.sleep(10);
+            return responseByteMessage;
+        });
 
         when(responseByteMessage.readBytes(any(byte[].class))).thenAnswer(it -> {
             if (it.getArguments().length > 0) {
@@ -439,7 +455,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
         Throwable e = Asserts.assertThrows(() ->
             sut.doCall(properties, message, 10)
         );
-        Thread.sleep(10);
+        Thread.sleep(50);
 
         // then
         Asserts.assertEqualsType(e, TimeoutException.class);
@@ -454,6 +470,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
         verify(responseByteMessage, atLeast(1)).readBytes(any());
         verify(responseByteMessage, atLeast(1)).getJMSType();
         verify(correlationIdFactory, times(1)).newCorrelationId();
+        sut.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -479,7 +496,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
         when(correlationIdFactory.newCorrelationId()).thenReturn(requestId);
 
         BytesMessage responseByteMessage = mock(BytesMessage.class);
-        when(messageConsumer.receive()).thenReturn(responseByteMessage);
+        when(messageConsumer.receive()).thenAnswer(it -> responseByteMessage);
 
         when(responseByteMessage.readBytes(any(byte[].class))).thenAnswer(it -> {
             if (it.getArguments().length > 0) {
@@ -540,6 +557,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
         verify(responseByteMessage, atLeast(1)).readBytes(any());
         verify(responseByteMessage, atLeast(1)).getJMSType();
         verify(correlationIdFactory, times(1)).newCorrelationId();
+        sut.close();
     }
 
     @Test
@@ -559,7 +577,7 @@ public class EzyActiveRpcClientTest extends BaseTest {
         when(session.createConsumer(replyQueue)).thenReturn(messageConsumer);
 
         // when
-        EzyActiveRpcClient.builder()
+        EzyActiveRpcClient sut = EzyActiveRpcClient.builder()
             .session(session)
             .capacity(capacity)
             .threadPoolSize(threadPoolSize)
@@ -571,5 +589,6 @@ public class EzyActiveRpcClientTest extends BaseTest {
         // then
         verify(session, times(1)).createProducer(requestQueue);
         verify(session, times(1)).createConsumer(replyQueue);
+        sut.close();
     }
 }

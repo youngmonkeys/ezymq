@@ -21,7 +21,6 @@ public class EzyActiveRpcConsumerManagerTest extends BaseTest {
     public void test() throws JMSException {
         // given
         EzyMQDataCodec dataCodec = mock(EzyMQDataCodec.class);
-        ConnectionFactory connectionFactory = mock(ConnectionFactory.class);
 
         String requestQueueName = RandomUtil.randomShortAlphabetString();
         String replyQueueName = RandomUtil.randomShortAlphabetString();
@@ -37,8 +36,6 @@ public class EzyActiveRpcConsumerManagerTest extends BaseTest {
                 .toMap();
 
         Connection connection = mock(Connection.class);
-        when(connectionFactory.createConnection()).thenReturn(connection);
-
         Session session = mock(Session.class);
         when(
             connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
@@ -52,8 +49,8 @@ public class EzyActiveRpcConsumerManagerTest extends BaseTest {
 
         // when
         EzyActiveRpcConsumerManager sut = new EzyActiveRpcConsumerManager(
+            connection,
             dataCodec,
-            connectionFactory,
             rpcConsumerSettings
         );
 
@@ -63,8 +60,6 @@ public class EzyActiveRpcConsumerManagerTest extends BaseTest {
         );
         Asserts.assertThatThrows(() -> sut.getRpcConsumer("not found"))
                 .isEqualsType(IllegalArgumentException.class);
-        verify(connectionFactory, times(1)).createConnection();
-        verify(connection, times(1)).start();
         verify(
             connection, times(1)
         ).createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -79,7 +74,6 @@ public class EzyActiveRpcConsumerManagerTest extends BaseTest {
     public void createRpcConsumerFailed() throws JMSException {
         // given
         EzyMQDataCodec dataCodec = mock(EzyMQDataCodec.class);
-        ConnectionFactory connectionFactory = mock(ConnectionFactory.class);
 
         String requestQueueName = RandomUtil.randomShortAlphabetString();
         String replyQueueName = RandomUtil.randomShortAlphabetString();
@@ -95,8 +89,6 @@ public class EzyActiveRpcConsumerManagerTest extends BaseTest {
                 .toMap();
 
         Connection connection = mock(Connection.class);
-        when(connectionFactory.createConnection()).thenReturn(connection);
-
         Session session = mock(Session.class);
         when(
             connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
@@ -111,16 +103,14 @@ public class EzyActiveRpcConsumerManagerTest extends BaseTest {
         // when
         Throwable e = Asserts.assertThrows(() ->
             new EzyActiveRpcConsumerManager(
+                connection,
                 dataCodec,
-                connectionFactory,
                 rpcConsumerSettings
             )
         );
 
         // then
         Asserts.assertEqualsType(e, java.lang.IllegalStateException.class);
-        verify(connectionFactory, times(1)).createConnection();
-        verify(connection, times(1)).start();
         verify(
             connection, times(1)
         ).createSession(false, Session.AUTO_ACKNOWLEDGE);

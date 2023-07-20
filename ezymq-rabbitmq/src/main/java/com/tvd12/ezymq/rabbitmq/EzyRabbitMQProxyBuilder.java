@@ -1,5 +1,6 @@
 package com.tvd12.ezymq.rabbitmq;
 
+import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.tvd12.ezymq.common.EzyMQRpcProxyBuilder;
 import com.tvd12.ezymq.rabbitmq.annotation.EzyRabbitConsumer;
@@ -57,11 +58,17 @@ public class EzyRabbitMQProxyBuilder extends EzyMQRpcProxyBuilder<
 
     @Override
     protected EzyRabbitMQProxy newProxy() {
+        Connection connection;
+        try {
+            connection = connectionFactory.newConnection();
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
         return new EzyRabbitMQProxy(
+            connection,
             settings,
             dataCodec,
-            entityCodec,
-            connectionFactory
+            entityCodec
         );
     }
 }

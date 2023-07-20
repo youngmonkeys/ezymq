@@ -24,8 +24,10 @@ public class EzyActiveTopicClient extends EzyActiveTopicEndpoint {
         return new Builder();
     }
 
-    public void publish(EzyActiveProperties props, byte[] message)
-        throws Exception {
+    public void publish(
+        EzyActiveProperties props,
+        byte[] message
+    ) throws Exception {
         publish(producer, props, message);
     }
 

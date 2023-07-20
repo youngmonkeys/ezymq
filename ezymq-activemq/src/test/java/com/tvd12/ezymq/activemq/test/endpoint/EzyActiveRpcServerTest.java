@@ -1,5 +1,6 @@
 package com.tvd12.ezymq.activemq.test.endpoint;
 
+import com.tvd12.ezyfox.util.EzyThreads;
 import com.tvd12.ezymq.activemq.endpoint.EzyActiveRpcServer;
 import com.tvd12.ezymq.activemq.handler.EzyActiveRpcCallHandler;
 import com.tvd12.test.assertion.Asserts;
@@ -41,7 +42,10 @@ public class EzyActiveRpcServerTest extends BaseTest {
         sut.setCallHandler(handler);
 
         BytesMessage message = mock(BytesMessage.class);
-        when(messageConsumer.receive()).thenReturn(message);
+        when(messageConsumer.receive()).thenAnswer(it -> {
+            EzyThreads.sleep(10);
+            return message;
+        });
 
         BytesMessage bytesMessage = mock(BytesMessage.class);
         when(session.createBytesMessage()).thenReturn(bytesMessage);
@@ -70,7 +74,7 @@ public class EzyActiveRpcServerTest extends BaseTest {
 
         // when
         sut.start();
-        Thread.sleep(10);
+        Thread.sleep(50);
 
         // then
         verify(session, times(1)).createProducer(replyQueue);
@@ -86,6 +90,7 @@ public class EzyActiveRpcServerTest extends BaseTest {
 
         Throwable e = Asserts.assertThrows(sut::start);
         Asserts.assertEqualsType(e, java.lang.IllegalStateException.class);
+        sut.close();
     }
 
     @SuppressWarnings("unchecked")
@@ -114,7 +119,10 @@ public class EzyActiveRpcServerTest extends BaseTest {
         sut.setCallHandler(handler);
 
         BytesMessage message = mock(BytesMessage.class);
-        when(messageConsumer.receive()).thenReturn(message);
+        when(messageConsumer.receive()).thenAnswer(it -> {
+            EzyThreads.sleep(10);
+            return message;
+        });
 
         BytesMessage bytesMessage = mock(BytesMessage.class);
         when(session.createBytesMessage()).thenReturn(bytesMessage);
@@ -138,7 +146,7 @@ public class EzyActiveRpcServerTest extends BaseTest {
 
         // when
         sut.start();
-        Thread.sleep(10);
+        Thread.sleep(50);
 
         // then
         verify(session, times(1)).createProducer(replyQueue);
@@ -154,5 +162,6 @@ public class EzyActiveRpcServerTest extends BaseTest {
 
         Throwable e = Asserts.assertThrows(sut::start);
         Asserts.assertEqualsType(e, java.lang.IllegalStateException.class);
+        sut.close();
     }
 }

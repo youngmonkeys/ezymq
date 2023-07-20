@@ -40,5 +40,6 @@ public class EzyActiveTopicClientTest extends BaseTest {
         verify(session, times(1)).createBytesMessage();
         verify(bytesMessage, times(1)).writeBytes(any());
         verify(producer, times(1)).send(bytesMessage);
+        sut.close();
     }
 }

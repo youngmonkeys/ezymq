@@ -45,7 +45,10 @@ public class EzyActiveRpcConsumer
     }
 
     @Override
-    public void handleFire(EzyActiveProperties requestProperties, byte[] requestBody) {
+    public void handleFire(
+        EzyActiveProperties requestProperties,
+        byte[] requestBody
+    ) {
         String cmd = requestProperties.getType();
         Object requestEntity = null;
         Object responseEntity;

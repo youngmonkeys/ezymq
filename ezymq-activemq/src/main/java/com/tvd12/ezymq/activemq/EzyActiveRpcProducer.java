@@ -41,7 +41,9 @@ public class EzyActiveRpcProducer
 
     public void fire(Object data) {
         if (!(data instanceof EzyMessageTypeFetcher)) {
-            throw new IllegalArgumentException("data class must implement 'EzyMessageTypeFetcher'");
+            throw new IllegalArgumentException(
+                "data class must implement 'EzyMessageTypeFetcher'"
+            );
         }
         EzyMessageTypeFetcher mdata = (EzyMessageTypeFetcher) data;
         fire(mdata.getMessageType(), data);
@@ -93,7 +95,10 @@ public class EzyActiveRpcProducer
         try {
             return client.doCall(requestProperties, requestMessage);
         } catch (TimeoutException e) {
-            throw new EzyTimeoutException("call request: " + requestProperties.getType() + " timeout", e);
+            throw new EzyTimeoutException(
+                "call request: " + requestProperties.getType() + " timeout",
+                e
+            );
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage(), e);
         }

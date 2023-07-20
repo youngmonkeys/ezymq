@@ -1,7 +1,6 @@
 package com.tvd12.ezymq.activemq;
 
 import com.tvd12.ezyfox.codec.EzyEntityCodec;
-import com.tvd12.ezyfox.util.EzyCloseable;
 import com.tvd12.ezymq.activemq.manager.EzyActiveRpcConsumerManager;
 import com.tvd12.ezymq.activemq.manager.EzyActiveRpcProducerManager;
 import com.tvd12.ezymq.activemq.manager.EzyActiveTopicManager;
@@ -9,25 +8,25 @@ import com.tvd12.ezymq.activemq.setting.EzyActiveSettings;
 import com.tvd12.ezymq.common.EzyMQRpcProxy;
 import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 
-import javax.jms.ConnectionFactory;
+import javax.jms.Connection;
 
 import static com.tvd12.ezyfox.util.EzyProcessor.processWithLogException;
 
 public class EzyActiveMQProxy extends EzyMQRpcProxy<EzyActiveSettings> {
 
+    protected final Connection connection;
     protected final EzyActiveTopicManager topicManager;
-    protected final ConnectionFactory connectionFactory;
     protected final EzyActiveRpcProducerManager rpcProducerManager;
     protected final EzyActiveRpcConsumerManager rpcConsumerManager;
 
     public EzyActiveMQProxy(
+        Connection connection,
         EzyActiveSettings settings,
         EzyMQDataCodec dataCodec,
-        EzyEntityCodec entityCodec,
-        ConnectionFactory connectionFactory
+        EzyEntityCodec entityCodec
     ) {
         super(settings, dataCodec, entityCodec);
-        this.connectionFactory = connectionFactory;
+        this.connection = connection;
         this.topicManager = newTopicManager();
         this.rpcProducerManager = newRpcProducerManager();
         this.rpcConsumerManager = newActiveRpcConsumerManager();
@@ -54,31 +53,29 @@ public class EzyActiveMQProxy extends EzyMQRpcProxy<EzyActiveSettings> {
         topicManager.close();
         rpcConsumerManager.close();
         rpcProducerManager.close();
-        if (connectionFactory instanceof EzyCloseable) {
-            processWithLogException(((EzyCloseable) connectionFactory)::close);
-        }
+        processWithLogException(connection::close);
     }
 
     protected EzyActiveTopicManager newTopicManager() {
         return new EzyActiveTopicManager(
+            connection,
             dataCodec,
-            connectionFactory,
             settings.getTopicSettings()
         );
     }
 
     protected EzyActiveRpcProducerManager newRpcProducerManager() {
         return new EzyActiveRpcProducerManager(
+            connection,
             entityCodec,
-            connectionFactory,
             settings.getRpcProducerSettings()
         );
     }
 
     protected EzyActiveRpcConsumerManager newActiveRpcConsumerManager() {
         return new EzyActiveRpcConsumerManager(
+            connection,
             dataCodec,
-            connectionFactory,
             settings.getRpcConsumerSettings()
         );
     }

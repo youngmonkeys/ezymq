@@ -1,7 +1,7 @@
 package com.tvd12.ezymq.rabbitmq.manager;
 
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.Connection;
 import com.tvd12.ezymq.common.codec.EzyMQDataCodec;
 import com.tvd12.ezymq.rabbitmq.EzyRabbitRpcConsumer;
 import com.tvd12.ezymq.rabbitmq.endpoint.EzyRabbitRpcServer;
@@ -19,11 +19,11 @@ public class EzyRabbitRpcConsumerManager extends EzyRabbitAbstractManager {
     protected final Map<String, EzyRabbitRpcConsumerSetting> rpcConsumerSettings;
 
     public EzyRabbitRpcConsumerManager(
+        Connection connection,
         EzyMQDataCodec dataCodec,
-        ConnectionFactory connectionFactory,
         Map<String, EzyRabbitRpcConsumerSetting> rpcConsumerSettings
     ) {
-        super(connectionFactory);
+        super(connection);
         this.dataCodec = dataCodec;
         this.rpcConsumerSettings = rpcConsumerSettings;
         this.rpcConsumers = createRpcConsumers();
