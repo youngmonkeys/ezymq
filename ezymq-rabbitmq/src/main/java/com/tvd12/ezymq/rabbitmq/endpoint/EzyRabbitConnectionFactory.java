@@ -24,6 +24,8 @@ public class EzyRabbitConnectionFactory
 
     @Setter
     protected int maxConnectionAttempts;
+    @Setter
+    protected int connectionAttemptSleepTime = 3000;
     protected ExecutorService copyExecutorService;
     protected final List<Connection> createdConnections =
         Collections.synchronizedList(new ArrayList<>());
@@ -60,7 +62,7 @@ public class EzyRabbitConnectionFactory
                     ++retryCount,
                     e
                 );
-                EzyThreads.sleep(3000);
+                EzyThreads.sleep(connectionAttemptSleepTime);
             }
         }
         createdConnections.add(connection);

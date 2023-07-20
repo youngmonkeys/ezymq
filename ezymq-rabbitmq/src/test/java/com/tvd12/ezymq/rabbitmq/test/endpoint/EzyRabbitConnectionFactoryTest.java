@@ -30,6 +30,7 @@ public class EzyRabbitConnectionFactoryTest extends BaseTest {
     public void newConnectionSuccessfullyButRetry() throws IOException, TimeoutException {
         // given
         int maxConnectionAttempts = RandomUtil.randomInt(2, 10);
+        int connectionAttemptSleepTime = RandomUtil.randomInt(2, 10);
 
         ExecutorService executorService = mock(ExecutorService.class);
         AddressResolver addressResolver = mock(AddressResolver.class);
@@ -64,6 +65,7 @@ public class EzyRabbitConnectionFactoryTest extends BaseTest {
         };
         sut.setAutomaticRecoveryEnabled(false);
         sut.setMaxConnectionAttempts(maxConnectionAttempts);
+        sut.setConnectionAttemptSleepTime(connectionAttemptSleepTime);
 
         // when
         Connection actual = sut.newConnection(
