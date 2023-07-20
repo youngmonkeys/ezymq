@@ -26,6 +26,7 @@ public class EzyMqttClientFactory
     protected final String username;
     protected final String password;
     protected final int maxConnectionAttempts;
+    protected final int connectionAttemptSleepTime;
     protected final EzyMqttMqMessageCodec mqttMqMessageCodec;
     protected final AtomicInteger clientIdGenerator =
         new AtomicInteger();
@@ -63,7 +64,7 @@ public class EzyMqttClientFactory
                     ++retryCount,
                     e
                 );
-                EzyThreads.sleep(3000);
+                EzyThreads.sleep(connectionAttemptSleepTime);
             }
         }
         createdMqttClients.add(mqttClientProxy);

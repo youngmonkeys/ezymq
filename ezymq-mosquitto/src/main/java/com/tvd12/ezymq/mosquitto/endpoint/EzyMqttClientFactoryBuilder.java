@@ -15,6 +15,7 @@ public class EzyMqttClientFactoryBuilder
     protected String username;
     protected String password;
     protected int maxConnectionAttempts;
+    protected int connectionAttemptSleepTime = 3000;
     protected EzyMqttMqMessageCodec mqttMqMessageCodec;
 
     public EzyMqttClientFactoryBuilder serverUri(String serverUri) {
@@ -41,6 +42,13 @@ public class EzyMqttClientFactoryBuilder
         int maxConnectionAttempts
     ) {
         this.maxConnectionAttempts = maxConnectionAttempts;
+        return this;
+    }
+
+    public EzyMqttClientFactoryBuilder connectionAttemptSleepTime(
+        int connectionAttemptSleepTime
+    ) {
+        this.connectionAttemptSleepTime = connectionAttemptSleepTime;
         return this;
     }
 
@@ -75,6 +83,7 @@ public class EzyMqttClientFactoryBuilder
             username,
             password,
             maxConnectionAttempts,
+            connectionAttemptSleepTime,
             mqttMqMessageCodec
         );
     }
