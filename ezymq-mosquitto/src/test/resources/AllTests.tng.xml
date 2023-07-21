@@ -4,6 +4,7 @@
     <test name="All">
         <packages>
             <package name="com.tvd12.ezymq.mosquitto.test"/>
+            <package name="com.tvd12.ezymq.mosquitto.test.codec"/>
             <package name="com.tvd12.ezymq.mosquitto.test.endpoint"/>
             <package name="com.tvd12.ezymq.mosquitto.test.factory"/>
             <package name="com.tvd12.ezymq.mosquitto.test.handler"/>
