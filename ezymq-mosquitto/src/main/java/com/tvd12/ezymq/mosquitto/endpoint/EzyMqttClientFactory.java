@@ -49,10 +49,7 @@ public class EzyMqttClientFactory
                 if (isNotEmpty(password)) {
                     options.setPassword(password.toCharArray());
                 }
-                mqttClientProxy = new EzyMqttClientProxy(
-                    mqttClient,
-                    mqttMqMessageCodec
-                );
+                mqttClientProxy = neMqttClientProxy(mqttClient);
                 mqttClientProxy.connect();
                 break;
             } catch (Throwable e) {
@@ -69,6 +66,12 @@ public class EzyMqttClientFactory
         }
         createdMqttClients.add(mqttClientProxy);
         return mqttClientProxy;
+    }
+
+    protected EzyMqttClientProxy neMqttClientProxy(
+        MqttClient mqttClient
+    ) {
+        return new EzyMqttClientProxy(mqttClient, mqttMqMessageCodec);
     }
 
     @Override

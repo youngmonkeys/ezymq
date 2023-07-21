@@ -1,7 +1,7 @@
 package com.tvd12.ezymq.mosquitto.util;
 
 import com.tvd12.ezymq.common.annotation.EzyConsumerAnnotationProperties;
-import com.tvd12.ezymq.mosquitto.annotation.EzyRabbitConsumer;
+import com.tvd12.ezymq.mosquitto.annotation.EzyMosquittoConsumer;
 
 public final class EzyMosquittoConsumerAnnotations {
 
@@ -10,14 +10,14 @@ public final class EzyMosquittoConsumerAnnotations {
     public static EzyConsumerAnnotationProperties getProperties(
         Object messageConsumer
     ) {
-        EzyRabbitConsumer anno = messageConsumer
+        EzyMosquittoConsumer anno = messageConsumer
             .getClass()
-            .getAnnotation(EzyRabbitConsumer.class);
+            .getAnnotation(EzyMosquittoConsumer.class);
         return getProperties(anno);
     }
 
     public static EzyConsumerAnnotationProperties getProperties(
-        EzyRabbitConsumer annotation
+        EzyMosquittoConsumer annotation
     ) {
         return new EzyConsumerAnnotationProperties(
             annotation.topic(),

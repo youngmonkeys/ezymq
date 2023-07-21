@@ -1,0 +1,9 @@
+mosquitto:
+  producers:
+    test: default
+  consumers:
+    test: default
+  topics:
+    hello:
+      producer: default
+      consumer: default

@@ -2,10 +2,8 @@ package com.tvd12.ezymq.mosquitto.endpoint;
 
 import com.tvd12.ezymq.mosquitto.codec.EzyMqttMqMessageCodec;
 import com.tvd12.ezymq.mosquitto.message.EzyMqttMqMessage;
-import lombok.AllArgsConstructor;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 
-@AllArgsConstructor
 public class EzyMqttClientProxy {
 
     private final MqttClient mqttClient;

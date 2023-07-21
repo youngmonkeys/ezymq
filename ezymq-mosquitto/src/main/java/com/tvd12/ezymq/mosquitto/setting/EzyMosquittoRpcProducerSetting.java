@@ -68,7 +68,7 @@ public class EzyMosquittoRpcProducerSetting extends EzyMosquittoEndpointSetting 
             return this;
         }
 
-        public Builder messageIdFactory(
+        public Builder correlationIdFactory(
             EzyMosquittoCorrelationIdFactory correlationIdFactory
         ) {
             this.correlationIdFactory = correlationIdFactory;

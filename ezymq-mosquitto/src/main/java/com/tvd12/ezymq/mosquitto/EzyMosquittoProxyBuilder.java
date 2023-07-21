@@ -1,9 +1,9 @@
 package com.tvd12.ezymq.mosquitto;
 
 import com.tvd12.ezymq.common.EzyMQRpcProxyBuilder;
-import com.tvd12.ezymq.mosquitto.annotation.EzyRabbitConsumer;
-import com.tvd12.ezymq.mosquitto.annotation.EzyRabbitHandler;
-import com.tvd12.ezymq.mosquitto.annotation.EzyRabbitInterceptor;
+import com.tvd12.ezymq.mosquitto.annotation.EzyMosquittoConsumer;
+import com.tvd12.ezymq.mosquitto.annotation.EzyMosquittoHandler;
+import com.tvd12.ezymq.mosquitto.annotation.EzyMosquittoInterceptor;
 import com.tvd12.ezymq.mosquitto.endpoint.EzyMqttClientFactory;
 import com.tvd12.ezymq.mosquitto.endpoint.EzyMqttClientFactoryBuilder;
 import com.tvd12.ezymq.mosquitto.setting.EzyMosquittoSettings;
@@ -26,7 +26,7 @@ public class EzyMosquittoProxyBuilder extends EzyMQRpcProxyBuilder<
         return new EzyMosquittoSettings.Builder(this);
     }
 
-    public EzyMosquittoProxyBuilder connectionFactory(
+    public EzyMosquittoProxyBuilder mqttClientFactory(
         EzyMqttClientFactory mqttClientFactory
     ) {
         this.mqttClientFactory = mqttClientFactory;
@@ -35,17 +35,17 @@ public class EzyMosquittoProxyBuilder extends EzyMQRpcProxyBuilder<
     
     @Override
     public Class<?> getRequestInterceptorAnnotationClass() {
-        return EzyRabbitInterceptor.class;
+        return EzyMosquittoInterceptor.class;
     }
 
     @Override
     public Class<?> getRequestHandlerAnnotationClass() {
-        return EzyRabbitHandler.class;
+        return EzyMosquittoHandler.class;
     }
 
     @Override
     protected Class<?> getMessageConsumerAnnotationClass() {
-        return EzyRabbitConsumer.class;
+        return EzyMosquittoConsumer.class;
     }
 
     @Override

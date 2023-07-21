@@ -28,7 +28,7 @@ public class EzyMosquittoProxy extends EzyMQRpcProxy<EzyMosquittoSettings> {
         this.mqttClient = mqttClient;
         this.topicManager = newTopicManager();
         this.rpcProducerManager = newRpcProducerManager();
-        this.rpcConsumerManager = newRabbitRpcConsumerManager();
+        this.rpcConsumerManager = newMosquittoRpcConsumerManager();
     }
 
     public static EzyMosquittoProxyBuilder builder() {
@@ -71,7 +71,7 @@ public class EzyMosquittoProxy extends EzyMQRpcProxy<EzyMosquittoSettings> {
         );
     }
 
-    protected EzyMosquittoRpcConsumerManager newRabbitRpcConsumerManager() {
+    protected EzyMosquittoRpcConsumerManager newMosquittoRpcConsumerManager() {
         return new EzyMosquittoRpcConsumerManager(
             mqttClient,
             dataCodec,

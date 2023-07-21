@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-public @interface EzyRabbitHandler {
+public @interface EzyMosquittoHandler {
 
     String value() default "";
 
