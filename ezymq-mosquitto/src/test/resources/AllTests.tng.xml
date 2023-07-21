@@ -3,12 +3,13 @@
 <suite name="AllTests">
     <test name="All">
         <packages>
-            <package name="com.tvd12.ezymq.rabbitmq.test"/>
-            <package name="com.tvd12.ezymq.rabbitmq.test.endpoint"/>
-            <package name="com.tvd12.ezymq.rabbitmq.test.handler"/>
-            <package name="com.tvd12.ezymq.rabbitmq.test.manager"/>
-            <package name="com.tvd12.ezymq.rabbitmq.test.setting"/>
-            <package name="com.tvd12.ezymq.rabbitmq.test.util"/>
+            <package name="com.tvd12.ezymq.mosquitto.test"/>
+            <package name="com.tvd12.ezymq.mosquitto.test.endpoint"/>
+            <package name="com.tvd12.ezymq.mosquitto.test.factory"/>
+            <package name="com.tvd12.ezymq.mosquitto.test.handler"/>
+            <package name="com.tvd12.ezymq.mosquitto.test.manager"/>
+            <package name="com.tvd12.ezymq.mosquitto.test.setting"/>
+            <package name="com.tvd12.ezymq.mosquitto.test.util"/>
         </packages>
     </test>
 </suite>

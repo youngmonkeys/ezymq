@@ -34,7 +34,6 @@ public class EzyMosquittoSettings extends EzyMQRpcSettings {
     public static final String KEY_CONSUMERS = "mosquitto.consumers";
     public static final String KEY_DEFAULT_TIMEOUT = "default_timeout";
     public static final String KEY_ENABLE = "enable";
-    public static final String KEY_MAX_THREAD_POOL_SIZE = "mosquitto.max_thread_pool_size";
     public static final String KEY_PRODUCERS = "mosquitto.producers";
     public static final String KEY_PRODUCER = "producer";
     public static final String KEY_TOPIC = "topic";
